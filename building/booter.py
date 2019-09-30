@@ -11,7 +11,7 @@ nasm_path = "C:\\Users\\john_\\AppData\\Local\\bin\\NASM\\nasm.exe"
 commands = [
     f"{nasm_path} -f elf64 ./booter/boot.asm",
     f"{nasm_path} -f elf64 ./booter/multiboot_header.asm",
-    "ld -n -o ./binaries/kernel.bin -T ./booter/linker.ld ./booter/multiboot_header.o ./booter/boot.o"
+    "ld -n -o ./binaries/bootloader/kernel.bin -T ./booter/linker.ld ./booter/multiboot_header.o ./booter/boot.o"
 ]
 
 post_build = [
