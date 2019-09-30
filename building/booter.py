@@ -3,8 +3,6 @@ import shutil
 import platform
 import colorama
 
-if platform.system() != "Linux":
-    colorama.init(convert=True)
 
 nasm_path = "C:\\Users\\john_\\AppData\\Local\\bin\\NASM\\nasm.exe"
 
@@ -34,8 +32,11 @@ def build() -> bool:
     for func in post_build:
         func[0](*func[1])
 
+    print(f"{colorama.Fore.GREEN}Building bootloader finished!{colorama.Fore.RESET}")
     return True
 
 
 if __name__ == "__main__":
+    if platform.system() != "Linux":
+        colorama.init(convert=True)
     build()
