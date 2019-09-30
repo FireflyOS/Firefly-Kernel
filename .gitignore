@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# VSCode
+/.vscode
+
+# Binaries
+*.iso
