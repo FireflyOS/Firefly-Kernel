@@ -36,3 +36,6 @@
 
 # Binaries
 *.iso
+
+# Buildsystem
+/__pycache__
