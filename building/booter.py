@@ -5,9 +5,11 @@ import colorama
 if platform.system() != "Linux":
     colorama.init(convert=True)
 
+nasm_path = "nasm"
+
 commands = [
-    "nasm -f elf64 ./kernel/boot.asm",
-    "nasm -f elf64 ./kernel/multiboot",
+    f"{nasm_path} -f elf64 ./kernel/boot.asm",
+    f"{nasm_path} -f elf64 ./kernel/multiboot",
     "ld -n -o kernel.bin -T linker.ld multiboot_header.o boot.o"    
 ]
 
