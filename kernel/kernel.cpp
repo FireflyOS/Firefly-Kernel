@@ -1,5 +1,5 @@
 // nostd
 
-extern "C" [[noreturn]] auto kernel_main() -> void {
+extern "C" [[noreturn]] void kernel_main() {
     while (true);
 }

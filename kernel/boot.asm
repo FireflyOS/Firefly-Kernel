@@ -1,7 +1,6 @@
 global start
 extern kernel_main
 
-
 section .text
 bits 32
 start:
@@ -18,7 +17,7 @@ start:
     lgdt [gdt64.pointer]
     jmp gdt64.code:long_mode_start
 
-    mov dword [0xb8000], 0x2f4b2f4f
+    ; mov dword [0xb8000], 0x2f4b2f4f
 
     call kernel_main
     ; mov eax, 0xb8000
@@ -189,6 +188,6 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
     ; print `OKAY` to screen
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
+    ; mov rax, 0x2f592f412f4b2f4f
+    ; mov qword [0xb8000], rax
     hlt
