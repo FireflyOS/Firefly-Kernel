@@ -1,16 +1,19 @@
-#include "../include/drivers/vga.hpp"
-
+#include <drivers/vga.hpp>
 
 extern "C" [[noreturn]] void kernel_main() {
     Display x{};
     x.set_background_color(color::green);
     x.set_foreground_color(color::red);
-    for (int i = 0; i < 1200; i++) {
+
+    for (int i = 0; i < 81; i++) {
         x.write('@');
     }
+
+    x.test();
+
     // x.write("hello world!");
     // x.clear();
-    (void)x;
+    // (void)x;
     // for (int i = 0; i < 50; i++) {
     //     // x.write(' ');
     // }

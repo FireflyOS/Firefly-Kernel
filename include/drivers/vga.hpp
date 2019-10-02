@@ -1,11 +1,7 @@
 #pragma once
-#include "../algorithm.h"
-#include "../../cstdlib/cstdint.h"
-#include "../../cstdlib/cstring.h"
-
-constexpr uint64_t VGA_BUFFER_ADDR = 0xb8000;
-constexpr uint64_t WIDTH = 80;
-constexpr uint64_t HEIGHT = 25;
+#include <algorithm.h>
+#include <cstdlib/cstdint.h>
+#include <cstdlib/cstring.h>
 
 enum class color : uint8_t {
     black = 0x00,
@@ -26,6 +22,14 @@ enum class color : uint8_t {
     white = 0x0F,
 };
 
+struct __attribute__((packed)) vga_char {
+    char codepoint;
+    color fg : 4;
+    color bg : 4;
+};
+
+static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
+
 constexpr static size_t width = 80;
 constexpr static size_t height = 15;
 constexpr static size_t display_buff_addr = 0xB8000;
@@ -35,33 +39,53 @@ struct Display {
     size_t y = 0;
     size_t x = 0;
 
-    short background = static_cast<short>(color::black);
-    short foreground = static_cast<short>(color::white);
+    color background = color::black;
+    color foreground = color::white;
 
-    char16_t* display_buffer = reinterpret_cast<char16_t*>(display_buff_addr);
+    vga_char* display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
-    char16_t prepare_char(const char16_t c) const noexcept {
-        return c | (((background << 4) | (foreground & 0x0F)) << 8);
-    }
+    // char16_t prepare_char(const char16_t c) const noexcept {
+    //     return c | (((background << 4) | (foreground & 0x0F)) << 8);
+    // }
 
-    void clear() noexcept {
+    void clear() {
         // firefly::std::fill(
         //     display_buffer, display_buffer + (height * width), prepare_char(' ')
         // );
     }
 
-    void handle_write_pos() noexcept {
+    static size_t vgalen(const vga_char* str) {
+        size_t _sz{};
+        while (str[_sz++].codepoint);
+        return _sz;
+    }
+
+    void test() {
+        // 36 works, 37 fails
+        for(size_t i = 0; i < 36; i++) {
+            display_buffer[i + 160] = display_buffer[i];
+        }
+
+
+        //display_buffer[160] = display_buffer[0];
+    }
+
+    void handle_write_pos() {
         if (x >= width) {
             y++;
             x = 0;
         }
         if (y >= height) {
-            firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width), display_buffer);
+            for(size_t i = 0; i < ((height - 1) * width); i++) {
+                display_buffer[i] = display_buffer[i + width];
+            }
+            
+            //firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width) - width, display_buffer);
             y = height - 1;
         }
     }
 
-    bool handle_special_characters(const char16_t c) noexcept {
+    bool handle_special_characters(const char c) {
         bool ret = false;
         if (c == '\n') {
             x = 0;
@@ -80,40 +104,39 @@ struct Display {
         return ret;
     }
 
-    void write(const uint16_t c) noexcept {
-        if (handle_special_characters(c)) {
+    void write(const vga_char c) {
+        if (handle_special_characters(c.codepoint)) {
             return;
         }
-        display_buffer[y * width + x++] = prepare_char(c);
+        display_buffer[y * width + x++] = c;
         handle_write_pos();
     }
 
-    void write(const uint16_t* str) noexcept {
-        for (size_t idx = 0; idx < strnlen(str); idx++) {
+    void write(const vga_char* str) {
+        for (size_t idx = 0; idx < vgalen(str); idx++) {
             write(str[idx]);
         }
     }
 
-    void write(const char c) noexcept {
+    void write(const char c) {
         if (handle_special_characters(c)) {
             return;
         }
-        display_buffer[y * width + x++] = prepare_char(c);
+        display_buffer[y * width + x++] = {c, foreground, background};
         handle_write_pos();
     }
 
-    void write(const char* str) noexcept {
-        for (size_t idx = 0; idx < strnlen(str); idx++) {
+    void write(const char* str) {
+        for (size_t idx = 0; idx < strlen(str); idx++) {
             write(str[idx]);
         }
     }
 
-    void set_background_color(color c) noexcept {
-        background = static_cast<short>(c);
+    void set_background_color(color c) {
+        background = c;
     }
 
-    void set_foreground_color(color c) noexcept {
-        foreground = static_cast<short>(c);
+    void set_foreground_color(color c) {
+        foreground = c;
     }
-
 };
