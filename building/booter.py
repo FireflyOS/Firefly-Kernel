@@ -11,8 +11,7 @@ commands = [
     f"{nasm_path} -f elf64 ./booter/boot.asm -o ./binaries/boot/boot.o",
     f"ld -n -o ./binaries/boot/boot.o ./binaries/boot/kernel.o",
     f"{nasm_path} -f elf64 ./booter/multiboot_header.asm -o ./binaries/boot/multiboot_header.o",
-    # f"clang++ -fuse-ld=/usr/bin/ld.gold -Wl,-n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./booter/multiboot_header.o ./booter/boot.o ./booter/kernel.o",
-    "ld -n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./binaries/boot/multiboot_header.o ./binaries/boot/boot.o",
+    "ld -n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./binaries/boot/multiboot_header.o ./binaries/boot/boot.o ./binaries/boot/kernel.o",
     "grub-mkrescue -o FireflyOS.iso binaries"
 ]
 

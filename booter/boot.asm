@@ -25,13 +25,13 @@ start:
     ; call write_empty
 
     
-write_empty:
-    mov byte [eax], 0x20
-    inc eax
-    cmp eax, 0xb8fa0
-    jne write_empty
-    hlt
-    ret
+; write_empty:
+;     mov byte [eax], 0x20
+;     inc eax
+;     cmp eax, 0xb8fa0
+;     jne write_empty
+;     hlt
+;     ret
 
 ; Prints `ERR: ` and the given error code to screen and hangs.
 ; parameter: error code (in ascii) in al

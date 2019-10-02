@@ -39,4 +39,5 @@
 
 # Buildsystem
 /building/__pycache__
-*.bin
+binaries/
+!binaries/boot/grub.cfg
