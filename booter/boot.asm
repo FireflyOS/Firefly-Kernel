@@ -12,14 +12,10 @@ start:
     call set_up_page_tables 
     call enable_paging
 
-    cli
-    hlt
-
     ; load the 64-bit GDT
     lgdt [gdt64.pointer]
     jmp gdt64.code:long_mode_start
 
-    ; print `OK` to screen
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
     ; mov eax, 0xb8000
@@ -43,16 +39,16 @@ error:
     mov byte  [0xb800a], al
     hlt
 
-section .bss
+section .data
 align 4096
 p4_table:
-    resb 4096
+    times 512 dq 0
 p3_table:
-    resb 4096
+    times 512 dq 0
 p2_table:
-    resb 4096
+    times 512 dq 0
 stack_bottom:
-    resb 64
+    times 64 db 0
 stack_top:
 
 

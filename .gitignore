@@ -39,3 +39,4 @@
 
 # Buildsystem
 /building/__pycache__
+*.bin
