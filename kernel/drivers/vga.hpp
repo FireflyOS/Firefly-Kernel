@@ -1,10 +1,10 @@
 #pragma once
 #include <cppstdlib/algorithm.h>
-#include <cstdint.h>
+#include <cstdint>
 
-constexpr size_t VGA_BUFFER_ADDR = 0xB8000;
-constexpr size_t WIDTH = 80;
-constexpr size_t HEIGHT = 25;
+constexpr uint64_t VGA_BUFFER_ADDR = 0xB8000;
+constexpr uint64_t WIDTH = 80;
+constexpr uint64_t HEIGHT = 25;
 
 enum class color : uint8_t {
     black = 0x00,
@@ -27,16 +27,16 @@ enum class color : uint8_t {
 
 class VgaBuffer {
 private:
-    size_t x = 0;
-    size_t y = 0;
+    uint64_t x = 0;
+    uint64_t y = 0;
 
-    uint8_t bg_color = static_cast<int>(color::black);
-    uint8_t text_color = static_cast<int>(color::white);
+    uint8_t bg_color = static_cast<uint8_t>(color::black);
+    uint8_t text_color = static_cast<uint8_t>(color::white);
 
     uint16_t* arr = reinterpret_cast<uint16_t*>(VGA_BUFFER_ADDR);
 
-    uint16_t prepare_char(uint16_t chr) {
-        return ((static_cast<uint16_t>(bg_color) | static_cast<uint16_t>(text_color)) << 8) | chr;
+    uint16_t prepare_char(char chr) {
+        return ((bg_color << 4 | text_color) << 8) | chr;
     }
 
     void set_bg_color(color c) {
@@ -44,7 +44,7 @@ private:
     }
 
     void set_text_color(color c) {
-        this->text_color = static_cast<int>(c)
+        this->text_color = static_cast<int>(c);
     }
 
 public:
@@ -54,13 +54,13 @@ public:
 
     void clear() {
         auto prepared_char = this->prepare_char(' ');
-        for (auto* _ptr = arr; _ptr < (arr + (WIDTH * HEIGHT); _ptr = prepared_char))
+        for (auto* _ptr = arr; _ptr < (arr + (WIDTH * HEIGHT)); *_ptr = prepared_char)
             ;
     }
 
 
     void write(uint16_t chr) {
-        arr[(y * HEIGHT) + x] = prepare_char(chr);
+        arr[(y * HEIGHT) + x++] = prepare_char(chr);
     }
 
     void write(const char* chr) {
