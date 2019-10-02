@@ -1,4 +1,6 @@
 global start
+extern kernel_main
+
 
 section .text
 bits 32
@@ -17,7 +19,8 @@ start:
     jmp gdt64.code:long_mode_start
 
     mov dword [0xb8000], 0x2f4b2f4f
-    hlt
+
+    call kernel_main
     ; mov eax, 0xb8000
     ; call write_empty
 

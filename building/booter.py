@@ -5,20 +5,16 @@ import colorama
 
 
 nasm_path = "nasm"
+linker_path = "ld.lld"
 
 commands = [
-    f"{nasm_path} -f elf64 ./booter/boot.asm",
-    f"{nasm_path} -f elf64 ./booter/multiboot_header.asm",
-    "ld -n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./booter/multiboot_header.o ./booter/boot.o",
+    f"{nasm_path} -f elf64 ./booter/boot.asm -o ./binaries/boot/boot.o",
+    f"ld -n -o ./binaries/boot/boot.o ./binaries/boot/kernel.o",
+    f"{nasm_path} -f elf64 ./booter/multiboot_header.asm -o ./binaries/boot/multiboot_header.o",
+    # f"clang++ -fuse-ld=/usr/bin/ld.gold -Wl,-n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./booter/multiboot_header.o ./booter/boot.o ./booter/kernel.o",
+    "ld -n -o ./binaries/boot/kernel.bin -T ./booter/linker.ld ./binaries/boot/multiboot_header.o ./binaries/boot/boot.o",
     "grub-mkrescue -o FireflyOS.iso binaries"
 ]
-
-post_build = [
-    (os.remove, ["./booter/multiboot_header.o"], ),
-    (os.remove, ["./booter/boot.o"], ),
-    (shutil.move, ["FireflyOS.iso", "binaries/boot/FireflyOS.iso"])
-]
-
 
 def build() -> bool:
     """
@@ -31,9 +27,6 @@ def build() -> bool:
         if os.system(command):
             print(f"{colorama.Fore.RED}Building the bootloader failed at command:\n{colorama.Fore.GREEN}{command}{colorama.Fore.RESET}")
             return False
-
-    for func in post_build:
-        func[0](*func[1])
 
     print(f"{colorama.Fore.GREEN}Building bootloader finished!{colorama.Fore.RESET}")
     return True
