@@ -2,7 +2,7 @@ SRC_DIR = kernel
 INC_DIR = include
 BUILD_DIR = binaries/boot
 
-CXX_FLAGS = -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 # all source code
 CXX_FILES = $(wildcard $(SRC_DIR)/*.cpp)

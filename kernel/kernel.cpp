@@ -1,4 +1,4 @@
-#include "drivers/vga.hpp"
+#include "../include/drivers/vga.hpp"
 
 extern "C" [[noreturn]] auto kernel_main() -> void {
     VgaBuffer buff{};
