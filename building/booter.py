@@ -4,7 +4,7 @@ import platform
 import colorama
 
 
-nasm_path = "C:\\Users\\john_\\AppData\\Local\\bin\\NASM\\nasm.exe"
+nasm_path = "C:\\Users\\John\\AppData\\Local\\bin\\NASM\\nasm.exe"
 
 commands = [
     f"{nasm_path} -f elf64 ./booter/boot.asm",
