@@ -12,7 +12,7 @@ OBJ_FILES += $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%_asm.o)
 
 # build objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
-	clang++ $(CXXFLAGS) -c $< -o $@
+	clang++ $(CXXFLAGS) -std=c++17 -c $< -o $@
 
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm $< -f elf64 -o $@

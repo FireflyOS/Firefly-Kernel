@@ -1,5 +1,5 @@
 #pragma once
-#include <cppstdlib/algorithm.h>
+#include "algorithm.h"
 #include <cstdint>
 
 constexpr uint64_t VGA_BUFFER_ADDR = 0xB8000;

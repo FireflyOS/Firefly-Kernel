@@ -15,7 +15,7 @@ namespace firefly::std {
             if (!func(*begin)) {
                 continue;
             }
-            *(write++) = *(begin++));
+            *(write++) = *(begin++);
         }
         return write;
     }
