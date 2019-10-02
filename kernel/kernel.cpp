@@ -2,14 +2,13 @@
 
 extern "C" [[noreturn]] void kernel_main() {
     Display x{};
+    x.clear();
     x.set_background_color(color::green);
     x.set_foreground_color(color::red);
 
-    for (int i = 0; i < 81; i++) {
+    for (int i = 0; i < 1200; i++) {
         x.write('@');
     }
-
-    x.test();
 
     // x.write("hello world!");
     // x.clear();

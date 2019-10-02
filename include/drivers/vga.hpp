@@ -36,9 +36,15 @@ constexpr static size_t display_buff_addr = 0xB8000;
 
 struct Display {
 
+    // cursor corrdinates
+    // should probably be in a separate cursor struct and a static std_cursor
+    // so one `write` passes the std_cursor to another write which takes it or any other created by the user
+    // similar to printf's only job being to forward the arguments and `stdout` to vfprintf
     size_t y = 0;
     size_t x = 0;
 
+    // default colors
+    // also should go in a `cursor` struct with x and y
     color background = color::black;
     color foreground = color::white;
 
@@ -49,8 +55,9 @@ struct Display {
     // }
 
     void clear() {
+        // fails, no matching function call
         // firefly::std::fill(
-        //     display_buffer, display_buffer + (height * width), prepare_char(' ')
+        //     display_buffer, display_buffer + (height * width), {' ', color::black, color::white}
         // );
     }
 
@@ -60,27 +67,13 @@ struct Display {
         return _sz;
     }
 
-    void test() {
-        // 36 works, 37 fails
-        for(size_t i = 0; i < 36; i++) {
-            display_buffer[i + 160] = display_buffer[i];
-        }
-
-
-        //display_buffer[160] = display_buffer[0];
-    }
-
     void handle_write_pos() {
         if (x >= width) {
             y++;
             x = 0;
         }
         if (y >= height) {
-            for(size_t i = 0; i < ((height - 1) * width); i++) {
-                display_buffer[i] = display_buffer[i + width];
-            }
-            
-            //firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width) - width, display_buffer);
+            firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width), display_buffer);
             y = height - 1;
         }
     }

@@ -20,10 +20,6 @@ $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm $< -f elf64 -o $@
 
-$(BUILD_DIR)/kernel.bin: $(OBJ_FILES)
-	ld --no-undefined -T linker.ld -o $(BUILD_DIR)/kernel.bin $(OBJ_FILES)
-	grub-mkrescue -o FireflyOS.iso binaries
-
 all: build run
 
 build: $(BUILD_DIR)/kernel.bin
@@ -35,7 +31,7 @@ clean:
 run:
 	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso
 
-debug: FireflyOS.iso $(BUILD_DIR)/kernel.bin
+debug: build FireflyOS.iso $(BUILD_DIR)/kernel.bin
 	qemu-system-x86_64 -cdrom FireflyOS.iso $(QEMU_FLAGS) -S -s &
 	gdb $(BUILD_DIR)/kernel.bin \
 		-ex 'target remote localhost:1234' \
@@ -43,3 +39,7 @@ debug: FireflyOS.iso $(BUILD_DIR)/kernel.bin
 		-ex 'layout regs' \
 		-ex 'break $(QEMU_BP)' \
 		-ex 'continue'
+
+$(BUILD_DIR)/kernel.bin: $(OBJ_FILES)
+	ld --no-undefined -T linker.ld -o $(BUILD_DIR)/kernel.bin $(OBJ_FILES)
+	grub-mkrescue -o FireflyOS.iso binaries
