@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 
 typedef char int8_t;
 typedef unsigned char uint8_t;
