@@ -2,7 +2,7 @@ SRC_DIR = kernel
 INC_DIR = include
 BUILD_DIR = binaries/boot
 
-CXX_FLAGS = -I./include -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 # all source code
 CXX_FILES = $(wildcard $(SRC_DIR)/*.cpp)
@@ -12,7 +12,7 @@ OBJ_FILES += $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%_asm.o)
 
 # build objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
-	clang++ $(CXXFLAGS) -std=c++17 -c $< -o $@
+	clang++ $(CXX_FLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm $< -f elf64 -o $@

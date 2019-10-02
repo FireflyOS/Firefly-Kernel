@@ -16,9 +16,6 @@ start:
     ; load the 64-bit GDT
     lgdt [gdt64.pointer]
     jmp gdt64.code:long_mode_start
-
-    mov dword [0xb8000], 0x2f4b2f4f
-    call kernel_main
     ; mov eax, 0xb8000
     ; call write_empty
 
@@ -186,7 +183,7 @@ long_mode_start:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    mov rax, 0x2f592f412f4b2f4f
+    mov qword [0xb8000], rax
     ; print `OKAY` to screen
-    ; mov rax, 0x2f592f412f4b2f4f
-    ; mov qword [0xb8000], rax
-    hlt
+    jmp kernel_main

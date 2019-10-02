@@ -10,7 +10,7 @@ SECTIONS {
 
     .text :
     {
-        *(.text)
+        *(.text*)
     }
 
     .data :
@@ -19,10 +19,9 @@ SECTIONS {
 		*(.rodata*)
 		*(.bss*)
 	}
-
-    /* warn if a section is unaccounted for */
     /DISCARD/ :
     {
-		*(*)
-	}
+        *(*)
+    }
+
 }

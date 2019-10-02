@@ -1,14 +1,20 @@
 #pragma once
 
 namespace firefly::std {
-
-    template <typename InputIt, typename OutputIt>
-    OutputIt copy(InputIt begin, const InputIt end, OutputIt write) {
-        for (; begin < end; *(write++) = *(begin++))
-            ;
-        return write;
+    template <class ForwardIt, class T>
+    void fill(ForwardIt first, ForwardIt last, const T& value) {
+        for (; first != last; ++first) {
+            *first = value;
+        }
     }
 
+    template <class InputIt, class OutputIt>
+    OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+        while (first != last) {
+            *d_first++ = *first++;
+        }
+        return d_first;
+    }
     template <typename InputIt, typename OutputIt, typename UnaryPredicate>
     OutputIt copy_if(InputIt begin, const InputIt end, OutputIt write, UnaryPredicate func) {
         while (begin < end) {
