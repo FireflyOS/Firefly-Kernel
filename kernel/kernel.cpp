@@ -1,8 +1,8 @@
 #include <drivers/vga.hpp>
 #include "array.h"
 
-constexpr short [[maybe_unused]] MAJOR_VERSION = 0;
-constexpr short [[maybe_unused]] MINOR_VERSION = 0;
+[[maybe_unused]] constexpr short MAJOR_VERSION = 0;
+[[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char* VERSION_STRING = "0.0";
 
 void write_ff_info(Display& display_driver) {
