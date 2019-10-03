@@ -33,6 +33,10 @@ struct cursor {
     color fg;
     size_t x;
     size_t y;
+
+    vga_char character(char c) {
+        return { c, fg, bg };
+    }
 };
 
 static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
@@ -50,7 +54,6 @@ struct Display {
 
     // default colors
     // also should go in a `cursor` struct with x and y
-
     vga_char* display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
     void clear() {
@@ -113,7 +116,7 @@ struct Display {
         if (handle_special_characters(c)) {
             return;
         }
-        display_buffer[crs.y * width + crs.x++] = { c, crs.fg, crs.bg };
+        display_buffer[crs.y * width + crs.x++] = crs.character(c);
         handle_write_pos();
     }
 
