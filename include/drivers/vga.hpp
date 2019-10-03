@@ -56,6 +56,18 @@ struct Display {
     // also should go in a `cursor` struct with x and y
     vga_char* display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
+    Display& operator<<(const char* arr) {
+        this->write(arr);
+        return *this;
+    }
+
+    Display& operator<<(char c) {
+        this->write(c);
+        return *this;
+    }
+
+    // Display& operator<<(int);
+
     void clear() {
         firefly::std::fill(
             display_buffer, display_buffer + (height * width), vga_char{ ' ', color::black, color::black });
