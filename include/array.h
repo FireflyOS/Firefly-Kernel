@@ -1,12 +1,11 @@
 #pragma once
-#include <cstdint.h>
 #include <algorithm.h>
+#include <cstdlib/cstdint.h>
 
 namespace firefly::std {
     template <typename T, size_t N>
     class array {
         T data[N];
-
     public:
 
         using iterator = T*;
@@ -19,14 +18,12 @@ namespace firefly::std {
 
         array(array const& arr) noexcept {
             firefly::std::copy(
-                arr.begin(), arr.end(), this->begin()
-            );
+                arr.begin(), arr.end(), this->begin());
         }
 
         array(array&& arr) noexcept {
             firefly::std::copy(
-                arr.begin(), arr.end(), this->begin()
-            );
+                arr.begin(), arr.end(), this->begin());
         }
 
         iterator begin() {
@@ -51,7 +48,11 @@ namespace firefly::std {
 
         T const& operator[](size_t idx) const noexcept {
             return data[idx];
-        }      
+        }
+
+        constexpr size_t max_size() {
+            return N;
+        }
     };
 
 }  // namespace firefly::std
