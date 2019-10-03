@@ -28,6 +28,13 @@ struct __attribute__((packed)) vga_char {
     color bg : 4;
 };
 
+struct cursor {
+    color bg;
+    color fg;
+    size_t x;
+    size_t y;
+};
+
 static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
 
 constexpr static size_t width = 80;
@@ -35,62 +42,53 @@ constexpr static size_t height = 15;
 constexpr static size_t display_buff_addr = 0xB8000;
 
 struct Display {
-
     // cursor corrdinates
     // should probably be in a separate cursor struct and a static std_cursor
     // so one `write` passes the std_cursor to another write which takes it or any other created by the user
     // similar to printf's only job being to forward the arguments and `stdout` to vfprintf
-    size_t y = 0;
-    size_t x = 0;
+    cursor crs{ color::black, color::white, 0, 0 };
 
     // default colors
     // also should go in a `cursor` struct with x and y
-    color background = color::black;
-    color foreground = color::white;
 
     vga_char* display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
-    // char16_t prepare_char(const char16_t c) const noexcept {
-    //     return c | (((background << 4) | (foreground & 0x0F)) << 8);
-    // }
-
     void clear() {
-        // fails, no matching function call
-        // firefly::std::fill(
-        //     display_buffer, display_buffer + (height * width), {' ', color::black, color::white}
-        // );
+        firefly::std::fill(
+            display_buffer, display_buffer + (height * width), vga_char{ ' ', color::black, color::black });
     }
 
     static size_t vgalen(const vga_char* str) {
         size_t _sz{};
-        while (str[_sz++].codepoint);
+        while (str[_sz++].codepoint)
+            ;
         return _sz;
     }
 
     void handle_write_pos() {
-        if (x >= width) {
-            y++;
-            x = 0;
+        if (crs.x >= width) {
+            crs.y++;
+            crs.x = 0;
         }
-        if (y >= height) {
+        if (crs.y >= height) {
             firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width), display_buffer);
-            y = height - 1;
+            crs.y = height - 1;
         }
     }
 
     bool handle_special_characters(const char c) {
         bool ret = false;
         if (c == '\n') {
-            x = 0;
-            y++;
+            crs.x = 0;
+            crs.y++;
             ret = true;
         }
         if (c == '\t') {
-            x += 4;
+            crs.x += 4;
             ret = true;
         }
         if (c == '\r') {
-            x = 0;
+            crs.x = 0;
             ret = true;
         }
         if (ret) handle_write_pos();
@@ -101,7 +99,7 @@ struct Display {
         if (handle_special_characters(c.codepoint)) {
             return;
         }
-        display_buffer[y * width + x++] = c;
+        display_buffer[crs.y * width + crs.x++] = c;
         handle_write_pos();
     }
 
@@ -115,7 +113,7 @@ struct Display {
         if (handle_special_characters(c)) {
             return;
         }
-        display_buffer[y * width + x++] = {c, foreground, background};
+        display_buffer[crs.y * width + crs.x++] = { c, crs.fg, crs.bg };
         handle_write_pos();
     }
 
@@ -126,10 +124,10 @@ struct Display {
     }
 
     void set_background_color(color c) {
-        background = c;
+        crs.bg = c;
     }
 
     void set_foreground_color(color c) {
-        foreground = c;
+        crs.fg = c;
     }
 };

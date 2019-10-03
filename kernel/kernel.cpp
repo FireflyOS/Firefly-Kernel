@@ -1,24 +1,15 @@
 #include <drivers/vga.hpp>
 
+constexpr short MAJOR_VERSION = 0;
+constexpr short MINOR_VERSION = 0;
+
 extern "C" [[noreturn]] void kernel_main() {
-    Display x{};
-    x.clear();
-    x.set_background_color(color::green);
-    x.set_foreground_color(color::red);
-
-    for (int i = 0; i < 1200; i++) {
-        x.write('@');
-    }
-
-    // x.write("hello world!");
-    // x.clear();
-    // (void)x;
-    // for (int i = 0; i < 50; i++) {
-    //     // x.write(' ');
-    // }
-    // x.clear();
-    // *reinterpret_cast<char *>(0xb8000) = 'x';
-    // *reinterpret_cast<char*>(0xb8001) = 0x20;
+    Display display_driver{};
+    display_driver.clear();
+    display_driver.write("FireflyOS\nVersion: ");
+    display_driver.write(MAJOR_VERSION + '0');
+    display_driver.write('.');
+    display_driver.write(MINOR_VERSION + '0');
 
     while (true)
         ;

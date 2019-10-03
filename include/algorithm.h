@@ -2,14 +2,14 @@
 
 namespace firefly::std {
     template <class ForwardIt, class T>
-    void fill(ForwardIt first, ForwardIt last, const T& value) {
+    void fill(ForwardIt first, const ForwardIt last, const T& value) {
         for (; first != last; ++first) {
             *first = value;
         }
     }
 
     template <class InputIt, class OutputIt>
-    OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+    OutputIt copy(InputIt first, const InputIt last, OutputIt d_first) {
         while (first != last) {
             *d_first++ = *first++;
         }
