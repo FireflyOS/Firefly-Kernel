@@ -7,14 +7,23 @@ QEMU_FLAGS :=
 
 CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
-# all source code
-CXX_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+# source files
+CXX_ROOT_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+CXX_DRIVER_FILES = $(wildcard $(SRC_DIR)/drivers/*.cpp)
+CXX_FILES = $(CXX_ROOT_FILES) $(CXX_DRIVER_FILES)
 ASM_FILES = $(wildcard $(SRC_DIR)/*.asm)
-OBJ_FILES = $(CXX_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%_cxx.o)
-OBJ_FILES += $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%_asm.o)
+
+# object files
+ROOT_OBJ_FILES = $(CXX_ROOT_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%_cxx.o)
+DRIVER_OBJ_FILES = $(CXX_DRIVER_FILES:$(SRC_DIR)/drivers/%.cpp=$(BUILD_DIR)/drivers/%_cxx.o)
+ASM_OBJ_FILES = $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%_asm.o)
+OBJ_FILES = $(ROOT_OBJ_FILES) $(DRIVER_OBJ_FILES) $(ASM_OBJ_FILES)
 
 # build objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
+	clang++ $(CXX_FLAGS) -c $< -o $@
+
+$(BUILD_DIR)/drivers/%_cxx.o: $(SRC_DIR)/drivers/%.cpp
 	clang++ $(CXX_FLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
