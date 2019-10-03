@@ -8,6 +8,7 @@ Kernel for FireflyOS
  * xorriso
  * qemu
  * mtools
+ * clang++
 
 ## Run ##
  * git clone https://github.com/FireflyOS/Firefly-Kernel
