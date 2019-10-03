@@ -3,6 +3,9 @@
 #include <stl/cstdlib/cstdint.h>
 #include <stl/cstdlib/cstring.h>
 
+/**
+ *                          A VGA color
+ */
 enum class color : uint8_t {
     black = 0x00,
     blue = 0x01,
@@ -22,127 +25,158 @@ enum class color : uint8_t {
     white = 0x0F,
 };
 
+/**
+ *                          A VGA character
+ */
 struct __attribute__((packed)) vga_char {
+    /**
+     *                      The ASCII codepoint
+     */
     char codepoint;
+    /**
+     *                      The character's color
+     */
     color fg : 4;
+    /**
+     *                      The character's background color
+     */
     color bg : 4;
-};
-
-struct cursor {
-    color bg;
-    color fg;
-    size_t x;
-    size_t y;
-
-    vga_char character(char c) {
-        return { c, fg, bg };
-    }
 };
 
 static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
 
-constexpr static size_t width = 80;
-constexpr static size_t height = 15;
-constexpr static size_t display_buff_addr = 0xB8000;
+/**
+ *                          A cursor for printing to the screen
+ */
+struct cursor {
+    /**
+     *                      Background color to print
+     */
+    color bg;
 
+    /**
+     *                      Foreground color to print
+     */
+    color fg;
+
+    /**
+     *                      X-coordinate to print at
+     */
+    size_t x;
+
+    /**
+     *                      Y-coordinate to print at
+     */
+    size_t y;
+
+    /**
+     *                      Creates a VGA character for printing
+     * @param c             The ASCII character to print
+     * @return              a VGA character to print
+     */
+    vga_char character(char c);
+};
+
+/**
+ *                          Character width of default mode
+ */
+constexpr static size_t width = 80;
+/**
+ *                          Character height of default mode
+ */
+constexpr static size_t height = 15;
+/**
+ *                          Address of VGA character buffer
+ */
+constexpr static size_t display_buff_addr = 0xB8000;
+vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
+
+/**
+ *                          A driver for displaying text
+ */
 struct Display {
-    // cursor corrdinates
-    // should probably be in a separate cursor struct and a static std_cursor
-    // so one `write` passes the std_cursor to another write which takes it or any other created by the user
-    // similar to printf's only job being to forward the arguments and `stdout` to vfprintf
+    /**
+     *                      Default cursor for the display
+     */
     cursor crs{ color::black, color::white, 0, 0 };
 
-    // default colors
-    // also should go in a `cursor` struct with x and y
-    vga_char* display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
+    /**
+     *                      Prints an ASCII string
+     * @param arr           The null-terminated string to print
+     * @return              This Display
+     */
+    Display& operator<<(const char* arr);
 
-    Display& operator<<(const char* arr) {
-        this->write(arr);
-        return *this;
-    }
-
-    Display& operator<<(char c) {
-        this->write(c);
-        return *this;
-    }
+    /**
+     *                      Prints an ASCII character
+     * @param c             The character to print
+     * @return              This Display
+     */
+    Display& operator<<(char c);
 
     // Display& operator<<(int);
 
-    void clear() {
-        firefly::std::fill(
-            display_buffer, display_buffer + (height * width), vga_char{ ' ', color::black, color::black });
-    }
+    /**
+     *                      Clears the entire screen
+     */
+    void clear();
 
-    [[nodiscard]] static size_t vgalen(const vga_char* str) {
-        size_t _sz{};
-        while (str[_sz++].codepoint)
-            ;
-        return _sz;
-    }
+    /**
+     *                      Gets the length of a VGA character string
+     * @param str           pointer to null-terminated VGA string
+     * @return              length of the string
+     */
+    [[nodiscard]] static size_t vgalen(const vga_char* str);
 
-    void handle_write_pos() {
-        if (crs.x >= width) {
-            crs.y++;
-            crs.x = 0;
-        }
-        if (crs.y >= height) {
-            firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width), display_buffer);
-            crs.y = height - 1;
-        }
-    }
+    /**
+     *                      Keeps the cursor coordinates in bounds
+     *                      and scrolls the screen
+     */
+    void handle_write_pos();
 
-    bool handle_special_characters(const char c) {
-        bool ret = false;
-        if (c == '\n') {
-            crs.x = 0;
-            crs.y++;
-            ret = true;
-        }
-        if (c == '\t') {
-            crs.x += 4;
-            ret = true;
-        }
-        if (c == '\r') {
-            crs.x = 0;
-            ret = true;
-        }
-        if (ret) handle_write_pos();
-        return ret;
-    }
+    /**
+     *                      Deals with printing escape characters
+     * @param c             The character to handle
+     * @return true  :      c was an escape character
+     *         false :      c was not an escape character 
+     */
+    bool handle_special_characters(const char c);
 
-    void write(const vga_char c) {
-        if (handle_special_characters(c.codepoint)) {
-            return;
-        }
-        display_buffer[crs.y * width + crs.x++] = c;
-        handle_write_pos();
-    }
+    /**
+     *                      Prints a VGA character to the screen
+     *                      at the default cursor
+     * @param c             The character to print
+     */
+    void write(const vga_char c);
 
-    void write(const vga_char* str) {
-        for (size_t idx = 0; idx < vgalen(str); idx++) {
-            write(str[idx]);
-        }
-    }
+    /**
+     *                      Prints a VGA string to the screen
+     *                      at the defautl cursor
+     * @param str           Pointer to the null-terminated VGA string
+     */
+    void write(const vga_char* str);
 
-    void write(const char c) {
-        if (handle_special_characters(c)) {
-            return;
-        }
-        display_buffer[crs.y * width + crs.x++] = crs.character(c);
-        handle_write_pos();
-    }
+    /**
+     *                      Prints an ASCII character
+     * @param c             The character to print
+     */
+    void write(const char c);
 
-    void write(const char* str) {
-        for (size_t idx = 0; idx < strlen(str); idx++) {
-            write(str[idx]);
-        }
-    }
+    /**
+     *                      Prints an ASCII string
+     * @param arr           The null-terminated string to print
+     */
+    void write(const char* str);
 
-    void set_background_color(color c) {
-        crs.bg = c;
-    }
+    /**
+     *                      Sets the default background color
+     * @param c             The color to set
+     */
+    void set_background_color(color c);
 
-    void set_foreground_color(color c) {
-        crs.fg = c;
-    }
+    /**
+     *                      Sets the default foreground color
+     * @param c             The color to set
+     */
+    void set_foreground_color(color c);
 };
