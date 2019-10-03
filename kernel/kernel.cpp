@@ -1,5 +1,5 @@
 #include <drivers/vga.hpp>
-#include "array.h"
+#include "stl/array.h"
 
 constexpr short MAJOR_VERSION = 0;
 constexpr short MINOR_VERSION = 0;
