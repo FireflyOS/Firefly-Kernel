@@ -5,7 +5,7 @@ BUILD_DIR = binaries/boot
 QEMU_BP := kernel_main
 QEMU_FLAGS :=
 
-CXX_FLAGS = -I./include -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 # all source code
 CXX_FILES = $(wildcard $(SRC_DIR)/*.cpp)
