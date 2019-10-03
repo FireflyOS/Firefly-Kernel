@@ -1,0 +1,3 @@
+[submodule "include/stl"]
+	path = include/stl
+	url = https://github.com/FireflyOS/Firefly-STL

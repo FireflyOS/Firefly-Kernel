@@ -1,7 +1,7 @@
 #pragma once
-#include <algorithm.h>
-#include <cstdlib/cstdint.h>
-#include <cstdlib/cstring.h>
+#include <stl/algorithm.h>
+#include <stl/cstdlib/cstdint.h>
+#include <stl/cstdlib/cstring.h>
 
 enum class color : uint8_t {
     black = 0x00,

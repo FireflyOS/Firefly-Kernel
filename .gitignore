@@ -41,3 +41,4 @@
 /building/__pycache__
 binaries/
 !binaries/boot/grub.cfg
+.idea
