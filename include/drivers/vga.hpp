@@ -73,7 +73,7 @@ struct Display {
             display_buffer, display_buffer + (height * width), vga_char{ ' ', color::black, color::black });
     }
 
-    static size_t vgalen(const vga_char* str) {
+    [[nodiscard]] static size_t vgalen(const vga_char* str) {
         size_t _sz{};
         while (str[_sz++].codepoint)
             ;

@@ -1,16 +1,17 @@
 #include <drivers/vga.hpp>
 #include "array.h"
 
-constexpr short MAJOR_VERSION = 0;
-constexpr short MINOR_VERSION = 0;
+constexpr short [[maybe_unused]] MAJOR_VERSION = 0;
+constexpr short [[maybe_unused]] MINOR_VERSION = 0;
+constexpr const char* VERSION_STRING = "0.0";
 
 void write_ff_info(Display& display_driver) {
     display_driver.clear();
-    display_driver << "FireflyOS\nVersion: " << '0' + MAJOR_VERSION
-                   << "." << MINOR_VERSION + '0' << "\nContributors:";
+    display_driver << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
-    firefly::std::array<const char*, 7> arr = { 
-        "Lime      ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D" };
+    firefly::std::array<const char*, 7> arr = {
+        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D"
+    };
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {

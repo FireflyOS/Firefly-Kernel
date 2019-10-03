@@ -20,15 +20,15 @@ namespace std {
             : _array{ 0 }, _sz{ 0 } {
         }
 
-        constexpr size_t size() const noexcept {
+        [[nodiscard]] constexpr size_t size() const noexcept {
             return _sz;
         }
 
-        constexpr const_iterator begin() const noexcept {
+        [[nodiscard]] constexpr const_iterator begin() const noexcept {
             return _array;
         }
 
-        constexpr const_iterator end() const noexcept {
+        [[nodiscard]] constexpr const_iterator end() const noexcept {
             return _array + _sz;
         }
     };
