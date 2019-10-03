@@ -1,6 +1,7 @@
 # Firefly-Kernel
 Kernel for FireflyOS
 
+![Firefly OS](docs/progress.png)
 
 ## Dependencies ##
  * NASM
