@@ -1,17 +1,22 @@
 #pragma once
 #include "include/stl/algorithm.h"
 #include <cstdlib/cstdint.h>
+#include <initializer_list.h>
 
 namespace firefly::std {
     template <typename T, size_t N>
     class array {
         T data[N];
-    public:
 
+    public:
         using iterator = T*;
         using const_iterator = const T*;
 
         array() = default;
+        array(::std::initializer_list<T> const& arr) {
+            firefly::std::copy(
+                arr.begin(), arr.end(), data);
+        }
 
         array& operator=(array const&) = default;
         array& operator=(array&&) = default;
@@ -26,31 +31,35 @@ namespace firefly::std {
                 arr.begin(), arr.end(), this->begin());
         }
 
-        iterator begin() {
+        [[nodiscard]] iterator begin() {
             return data;
         }
 
-        iterator end() {
+        [[nodiscard]] iterator end() {
             return data + N;
         }
 
-        const_iterator begin() const {
+        [[nodiscard]] const_iterator begin() const {
             return data;
         }
 
-        const_iterator end() const {
+        [[nodiscard]] const_iterator end() const {
             return data + N;
         }
 
-        T& operator[](size_t idx) noexcept {
+        [[nodiscard]] T& operator[](size_t idx) noexcept {
             return data[idx];
         }
 
-        T const& operator[](size_t idx) const noexcept {
+        [[nodiscard]] T const& operator[](size_t idx) const noexcept {
             return data[idx];
         }
 
-        constexpr size_t max_size() {
+        [[nodiscard]] constexpr size_t max_size() {
+            return N;
+        }
+
+        [[nodiscard]] constexpr size_t size() {
             return N;
         }
     };
