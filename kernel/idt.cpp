@@ -1,6 +1,6 @@
+#include <stl/array.h>
 #include <stl/cstdlib/cstdint.h>
 #include <drivers/vga.hpp>
-#include <stl/array.h>
 
 // type doesn't really exist in C++
 // so just decl as function so it decays into a pointer
@@ -110,21 +110,18 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 /**
  *                          the interrupt descriptor table
  */
-static firefly::std::array<idt_gate, 256> idt {
+namespace {
+    auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
+        return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
+                 static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+                 static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
+    };
+    auto __inter = _inter(interrupt_wrapper);
+}  // namespace
+
+static firefly::std::array<idt_gate, 256> idt{
     // division interrupt
-    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
-    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
-    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
-    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 }
-    
+    __inter, __inter, __inter, __inter
     // all others have present flag set to 0
 };
 
@@ -151,8 +148,7 @@ void init_idt() {
     asm(
         "lidt %0"
         :
-        : "m"(idtr)
-    );
+        : "m"(idtr));
 }
 
 void test_int() {
@@ -163,20 +159,20 @@ void test_int() {
 
 // write different handlers for each irpt + exc later
 // noreturn for testing purposes, will remove later
-extern "C" __attribute__((noreturn))
-void interrupt_handler() {
+extern "C" __attribute__((noreturn)) void interrupt_handler() {
     Display x{};
     x << "\nINTERRUPT OCCURRED";
 
-    while(1);
+    while (1)
+        ;
 }
 
-extern "C" __attribute__((noreturn))
-void exception_handler(interrupt_error error_code) {
-    (void) error_code;
+extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {
+    (void)error_code;
 
     Display x{};
     x << "\nEXCEPTION OCCURRED";
 
-    while(1);
+    while (1)
+        ;
 }
