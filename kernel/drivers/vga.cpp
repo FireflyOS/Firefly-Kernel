@@ -19,7 +19,7 @@ void Display::clear() {
         display_buffer, display_buffer + (height * width), vga_char{ ' ', color::black, color::black });
 }
 
-[[nodiscard]] static size_t Display::vgalen(const vga_char* str) {
+[[nodiscard]] size_t Display::vgalen(const vga_char* str) {
     size_t _sz{};
     while (str[_sz++].codepoint)
         ;
