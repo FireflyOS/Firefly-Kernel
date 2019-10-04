@@ -87,7 +87,7 @@ static firefly::std::array<idt_gate, 255> idt {
     // division interrupt
     { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
       static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-      static_cast<uint32_t>((reinterpret_cast<uint64_t>(interrupt_wrapper)) >> 32), 0 }
+      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 }
     
     // all others have present flag set to 0
 };
@@ -113,9 +113,7 @@ void init_idt() {
 void div_zero() {
     Display x{};
     x << "DIVIVING BY ZERO";
-    // the following line breaks it and display's constructor does not get called
-    // so comment it to see the screen get cleared
-    asm volatile("divb 0");
+    asm volatile("int3");
 }
 
 // write different handlers for each irpt + exc later

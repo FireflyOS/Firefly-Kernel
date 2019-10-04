@@ -8,35 +8,54 @@ SECTIONS {
         *(.multiboot_header)
     }
 
-    /* Include the list of initialization functions sorted. */
-    /* .init_array :
-    {
-        crti.o(.init_array)
-        KEEP (*(SORT(EXCLUDE_FILE(crti.o crtn.o) .init_array.*)))
-        KEEP (*(EXCLUDE_FILE(crti.o crtn.o) .init_array))
-        crtn.o(.init_array)
-    } */
+    .ctors : {
+        KEEP (*crtbegin.o(.ctors))
+        KEEP (*crtbegin?.o(.ctors))
+        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*(.ctors))
+    }
 
-    /* Include the list of termination functions sorted. */
-    /* .fini_array :
+    .dtors :
     {
-        crti.o(.fini_array)
-        KEEP (*(SORT(EXCLUDE_FILE(crti.o crtn.o) .fini_array.*)))
-        KEEP (*(EXCLUDE_FILE(crti.o crtn.o) .fini_array))
-        crtn.o(.fini_array)
-    } */
+        KEEP (*crtbegin.o(.dtors))
+        KEEP (*crtbegin?.o(.dtors))
+        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
+        KEEP (*(SORT(.dtors.*)))
+        KEEP (*(.dtors))
+    }
 
     .text :
     {
+        *(.init_start)
+        *(.init)
+        *(.init_end)
+
+        *(.fini_start)
+        *(.fini)
+        *(.fini_end)
+
         *(.text*)
     }
 
     .data :
     {
 		*(.data)
-		*(.rodata*)
-		*(.bss*)
 	}
+
+    .rodata :
+    {
+        KEEP(*(.init_array))
+        KEEP(*(.fini_array))
+        *(.rodata*)
+        
+    }
+
+    .bss :
+    {
+        *(.bss*)
+    }
+
     /DISCARD/ :
     {
         *(*)

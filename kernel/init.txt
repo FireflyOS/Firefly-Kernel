@@ -1,0 +1,19 @@
+#include <drivers/vga.hpp>
+
+typedef void (*constructor)();
+
+extern "C" constructor start_ctors;
+extern "C" constructor end_ctors;
+extern "C" [[noreturn]] void kernel_main();
+
+extern "C" [[noreturn]] void __init() {
+    Display x{};
+    x << "starting CT\r\n";
+
+    for (constructor* ctor = &start_ctors; ctor != &end_ctors; ++ctor) {
+        x << "CT";
+        //(*ctor)();
+    }
+
+    kernel_main();
+}

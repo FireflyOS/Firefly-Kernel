@@ -1,4 +1,5 @@
 global start
+extern _init
 extern kernel_main
 
 section .text
@@ -172,7 +173,7 @@ gdt64:
     dw $ - gdt64 - 1
     dq gdt64
 
-global long_mode_start
+; global long_mode_start
 
 section .text
 bits 64
@@ -183,4 +184,8 @@ long_mode_start:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    call _init
     jmp kernel_main
+.loop:
+    hlt
+    jmp .loop
