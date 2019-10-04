@@ -100,6 +100,11 @@ struct Display {
      */
     cursor crs{ color::black, color::white, 0, 0 };
 
+    // exists only for testing
+    // ~Display() {
+    //     clear();
+    // }
+
     /**
      *                      Prints an ASCII string
      * @param arr           The null-terminated string to print

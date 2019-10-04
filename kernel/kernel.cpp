@@ -1,5 +1,6 @@
 #include "drivers/vga.hpp"
 #include "stl/array.h"
+#include <idt.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -24,6 +25,9 @@ void write_ff_info(Display& display_driver) {
 extern "C" [[noreturn]] void kernel_main() {
     Display display_driver{};
     write_ff_info(display_driver);
+
+    init_idt();
+    (void) div_zero();
 
     while (true)
         ;
