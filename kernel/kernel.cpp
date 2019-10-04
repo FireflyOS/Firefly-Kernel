@@ -31,7 +31,10 @@ extern "C" [[noreturn]] void kernel_main() {
     init_idt();
 
     while (true) {
-        auto x = keyboard_driver.get_scancode();
-        display_driver << "key: " << x << "\n";
+        auto key = keyboard_driver.get_scancode();
+        if (!key.has_value()) {
+            continue;
+        }
+        display_driver << "key: " << *key << "\n";
     }
 }
