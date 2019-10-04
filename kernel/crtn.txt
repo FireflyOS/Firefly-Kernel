@@ -1,3 +1,5 @@
+bits 64
+
 section .init_end
 	pop rbp
 	ret

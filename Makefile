@@ -2,7 +2,7 @@ SRC_DIR = kernel
 INC_DIR = include
 BUILD_DIR = binaries/boot
 
-QEMU_BP := kernel_main
+QEMU_BP := div_zero
 QEMU_FLAGS :=
 
 CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
@@ -49,7 +49,7 @@ debug: build FireflyOS.iso $(BUILD_DIR)/kernel.bin
 		-ex 'break $(QEMU_BP)' \
 		-ex 'continue'
 
-$(BUILD_DIR)/kernel.bin: $(OBJ_FILES)
+$(BUILD_DIR)/kernel.bin: $(OBJ_FILES) 
 	ld --no-undefined -T linker.ld -o $(BUILD_DIR)/kernel.bin $(OBJ_FILES)
 
 	grub-mkrescue -o FireflyOS.iso binaries

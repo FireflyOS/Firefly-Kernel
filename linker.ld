@@ -8,57 +8,30 @@ SECTIONS {
         *(.multiboot_header)
     }
 
-    .ctors : {
-        KEEP (*crtbegin.o(.ctors))
-        KEEP (*crtbegin?.o(.ctors))
-        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
-        KEEP (*(SORT(.ctors.*)))
-        KEEP (*(.ctors))
-    }
-
-    .dtors :
-    {
-        KEEP (*crtbegin.o(.dtors))
-        KEEP (*crtbegin?.o(.dtors))
-        KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
-        KEEP (*(SORT(.dtors.*)))
-        KEEP (*(.dtors))
-    }
-
     .text :
     {
-        *(.init_start)
-        *(.init)
-        *(.init_end)
-
-        *(.fini_start)
-        *(.fini)
-        *(.fini_end)
-
         *(.text*)
     }
 
     .data :
     {
-		*(.data)
-	}
+        /* *(.eh_frame)
+        *(.eh_frame_hdr) */
+        *(.data*)
+    }
 
     .rodata :
     {
-        KEEP(*(.init_array))
-        KEEP(*(.fini_array))
         *(.rodata*)
-        
+        init_array_start = .;
+        KEEP(*(SORT(.ctors)))
+        KEEP(*(.ctors))
+        init_array_end = .;
     }
 
     .bss :
     {
+        *(COMMON)
         *(.bss*)
     }
-
-    /DISCARD/ :
-    {
-        *(*)
-    }
-
 }

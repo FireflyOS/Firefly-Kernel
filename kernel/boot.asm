@@ -1,6 +1,8 @@
 global start
 extern _init
 extern kernel_main
+extern init_array_start
+extern init_array_end
 
 section .text
 bits 32
@@ -184,7 +186,25 @@ long_mode_start:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    call _init
+
+    std
+    mov rsi, init_array_end
+    sub rsi, 8
+.a:
+    lodsq
+    cmp rax, -1
+    jz .out
+    push rsi
+    cld
+    call rax
+    std
+    pop rsi
+  .out:
+    cld
+
+    mov rbx, 0xb8000
+    mov byte [rbx], 'x'
+
     jmp kernel_main
 .loop:
     hlt

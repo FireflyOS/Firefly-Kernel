@@ -83,8 +83,17 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
-static firefly::std::array<idt_gate, 255> idt {
+static firefly::std::array<idt_gate, 256> idt {
     // division interrupt
+    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
+      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
+    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
+      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
+    { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
+      static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+      static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 },
     { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
       static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
       static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 }
@@ -96,7 +105,7 @@ struct __attribute__((packed)) idt_reg {
     uint16_t limit;
     idt_gate* base;
 } idtr = {
-    255,
+    (sizeof(idt_gate) * 256) - 1,
     idt.begin()
 };
 
@@ -104,9 +113,9 @@ static_assert(10 == sizeof(idt_reg), "idt_reg size incorrect");
 
 void init_idt() {
     asm(
-        "lidt (%0)"
+        "lidt %0"
         :
-        : "r"(idt.begin())
+        : "m"(idtr)
     );
 }
 
