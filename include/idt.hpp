@@ -1,4 +1,9 @@
 #pragma once
 
+/**
+ *                          initializes the idt
+ */
 void init_idt();
-void div_zero();
+
+// test interrupt handler
+void test_int();

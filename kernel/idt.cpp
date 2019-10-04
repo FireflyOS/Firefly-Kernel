@@ -34,12 +34,12 @@ struct __attribute__((packed)) idt_gate {
     } type : 5;
 
     /**
-     *                      a
+     *                      privilege level of interrupt handler
      */
     unsigned desc_priv_lvl : 2;
 
     /**
-     *                      a
+     *                      interrupt present flag
      */
     unsigned present : 1;
 
@@ -62,11 +62,35 @@ struct __attribute__((packed)) idt_gate {
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
 struct __attribute__((packed)) interrupt_error {
+    /**
+     *                      0 : exc source inside cpu
+     *                      1 : exc source external to cpu
+     */
     unsigned ext : 1;
+    /**
+     *                      0 : selector refers to gdt or ldt descriptor
+     *                      1 : selector refers to idt descriptor
+     */
     unsigned idt : 1;
-    unsigned gdt : 1;
+    /**
+     *                      only use when idt flag is clear
+     *                      0 : selector refers to gdt descriptor
+     *                      1 : selector refers to ldt descriptor
+     */
+    unsigned ti : 1;
+    /**
+     *                      0 : error not caused by reference to specific segment
+     *                          OR referred to null segment
+     *                      1 : index into idt or gdt or ldt
+     */
     unsigned selector : 13;
+    /**
+     *                      zero
+     */
     unsigned rsv_0 : 16;
+    /**
+     *                      zero
+     */
     unsigned rsv_1;
 };
 
@@ -83,6 +107,9 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
+/**
+ *                          the interrupt descriptor table
+ */
 static firefly::std::array<idt_gate, 256> idt {
     // division interrupt
     { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
@@ -101,11 +128,20 @@ static firefly::std::array<idt_gate, 256> idt {
     // all others have present flag set to 0
 };
 
+/**
+ *                          contents to load into the idt register
+ */
 struct __attribute__((packed)) idt_reg {
+    /**
+     *                      size of table in bytes - 1
+     */
     uint16_t limit;
+    /**
+     *                      base address of idt
+     */
     idt_gate* base;
 } idtr = {
-    (sizeof(idt_gate) * 256) - 1,
+    (sizeof(idt_gate) * idt.size()) - 1,
     idt.begin()
 };
 
@@ -119,9 +155,9 @@ void init_idt() {
     );
 }
 
-void div_zero() {
+void test_int() {
     Display x{};
-    x << "DIVIVING BY ZERO";
+    x << "testing interrupt";
     asm volatile("int3");
 }
 
@@ -130,7 +166,7 @@ void div_zero() {
 extern "C" __attribute__((noreturn))
 void interrupt_handler() {
     Display x{};
-    x << "INTERRUPT OCCURRED";
+    x << "\nINTERRUPT OCCURRED";
 
     while(1);
 }
@@ -140,7 +176,7 @@ void exception_handler(interrupt_error error_code) {
     (void) error_code;
 
     Display x{};
-    x << "EXCEPTION OCCURRED";
+    x << "\nEXCEPTION OCCURRED";
 
     while(1);
 }

@@ -1,19 +1,10 @@
 bits 64
 
-global init_idt
 global interrupt_wrapper
 global exception_wrapper
 
-;extern idt
-;extern _GLOBAL__sub_I_idt.cpp
 extern interrupt_handler
 extern exception_handler
-
-;init_idt:
- ;   call _GLOBAL__sub_I_idt.cpp
-  ;  mov rax, idt
-   ; lidt [rax]
-    ;ret
 
 interrupt_wrapper:
     push rax
@@ -30,7 +21,7 @@ interrupt_wrapper:
     push r13
     push r14
     push r15
-    ; should probably also save SSE state
+    ; also save SSE state when we figure that out
 
     call interrupt_handler
 
@@ -65,7 +56,7 @@ exception_wrapper:
     push r13
     push r14
     push r15
-    ; should probably also save SSE state
+    ; also save SSE state when we figure that out
 
     ; pass error code
     push qword [rsp + (13 * 8)]

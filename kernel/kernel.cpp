@@ -27,7 +27,7 @@ extern "C" [[noreturn]] void kernel_main() {
     write_ff_info(display_driver);
 
     init_idt();
-    (void) div_zero();
+    test_int();
 
     while (true)
         ;

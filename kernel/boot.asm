@@ -1,7 +1,5 @@
 global start
-extern _init
 extern kernel_main
-extern init_array_start
 extern init_array_end
 
 section .text
@@ -187,11 +185,14 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
+    ; call global constructors
     std
+    ; start at last one
     mov rsi, init_array_end
     sub rsi, 8
 .a:
     lodsq
+    ; stop at 0xFFFFFFFFFFFFFFFF
     cmp rax, -1
     jz .out
     push rsi
@@ -199,13 +200,7 @@ long_mode_start:
     call rax
     std
     pop rsi
-  .out:
+.out:
     cld
 
-    mov rbx, 0xb8000
-    mov byte [rbx], 'x'
-
     jmp kernel_main
-.loop:
-    hlt
-    jmp .loop
