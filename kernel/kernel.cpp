@@ -36,6 +36,6 @@ extern "C" [[noreturn]] void kernel_main() {
         if (!key.has_value()) {
             continue;
         }
-        display_driver << "key: " << *key << "\n";
+        keyboard_driver.handle_input(*key, display_driver);
     }
 }

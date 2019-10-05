@@ -2,12 +2,19 @@
 #include "array.h"
 #include "drivers/ports.hpp"
 #include "drivers/vga.hpp"
-#include "utils.hpp"
 #include "optional.h"
+#include "utils.hpp"
 
 constexpr short data_port = 0x60;
 constexpr short status_register = 0x64;
 constexpr short command_register = 0x64;
+
+const firefly::std::array<uint8_t, 0xFF> _keys = {
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+    // up to 0x0d
+    '`', '\0', '\0', '\0', '\0', '\0', '\0', 'G'
+};
+
 
 struct Keyboard {
     enum status : short {
@@ -42,7 +49,7 @@ struct Keyboard {
         return nullptr;
     }
 
-    void handle_input(char scancode) {
-        (void)scancode;
+    void handle_input(unsigned char scancode, Display& disp) {
+        disp << _keys[scancode] << "\n";
     }
 };
