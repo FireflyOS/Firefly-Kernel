@@ -2,6 +2,7 @@
 #include "array.h"
 #include "drivers/ports.hpp"
 #include "drivers/vga.hpp"
+#include "utils.hpp"
 #include "optional.h"
 
 constexpr short data_port = 0x60;
@@ -21,23 +22,12 @@ struct Keyboard {
     };
 
     Keyboard(Display& disp) {
-        disp << "Initializing keyboard driver\n";
-        // set scancode command
-        firefly::write_port(command_register, 0xF0);
-        wait_for_status();
-        // set 1
-        firefly::write_port(data_port, 0x01);
-        wait_for_status();
-
-        if (firefly::read_port(status_register) & status::in_buffer_status) {
-            disp << "Keybaord driver initialized\n";
-        } else {
-            disp << "Driver initialization failure: keyboard\n";
-        }
+        start_load(disp, "Loading keyboard driver");
+        end_load(disp, "Keyboard driver");
     }
 
     void wait_for_status() {
-        while (firefly::read_port(status_register) & status::in_buffer_status)
+        while (!(firefly::read_port(status_register) & status::in_buffer_status))
             ;
     }
 

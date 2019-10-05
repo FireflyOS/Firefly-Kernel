@@ -21,12 +21,13 @@ void write_ff_info(Display& display_driver) {
         }
         display_driver << arr[i] << "  ";
     }
+    display_driver << "\n";
 }
 
 extern "C" [[noreturn]] void kernel_main() {
     Display display_driver{};
-    Keyboard keyboard_driver{ display_driver };
     write_ff_info(display_driver);
+    Keyboard keyboard_driver{ display_driver };
 
     init_idt();
 
