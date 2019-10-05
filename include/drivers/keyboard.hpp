@@ -1,5 +1,7 @@
 #pragma once
+#include "array.h"
 #include "drivers/ports.hpp"
+#include "drivers/vga.hpp"
 #include "optional.h"
 
 constexpr short data_port = 0x60;
@@ -18,6 +20,31 @@ struct Keyboard {
         parity_error = 0b10000000
     };
 
+    Keyboard(Display& disp) {
+        disp << "Initializing keyboard driver\n";
+        // set scancode command
+        firefly::write_port(command_register, 0xF0);
+        wait_for_status();
+        // set 1
+        firefly::write_port(data_port, 0x01);
+        wait_for_status();
+
+        if (firefly::read_port(status_register) & status::in_buffer_status) {
+            disp << "Keybaord driver initialized\n";
+        } else {
+            disp << "Driver initialization failure: keyboard\n";
+        }
+    }
+
+    void wait_for_status() {
+        while (firefly::read_port(status_register) & status::in_buffer_status)
+            ;
+    }
+
+    const firefly::std::array<unsigned char, 255> _letters = {
+
+    };
+
     firefly::std::optional<unsigned char> get_scancode() {
         if (firefly::read_port(status_register) & status::out_buffer_status) {
             return firefly::read_port(data_port);
@@ -26,7 +53,6 @@ struct Keyboard {
     }
 
     void handle_input(char scancode) {
-        (void) scancode;
+        (void)scancode;
     }
-    
 };

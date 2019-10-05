@@ -1,11 +1,17 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly {
-    inline uint8_t read_port(uint16_t port) {
-        uint8_t val;
+    [[nodiscard]] inline uint8_t read_port(uint8_t port) {
         asm volatile("inb %1, %0"
-                     : "=a"(val)
+                     : "=a"(port)
                      : "Nd"(port));
-        return val;
+        return port;
+    }
+
+    inline void write_port(uint8_t port, uint8_t val) {
+        asm volatile(
+            "outb %%al, %0"
+            :
+            : "i"(port), "a"(val));
     }
 }  // namespace firefly
