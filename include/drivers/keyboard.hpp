@@ -9,18 +9,6 @@ constexpr short data_port = 0x60;
 constexpr short status_register = 0x64;
 constexpr short command_register = 0x64;
 
-firefly::std::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
-                                                 "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
-                                                 "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
-                                                 "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
-                                                 "LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
-                                                 "/", "RShift", "Keypad *", "LAlt", "Spacebar" };
-firefly::std::array<char, 59> sc_ascii = { '?', '?', '1', '2', '3', '4', '5', '6',
-                                           '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
-                                           'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
-                                           'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
-                                           'b', 'n', 'm', ',', '.', '/', '?', '?', '?', ' ' };
-
 enum keys : short {
     backspace = 0x0E,
     enter = 0x1C,
@@ -36,6 +24,18 @@ struct Keyboard {
     size_t stdin_index = 0;
 
     bool shift_pressed = false;
+
+    firefly::std::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
+                                                     "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
+                                                     "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
+                                                     "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
+                                                     "LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
+                                                     "/", "RShift", "Keypad *", "LAlt", "Spacebar" };
+    firefly::std::array<char, 59> sc_ascii = { '?', '?', '1', '2', '3', '4', '5', '6',
+                                               '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
+                                               'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
+                                               'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
+                                               'b', 'n', 'm', ',', '.', '/', '?', '?', '?', ' ' };
 
     enum status : short {
         out_buffer_status = 0b00000001,
