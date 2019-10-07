@@ -1,6 +1,7 @@
+#include <idt.hpp>
+#include "drivers/keyboard.hpp"
 #include "drivers/vga.hpp"
 #include "stl/array.h"
-#include <idt.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -20,15 +21,21 @@ void write_ff_info(Display& display_driver) {
         }
         display_driver << arr[i] << "  ";
     }
+    display_driver << "\n";
 }
 
 extern "C" [[noreturn]] void kernel_main() {
     Display display_driver{};
     write_ff_info(display_driver);
+    Keyboard keyboard_driver{ display_driver };
 
     init_idt();
-    test_int();
 
-    while (true)
-        ;
+    while (true) {
+        auto key = keyboard_driver.get_scancode();
+        if (!key.has_value()) {
+            continue;
+        }
+        keyboard_driver.handle_input(*key, display_driver);
+    }
 }

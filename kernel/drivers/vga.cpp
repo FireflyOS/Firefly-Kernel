@@ -43,14 +43,27 @@ bool Display::handle_special_characters(const char c) {
         crs.x = 0;
         crs.y++;
         ret = true;
-    }
-    if (c == '\t') {
+    } else if (c == '\t') {
         crs.x += 4;
         ret = true;
-    }
-    if (c == '\r') {
+    } else if (c == '\r') {
         crs.x = 0;
         ret = true;
+    } else if (c == '\b') {
+        display_buffer[crs.y * width + crs.x - 1] = { ' ', color::white, color::black };
+        display_buffer[crs.y * width + crs.x] = { ' ', color::white, color::black };
+        if (crs.x == 0) {
+            crs.y--;
+            crs.x = width - 1;
+        } else if (crs.x == 1) {
+            crs.y--;
+            crs.x = width;
+        } else {
+            crs.x--;
+        }
+        return true;
+    } else if (c == '\0') {
+        return true;
     }
     if (ret) handle_write_pos();
     return ret;

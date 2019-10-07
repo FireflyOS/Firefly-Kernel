@@ -127,6 +127,11 @@ struct Display {
     void clear();
 
     /**
+     *                      Handles backspace characters
+     */
+    void backspace();
+
+    /**
      *                      Gets the length of a VGA character string
      * @param str           pointer to null-terminated VGA string
      * @return              length of the string

@@ -17,7 +17,8 @@ ASM_FILES = $(wildcard $(SRC_DIR)/*.asm)
 ROOT_OBJ_FILES = $(CXX_ROOT_FILES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%_cxx.o)
 DRIVER_OBJ_FILES = $(CXX_DRIVER_FILES:$(SRC_DIR)/drivers/%.cpp=$(BUILD_DIR)/drivers/%_cxx.o)
 ASM_OBJ_FILES = $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%_asm.o)
-OBJ_FILES = $(ROOT_OBJ_FILES) $(DRIVER_OBJ_FILES) $(ASM_OBJ_FILES)
+C_OBJ_FILES = ./include/stl/cstd.o
+OBJ_FILES = $(ROOT_OBJ_FILES) $(DRIVER_OBJ_FILES) $(ASM_OBJ_FILES) $(C_OBJ_FILES)
 
 # build objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
@@ -29,16 +30,20 @@ $(BUILD_DIR)/drivers/%_cxx.o: $(SRC_DIR)/drivers/%.cpp
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm $< -f elf64 -o $@
 
-all: create_dirs build run
+all: build_cstd create_dirs build run
 
 create_dirs:
 	mkdir -p ./binaries/boot/drivers
 
 build: $(BUILD_DIR)/kernel.bin
 
+build_cstd:
+	make -C $(SRC_DIR)/../include/stl
+
 clean:
 	rm $(BUILD_DIR)/*.o
 	rm $(BUILD_DIR)/*.bin
+	rm $(BUILD_DIR)/../../include/stl/cstd.o
 
 run:
 	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso
