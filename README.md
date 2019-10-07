@@ -13,4 +13,5 @@ Kernel for FireflyOS
 ## Run ##
  * git clone https://github.com/FireflyOS/Firefly-Kernel
  * cd Firefly-Kernel
+ * git submodule update --init --recursive
  * make
