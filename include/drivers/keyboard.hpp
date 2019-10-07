@@ -48,6 +48,10 @@ struct Keyboard {
         parity_error = 0b10000000
     };
 
+    void append_cin(char c) {
+        stdin[stdin_index++] = c;
+    }
+
     Keyboard(Display& disp)
         : disp{ disp } {
         start_load(disp, "Loading keyboard driver");
@@ -71,6 +75,7 @@ struct Keyboard {
             shift_pressed = !shift_pressed;
             return;
         }
+
         if (scancode & 0x80) {
             if ((scancode & ~(1UL << 7)) == keys::lshift) {
                 shift_pressed = !shift_pressed;
@@ -79,20 +84,19 @@ struct Keyboard {
             if (scancode == keys::lshift) {
                 shift_pressed = !shift_pressed;
             } else if (scancode == keys::enter) {
-                disp << "\n\0";
-                stdin[stdin_index++] = '\n';
+                disp << "\n";
+                append_cin('\n');
             } else if (scancode == keys::backspace) {
                 disp << '\b';
-                stdin[stdin_index++] = '\b';
+                append_cin('\b');
             } else {
                 char ascii = sc_ascii[scancode];
                 if (shift_pressed)
                     ascii -= 32;
-                stdin[stdin_index++] = ascii;
-                char str[2] = { stdin[stdin_index++], '\0' };
+                append_cin(ascii);
+                char str[2] = { ascii, '\0' };
                 disp << str;
             }
         }
-        disp << stdin.begin();
     }
 };
