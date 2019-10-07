@@ -95,6 +95,7 @@ vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
  *                          A driver for displaying text
  */
 struct Display {
+    bool _visual_cursor = false;
     /**
      *                      Default cursor for the display
      */
@@ -144,6 +145,10 @@ struct Display {
      */
     void handle_write_pos();
 
+
+    void update_cursor(size_t x, size_t y);
+
+    void toggle_cursor(bool on);
     /**
      *                      Deals with printing escape characters
      * @param c             The character to handle
