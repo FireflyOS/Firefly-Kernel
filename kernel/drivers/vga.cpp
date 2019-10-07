@@ -52,6 +52,16 @@ bool Display::handle_special_characters(const char c) {
         crs.x = 0;
         ret = true;
     }
+    if (c == '\b') {
+        if (--crs.x < 0) {
+            crs.x = width - 1;
+            crs.y--;
+        }
+        return true;
+    }
+    if (c == '\0') {
+        return true;
+    }
     if (ret) handle_write_pos();
     return ret;
 }

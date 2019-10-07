@@ -9,14 +9,34 @@ constexpr short data_port = 0x60;
 constexpr short status_register = 0x64;
 constexpr short command_register = 0x64;
 
-const firefly::std::array<uint8_t, 0xFF> _keys = {
-    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-    // up to 0x0d
-    '`', '\0', '\0', '\0', '\0', '\0', '\0', 'G'
+firefly::std::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
+                                                 "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
+                                                 "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
+                                                 "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
+                                                 "LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
+                                                 "/", "RShift", "Keypad *", "LAlt", "Spacebar" };
+firefly::std::array<char, 59> sc_ascii = { '?', '?', '1', '2', '3', '4', '5', '6',
+                                           '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
+                                           'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
+                                           'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
+                                           'b', 'n', 'm', ',', '.', '/', '?', '?', '?', ' ' };
+
+enum keys : short {
+    backspace = 0x0E,
+    enter = 0x1C,
+    lshift = 0x2A,
+    caps_lock = 0x3A,
+    max_stdin_length = 255,
 };
 
-
 struct Keyboard {
+    Display& disp;
+
+    firefly::std::array<char, keys::max_stdin_length> stdin = {};
+    size_t stdin_index = 0;
+
+    bool shift_pressed = false;
+
     enum status : short {
         out_buffer_status = 0b00000001,
         in_buffer_status = 0b00000010,
@@ -28,7 +48,8 @@ struct Keyboard {
         parity_error = 0b10000000
     };
 
-    Keyboard(Display& disp) {
+    Keyboard(Display& disp)
+        : disp{ disp } {
         start_load(disp, "Loading keyboard driver");
         end_load(disp, "Keyboard driver");
     }
@@ -38,10 +59,6 @@ struct Keyboard {
             ;
     }
 
-    const firefly::std::array<unsigned char, 255> _letters = {
-
-    };
-
     firefly::std::optional<unsigned char> get_scancode() {
         if (firefly::read_port(status_register) & status::out_buffer_status) {
             return firefly::read_port(data_port);
@@ -50,6 +67,32 @@ struct Keyboard {
     }
 
     void handle_input(unsigned char scancode, Display& disp) {
-        disp << _keys[scancode] << "\n";
+        if (scancode == keys::caps_lock) {
+            shift_pressed = !shift_pressed;
+            return;
+        }
+        if (scancode & 0x80) {
+            if ((scancode & ~(1UL << 7)) == keys::lshift) {
+                shift_pressed = !shift_pressed;
+            }
+        } else {
+            if (scancode == keys::lshift) {
+                shift_pressed = !shift_pressed;
+            } else if (scancode == keys::enter) {
+                disp << "\n\0";
+                stdin[stdin_index++] = '\n';
+            } else if (scancode == keys::backspace) {
+                disp << '\b';
+                stdin[stdin_index++] = '\b';
+            } else {
+                char ascii = sc_ascii[scancode];
+                if (shift_pressed)
+                    ascii -= 32;
+                stdin[stdin_index++] = ascii;
+                char str[2] = { stdin[stdin_index++], '\0' };
+                disp << str;
+            }
+        }
+        disp << stdin.begin();
     }
 };
