@@ -125,5 +125,6 @@ void Display::toggle_cursor(bool on) {
 }
 
 void Display::update_cursor(size_t x, size_t y) {
-
+    (void)x;
+    (void)y;
 }
