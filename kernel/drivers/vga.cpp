@@ -52,22 +52,19 @@ bool Display::handle_special_characters(const char c) {
         crs.x = 0;
         ret = true;
     } else if (c == '\b') {
+        /** bugged 
+         * 
+         * 
+         * When character is first character of a line, it's buggy
+        */
         if (crs.y == 0 && crs.x == 0) {
-            display_buffer[crs.y * width + crs.x] = { ' ', color::white, color::black };
-            crs.x = 0;
-            crs.y = 0;
-            return true;
-        }
-        display_buffer[crs.y * width + crs.x - 1] = { ' ', color::white, color::black };
-        display_buffer[crs.y * width + crs.x] = { ' ', color::white, color::black };
-        if (crs.x == 0) {
-            crs.y--;
-            crs.x = width - 1;
-        } else if (crs.x == 1) {
-            crs.y--;
-            crs.x = width;
         } else {
-            crs.x--;
+            display_buffer[crs.y * width + crs.x - 1] = { ' ', color::white, color::black };
+            display_buffer[crs.y * width + crs.x] = { ' ', color::white, color::black };
+            if (crs.x-- == 0) {
+                crs.y--;
+                crs.x = width - 1;
+            }
         }
         return true;
     } else if (c == '\0') {
@@ -118,9 +115,7 @@ void Display::set_foreground_color(color c) {
 void Display::toggle_cursor(bool on) {
     _visual_cursor = on;
     if (on) {
-
     } else {
-
     }
 }
 
