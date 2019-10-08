@@ -14,4 +14,22 @@ namespace firefly {
             :
             : "i"(port), "a"(val));
     }
+
+    [[nodiscard]] inline uint8_t inb(uint8_t port) {
+        return read_port(port);
+    }
+
+    inline void outb(uint8_t port, uint8_t val) {
+        write_port(port, val);
+    }
+
+
+    inline void wait_for_io() {
+        /* Port 0x80 is used for 'checkpoints' during POST. */
+        /* The Linux kernel seems to think it is free for use :-/ */
+        asm volatile("outb %%al, $0x80"
+                     :
+                     : "a"(0));
+        /* %%al instead of %0 makes no difference.  TODO: does the register need to be zeroed? */
+    }
 }  // namespace firefly

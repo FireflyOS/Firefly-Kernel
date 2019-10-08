@@ -87,11 +87,6 @@ struct Keyboard {
     void append_cin(char c);
 
     /**
-     * Waits for the status register to be set
-     */
-    void wait_for_status();
-
-    /**
      * Gets the current scancode located in the out port
      * 
      * @ret Returns an std::optional<unsigned char> that possibly contains the value that was in the scancode IO port

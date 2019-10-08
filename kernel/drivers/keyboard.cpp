@@ -10,11 +10,6 @@ void Keyboard::append_cin(char c) {
     stdin[stdin_index++] = c;
 }
 
-void Keyboard::wait_for_status() {
-    while (!(firefly::read_port(status_register) & status::in_buffer_status))
-        ;
-}
-
 firefly::std::optional<unsigned char> Keyboard::get_scancode() {
     if (firefly::read_port(status_register) & status::out_buffer_status) {
         return firefly::read_port(data_port);

@@ -96,6 +96,12 @@ vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
  */
 struct Display {
     bool _visual_cursor = false;
+
+    /**
+     * Constructor, enables cursor
+     */
+    Display();
+
     /**
      *                      Default cursor for the display
      */
@@ -161,8 +167,9 @@ struct Display {
      *                      Prints a VGA character to the screen
      *                      at the default cursor
      * @param c             The character to print
+     * @param _update       Whether or not to update cursor
      */
-    void write(const vga_char c);
+    void write(const vga_char c, bool _update=true);
 
     /**
      *                      Prints a VGA string to the screen
@@ -174,8 +181,9 @@ struct Display {
     /**
      *                      Prints an ASCII character
      * @param c             The character to print
+     * @param _update       Whether or not to update cursor
      */
-    void write(const char c);
+    void write(const char c, bool _update=true);
 
     /**
      *                      Prints an ASCII string

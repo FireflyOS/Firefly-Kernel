@@ -1,8 +1,13 @@
 #include <drivers/vga.hpp>
 #include "drivers/ports.hpp"
+#include "utils.hpp"
 
 vga_char cursor::character(char c) {
     return { c, fg, bg };
+}
+
+Display::Display() {
+    toggle_cursor(true);
 }
 
 Display& Display::operator<<(const char* arr) {
@@ -74,34 +79,46 @@ bool Display::handle_special_characters(const char c) {
     return ret;
 }
 
-void Display::write(const vga_char c) {
+void Display::write(const vga_char c, bool _update) {
     if (handle_special_characters(c.codepoint)) {
-        update_cursor(crs.x, crs.y);
+        if (_update) {
+            update_cursor(crs.x, crs.y);
+        }
         return;
     }
     display_buffer[crs.y * width + crs.x++] = c;
     handle_write_pos();
-    update_cursor(crs.x, crs.y);
+    if (_update) {
+        update_cursor(crs.x, crs.y);
+    }
 }
 
 void Display::write(const vga_char* str) {
     for (size_t idx = 0; idx < vgalen(str); idx++) {
-        write(str[idx]);
+        write(str[idx], false);
     }
+    update_cursor(crs.x, crs.y);
 }
 
-void Display::write(const char c) {
+void Display::write(const char c, bool _update) {
     if (handle_special_characters(c)) {
+        if (_update) {
+            update_cursor(crs.x, crs.y);
+        }
         return;
     }
     display_buffer[crs.y * width + crs.x++] = crs.character(c);
     handle_write_pos();
+    if (_update) {
+        update_cursor(crs.x, crs.y);
+    }
 }
 
 void Display::write(const char* str) {
     for (size_t idx = 0; idx < strlen(str); idx++) {
-        write(str[idx]);
+        write(str[idx], false);
     }
+    update_cursor(crs.x, crs.y);
 }
 
 void Display::set_background_color(color c) {
@@ -115,11 +132,26 @@ void Display::set_foreground_color(color c) {
 void Display::toggle_cursor(bool on) {
     _visual_cursor = on;
     if (on) {
+        firefly::outb(static_cast<uint8_t>(0x3D4), 0x0A);
+        firefly::wait_for_io();
+        firefly::outb(static_cast<uint8_t>(0x3D5), 0);
+
+        firefly::wait_for_io();
+
+        firefly::outb(static_cast<uint8_t>(0x3D4), 0x0B);
+        firefly::wait_for_io();
+        firefly::outb(static_cast<uint8_t>(0x3D5), height);  // Something something EGA cursor skew
     } else {
+        firefly::outb(static_cast<uint8_t>(0x3D4), 0x0A);
+        firefly::outb(static_cast<uint8_t>(0x3D5), 0x20);
     }
 }
 
 void Display::update_cursor(size_t x, size_t y) {
-    (void)x;
-    (void)y;
+    uint16_t pos = y * width + x;
+
+    firefly::outb(static_cast<uint8_t>(0x3D4), 0x0F);
+    firefly::outb(static_cast<uint8_t>(0x3D5), static_cast<uint8_t>(pos & 0xFF));
+    firefly::outb(static_cast<uint8_t>(0x3D4), 0x0E);
+    firefly::outb(static_cast<uint8_t>(0x3D5), static_cast<uint8_t>((pos >> 8) & 0xFF));
 }
