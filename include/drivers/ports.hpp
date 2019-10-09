@@ -1,35 +1,116 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly {
-    [[nodiscard]] inline uint8_t read_port(uint8_t port) {
-        asm volatile("inb %1, %0"
-                     : "=a"(port)
-                     : "Nd"(port));
-        return port;
-    }
+    // /**
+    //  *                      Read a byte from 8-bit port address
+    //  * @param port          The port to read from
+    //  * @return              The byte read from port
+    //  */
+    // [[nodiscard]] inline uint8_t inb(uint8_t port) {
+    //     uint8_t val;
+    //     asm volatile(
+    //         "inb %0, %%al"
+    //         : "=a"(val)
+    //         : "i"(port));
+    //     return val;
+    // }
 
-    inline void write_port(uint8_t port, uint8_t val) {
+    // /**
+    //  *                      Writes a byte to 8-bit port address
+    //  * @param port          The port to write to
+    //  * @param val           The byte to write
+    //  */
+    // inline void outb(uint8_t port, uint8_t val) {
+    //     asm volatile(
+    //         "outb %%al, %0"
+    //         :
+    //         : "i"(port), "a"(val));
+    // }
+
+    // /**
+    //  *                      Read a word from 8-bit port address
+    //  * @param port          The port to read from
+    //  * @return              The word read from port
+    //  */
+    // [[nodiscard]] inline uint16_t inw(uint8_t port) {
+    //     uint16_t val;
+    //     asm volatile(
+    //         "inw %0, %%ax"
+    //         : "=a"(val)
+    //         : "i"(port));
+    //     return val;
+    // }
+
+    // /**
+    //  *                      Writes a byte to 8-bit port address
+    //  * @param port          The port to write to
+    //  * @param val           The byte to write
+    //  */
+    // inline void outw(uint8_t port, uint16_t val) {
+    //     asm volatile(
+    //         "outw %%ax, %0"
+    //         :
+    //         : "i"(port), "a"(val));
+    // }
+
+    /**
+     *                      Read a byte from 16-bit port address
+     * @param port          The port to read from
+     * @return              The byte read from port
+     */
+    [[nodiscard]] inline uint8_t inb(uint16_t port) {
+        uint8_t val;
         asm volatile(
-            "outb %%al, %0"
+            "inb %%dx, %%al"
+            : "=a"(val)
+            : "d"(port));
+        return val;
+    }
+
+    /**
+     *                      Writes a byte to 16-bit port address
+     * @param port          The port to write to
+     * @param val           The byte to write
+     */
+    inline void outb(uint16_t port, uint8_t val) {
+        asm volatile(
+            "outb %%al, %%dx"
             :
-            : "i"(port), "a"(val));
+            : "d"(port), "a"(val));
     }
 
-    [[nodiscard]] inline uint8_t inb(uint8_t port) {
-        return read_port(port);
+    /**
+     *                      Read a word from 16-bit port address
+     * @param port          The port to read from
+     * @return              The word read from port
+     */
+    [[nodiscard]] inline uint16_t inw(uint16_t port) {
+        uint16_t val;
+        asm volatile(
+            "inw %%dx, %%ax"
+            : "=a"(val)
+            : "d"(port));
+        return val;
     }
 
-    inline void outb(uint8_t port, uint8_t val) {
-        write_port(port, val);
+    /**
+     *                      Writes a word to 16-bit port address
+     * @param port          The port to write to
+     * @param val           The byte to write
+     */
+    inline void outw(uint8_t port, uint16_t val) {
+        asm volatile(
+            "outw %%ax, %%dx"
+            :
+            : "d"(port), "a"(val));
     }
 
-
-    inline void wait_for_io() {
-        /* Port 0x80 is used for 'checkpoints' during POST. */
-        /* The Linux kernel seems to think it is free for use :-/ */
-        asm volatile("outb %%al, $0x80"
-                     :
-                     : "a"(0));
-        /* %%al instead of %0 makes no difference.  TODO: does the register need to be zeroed? */
+    /**
+     *                      Delays a small amount of time
+     *                      to give devices time to process
+     */
+    inline void io_pause() {
+        // dummy write, port 0x80 unused after POST
+        asm volatile("outb %al, $0x80");
     }
 }  // namespace firefly

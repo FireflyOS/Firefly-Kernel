@@ -81,7 +81,7 @@ struct __attribute__((packed)) interrupt_error {
     /**
      *                      0 : error not caused by reference to specific segment
      *                          OR referred to null segment
-     *                      1 : index into idt or gdt or ldt
+     *                      _ : index into idt or gdt or ldt
      */
     unsigned selector : 13;
     /**
@@ -91,7 +91,7 @@ struct __attribute__((packed)) interrupt_error {
     /**
      *                      zero
      */
-    unsigned rsv_1;
+    uint32_t rsv_1;
 };
 
 static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
@@ -152,16 +152,16 @@ void init_idt() {
 }
 
 void test_int() {
-    Display x{};
-    x << "testing interrupt";
+    cursor crs{ color::white, color::black, 0, 0 };
+    crs << "testing interrupt";
     asm volatile("int3");
 }
 
 // write different handlers for each irpt + exc later
 // noreturn for testing purposes, will remove later
 extern "C" __attribute__((noreturn)) void interrupt_handler() {
-    Display x{};
-    x << "\nINTERRUPT OCCURRED";
+    cursor crs{ color::white, color::black, 0, 0 };
+    crs << "\nINTERRUPT OCCURRED";
 
     while (1)
         ;
@@ -170,8 +170,8 @@ extern "C" __attribute__((noreturn)) void interrupt_handler() {
 extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {
     (void)error_code;
 
-    Display x{};
-    x << "\nEXCEPTION OCCURRED";
+    cursor crs{ color::white, color::black, 0, 0 };
+    crs << "\nEXCEPTION OCCURRED";
 
     while (1)
         ;

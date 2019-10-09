@@ -18,6 +18,7 @@ BreakConstructorInitializersBeforeComma: 'false'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 Cpp11BracedListStyle: 'false'
 ColumnLimit: 0
+CommentPragmas: '*'
 PointerAlignment: Left
 DisableFormat: 'false'
 IndentCaseLabels: 'true'

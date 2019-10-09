@@ -50,14 +50,14 @@ static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
  */
 struct cursor {
     /**
-     *                      Background color to print
-     */
-    color bg;
-
-    /**
      *                      Foreground color to print
      */
     color fg;
+    
+    /**
+     *                      Background color to print
+     */
+    color bg;
 
     /**
      *                      X-coordinate to print at
@@ -69,12 +69,48 @@ struct cursor {
      */
     size_t y;
 
+    // I think the window manager should keep the min_ and max_ bounds
+    // because that sounds more like the window's problem
+    // and it should take care of its own cursor
+
     /**
      *                      Creates a VGA character for printing
      * @param c             The ASCII character to print
      * @return              a VGA character to print
      */
     vga_char character(char c);
+
+    /**
+     *                      Prints an ASCII string
+     * @param arr           The null-terminated string to print
+     * @return              This cursor
+     */
+    cursor& operator<<(const char* arr);
+
+    /**
+     *                      Prints an ASCII character
+     * @param c             The character to print
+     * @return              This cursor
+     */
+    cursor& operator<<(char c);
+
+    /**
+     *                      Sets the default foreground color
+     * @param c             The color to set
+     */
+    void set_foreground_color(color c);
+
+    /**
+     *                      Sets the default background color
+     * @param c             The color to set
+     */
+    void set_background_color(color c);
+
+    /**
+     *                      Keeps the cursor in bounds
+     *                      and scrolls the screen
+     */
+    void handle_bounds();
 };
 
 /**
@@ -91,77 +127,43 @@ constexpr static size_t height = 15;
 constexpr static size_t display_buff_addr = 0xB8000;
 vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
+static bool _visual_cursor = false;
+
 /**
- *                          A driver for displaying text
+ *                          The VGA driver
  */
-struct Display {
-    bool _visual_cursor = false;
-
+namespace vga {
     /**
-     * Constructor, enables cursor
+     *                      Initializes the driver
+     * @return true  :       Driver was successfully initialized
      */
-    Display();
-
-    /**
-     *                      Default cursor for the display
-     */
-    cursor crs{ color::black, color::white, 0, 0 };
-
-    // exists only for testing
-    // ~Display() {
-    //     clear();
-    // }
-
-    /**
-     *                      Prints an ASCII string
-     * @param arr           The null-terminated string to print
-     * @return              This Display
-     */
-    Display& operator<<(const char* arr);
-
-    /**
-     *                      Prints an ASCII character
-     * @param c             The character to print
-     * @return              This Display
-     */
-    Display& operator<<(char c);
-
-    // Display& operator<<(int);
+    bool init();
 
     /**
      *                      Clears the entire screen
      */
+    // maybe not expose this and make it exclusive to window managers
+    // so they can clear only their own window?
+    // not sure how that'd work, either move the function to the wm
+    // class or make this take a wm reference
     void clear();
-
-    /**
-     *                      Handles backspace characters
-     */
-    void backspace();
 
     /**
      *                      Gets the length of a VGA character string
      * @param str           pointer to null-terminated VGA string
      * @return              length of the string
      */
-    [[nodiscard]] static size_t vgalen(const vga_char* str);
-
-    /**
-     *                      Keeps the cursor coordinates in bounds
-     *                      and scrolls the screen
-     */
-    void handle_write_pos();
-
-
-    void update_cursor(size_t x, size_t y);
-
-    void toggle_cursor(bool on);
+     // I don't see this being necessary cause it exposes internals
+     // but idk, maybe we'll want to preserve color info along with the string
+    //[[nodiscard]] size_t vgalen(const vga_char* str);
+    
     /**
      *                      Deals with printing escape characters
      * @param c             The character to handle
      * @return true  :      c was an escape character
      *         false :      c was not an escape character 
      */
-    bool handle_special_characters(const char c);
+    bool handle_special_characters(const char c, cursor& crs);
 
     /**
      *                      Prints a VGA character to the screen
@@ -169,37 +171,42 @@ struct Display {
      * @param c             The character to print
      * @param _update       Whether or not to update cursor
      */
-    void write(const vga_char c, bool _update=true);
+    void write(const vga_char c, cursor& crs, bool _update = true);
 
     /**
      *                      Prints a VGA string to the screen
      *                      at the defautl cursor
      * @param str           Pointer to the null-terminated VGA string
      */
-    void write(const vga_char* str);
+    void write(const vga_char* str, cursor& crs);
 
-    /**
+    /** 
      *                      Prints an ASCII character
      * @param c             The character to print
      * @param _update       Whether or not to update cursor
      */
-    void write(const char c, bool _update=true);
+    void write(const char c, cursor& crs, bool _update = true);
 
     /**
      *                      Prints an ASCII string
      * @param arr           The null-terminated string to print
      */
-    void write(const char* str);
+    void write(const char* str, cursor& crs);
 
     /**
-     *                      Sets the default background color
-     * @param c             The color to set
+     *                      Enables the hardware cursor
      */
-    void set_background_color(color c);
+    void enable_hw_cursor();
 
     /**
-     *                      Sets the default foreground color
-     * @param c             The color to set
+     *                      Disables the hardware cursor
      */
-    void set_foreground_color(color c);
-};
+    void disable_hw_cursor();
+
+    /**
+     *                      Update the position of the hardware cursor
+     * @param x             The new x-coordinate
+     * @param y             The new y-coordinate
+     */
+    void update_hw_cursor(size_t x, size_t y);
+}

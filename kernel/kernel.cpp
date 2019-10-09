@@ -1,5 +1,5 @@
 #include <idt.hpp>
-#include "drivers/keyboard.hpp"
+#include "drivers/ps2.hpp"
 #include "drivers/vga.hpp"
 #include "stl/array.h"
 
@@ -7,9 +7,9 @@
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char* VERSION_STRING = "0.0";
 
-void write_ff_info(Display& display_driver) {
-    display_driver.clear();
-    display_driver << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+void write_ff_info(cursor &crs) {
+    vga::clear();
+    crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char*, 7> arr = {
         "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D"
@@ -17,31 +17,34 @@ void write_ff_info(Display& display_driver) {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            display_driver << "\n\t";
+            crs << "\n\t";
         }
-        display_driver << arr[i] << "  ";
+        crs << arr[i] << "  ";
     }
-    display_driver << "\n";
+    crs << "\n";
 }
 
 extern "C" [[noreturn]] void kernel_main() {
-    Display display_driver{};
-    write_ff_info(display_driver);
-
-    start_load(display_driver, "Loading display driver");
-    end_load(display_driver, "Loaded display driver");
-    start_load(display_driver, "Loading cursor driver");
-    end_load(display_driver, "Loaded cursor driver");
-
-    Keyboard keyboard_driver{ display_driver };
-
+    vga::init();
+    ps2::init();
+    // should probably also make an idt namespace
     init_idt();
 
+    cursor crs{ color::white, color::black, 0, 0 };
+
+    write_ff_info(crs);
+
+    // eh
+    start_load(crs, "Loading VGA driver");
+    end_load(crs, "Loaded VGA driver");
+    start_load(crs, "Loading PS/2 driver");
+    end_load(crs, "Loaded PS/2 driver");
+
     while (true) {
-        auto key = keyboard_driver.get_scancode();
+        auto key = ps2::get_scancode();
         if (!key.has_value()) {
             continue;
         }
-        keyboard_driver.handle_input(*key, display_driver);
+        ps2::handle_input(*key, crs);
     }
 }
