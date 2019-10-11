@@ -28,19 +28,19 @@ error:
     mov byte  [0xb800a], al
     hlt
 
-section .data
+section .bss
 align 4096
 p4_table:
-    times 512 dq 0
+    resb 4096
 p3_table:
-    times 512 dq 0
+    resb 4096
 p2_table:
-    times 512 dq 0
+    resb 4096
 stack_bottom:
-    times 64 db 0
+    resb 65536
 stack_top:
 
-
+section .text
 check_multiboot:
     cmp eax, 0x36d76289
     jne .no_multiboot

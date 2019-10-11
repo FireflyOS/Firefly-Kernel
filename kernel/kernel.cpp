@@ -1,7 +1,7 @@
-#include <idt.hpp>
-#include "drivers/ps2.hpp"
-#include "drivers/vga.hpp"
-#include "stl/array.h"
+#include <interrupt.hpp>
+#include <drivers/ps2.hpp>
+#include <drivers/vga.hpp>
+#include <stl/array.h>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -27,8 +27,7 @@ void write_ff_info(cursor &crs) {
 extern "C" [[noreturn]] void kernel_main() {
     vga::init();
     ps2::init();
-    // should probably also make an idt namespace
-    init_idt();
+    interrupt::init();
 
     cursor crs{ color::white, color::black, 0, 0 };
 
