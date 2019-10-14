@@ -1,85 +1,95 @@
 global start
+extern _kernel_end
+extern _kernel_start
 extern kernel_main
 extern init_array_end
 
-section .text
+VIRT_ADDR = 0xFFFFFFFF80100000
+
+section .multiboot_header
+header_start:
+    dd 0xe85250d6                           ; magic number (multiboot 2)
+    dd 0                                    ; architecture 0 (protected mode i386)
+    dd header_end - header_start            ; header length
+                                            ; checksum
+    dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
+
+                                            ; insert optional multiboot tags here
+
+                                            ; required end tag
+    dw 0    ; type
+    dw 0    ; flags
+    dd 8    ; size
+header_end:
+
+                                            ; reserve space for the paging structures
+section .bss
+align 4096
+pml4:
+    resb 4096
+pdpt:
+    resb 4096
+pd:
+    resb 4096
+pt:
+    resb 4096
+stack_bottom:
+    resb 65536
+stack_top:
+
+section .pm_stub
 bits 32
 start:
-    mov esp, stack_top
+    ; mov esp, stack_top
 
-    call check_multiboot
-    call check_cpuid
-    call check_long_mode
+    call check_multiboot 
+    call check_cpuid 
+    call check_long_mode 
 
     call enable_sse
     call set_up_page_tables 
     call enable_paging
 
-    ; load the 64-bit GDT
     lgdt [gdt64.pointer]
     jmp gdt64.code:long_mode_start
 
-; Prints `ERR: ` and the given error code to screen and hangs.
-; parameter: error code (in ascii) in al
-error:
+error:                                      ; Prints `ERR: ` and the given error code to screen and hangs.
+                                            ; parameter: error code (in ascii) in al
     mov dword [0xb8000], 0x4f524f45
     mov dword [0xb8004], 0x4f3a4f52
     mov dword [0xb8008], 0x4f204f20
     mov byte  [0xb800a], al
     hlt
 
-section .bss
-align 4096
-p4_table:
-    resb 4096
-p3_table:
-    resb 4096
-p2_table:
-    resb 4096
-stack_bottom:
-    resb 65536
-stack_top:
-
-section .text
 check_multiboot:
     cmp eax, 0x36d76289
-    jne .no_multiboot
+    jne .no_multiboot 
     ret
 .no_multiboot:
     mov al, "0"
-    jmp error
+    jmp error 
 
-check_cpuid:
-    ; Check if CPUID is supported by attempting to flip the ID bit (bit 21)
-    ; in the FLAGS register. If we can flip it, CPUID is available.
+check_cpuid:                                ; cCheck if CPUID is supported by attempting to flip the ID bit
+                                            ; in the flags register. If we can flip it, CPUID is available.
 
-    ; Copy FLAGS in to EAX via stack
-    pushfd
+    pushfd                                  ; copy flags in to eax
     pop eax
 
-    ; Copy to ECX as well for comparing later on
-    mov ecx, eax
+    mov ecx, eax                            ; copy original to ecx
 
-    ; Flip the ID bit
-    xor eax, 1 << 21
+    xor eax, 1 << 21                        ; flip the ID bit
 
-    ; Copy EAX to FLAGS via the stack
-    push eax
+    push eax                                ; copy into flags
     popfd
 
-    ; Copy FLAGS back to EAX (with the flipped bit if CPUID is supported)
-    pushfd
+    pushfd                                  ; put back into eax
     pop eax
 
-    ; Restore FLAGS from the old version stored in ECX (i.e. flipping the
-    ; ID bit back if it was ever flipped).
-    push ecx
+    push ecx                                ; put original back into flags
     popfd
 
-    ; Compare EAX and ECX. If they are equal then that means the bit
-    ; wasn't flipped, and CPUID isn't supported.
-    cmp eax, ecx
-    je .no_cpuid
+    cmp eax, ecx                            ; modified flags same as original?
+    je .no_cpuid                            ; yes, cpuid not available
     ret
 
 .no_cpuid:
@@ -87,17 +97,15 @@ check_cpuid:
     jmp error
 
 check_long_mode:
-    ; test if extended processor info in available
-    mov eax, 0x80000000    ; implicit argument for cpuid
-    cpuid                  ; get highest supported argument
-    cmp eax, 0x80000001    ; it needs to be at least 0x80000001
-    jb .no_long_mode       ; if it's less, the CPU is too old for long mode
+    mov eax, 0x80000000                     ; get max extended input value for cpuid
+    cpuid
+    cmp eax, 0x80000001                     ; support at least one extended function?
+    jb .no_long_mode                        ; no, can't check for long mode
 
-    ; use extended info to test if long mode is available
-    mov eax, 0x80000001    ; argument for extended processor info
-    cpuid                  ; returns various feature bits in ecx and edx
-    test edx, 1 << 29      ; test if the LM-bit is set in the D-register
-    jz .no_long_mode       ; If it's not set, there is no long mode
+    mov eax, 0x80000001                     ; get extended processor info
+    cpuid
+    test edx, 1 << 29                       ; LM bit set?
+    jz .no_long_mode                        ; no, no long mode
     ret
 
 .no_long_mode:
@@ -106,74 +114,83 @@ check_long_mode:
 
 enable_sse:
     mov eax, cr0
-    and ax, 0xFFFB        ; clear coprocessor emulation CR0.EM
-    or ax, 0x2            ; set coprocessor monitoring  CR0.MP
+    and ax, 0xFFFB                          ; clear coprocessor emulation CR0.EM
+    or ax, 0x2                              ; set coprocessor monitoring  CR0.MP
     mov cr0, eax
     mov eax, cr4
-    or ax, 3 << 9        ; set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
+    or ax, 3 << 9                           ; set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
     mov cr4, eax
     ret
 
 set_up_page_tables:
-    ; map first P4 entry to P3 table
-    mov eax, p3_table
-    or eax, 0b11 ; present + writable
-    mov [p4_table], eax
+    mov eax, (pdpt - VIRT_ADDR)             ; physical address of a pdpt
+    or eax, 0b11                            ; writable + present
+    mov dword [pml4 + 4058], eax            ; put in last entry of pml4, so
+                                            ; bits 63:39 of virtual address all 1's
 
-    ; map first P3 entry to P2 table
-    mov eax, p2_table
-    or eax, 0b11 ; present + writable
-    mov [p3_table], eax
+    mov eax, (pd - VIRT_ADDR)               ; physical address of a pd
+    or eax, 0b11                            ; writable + present
+    mov dword [pdpt + 4050], eax            ; put in second-to-last entry of pdpt so 
+                                            ; bits 38:31 are all 1's, and bit 30 is 0,
+                                            ; 0xFFFF_FFFF_8nnn_nnnn
 
-    mov ecx, 0
+    mov eax, (pt - VIRT_ADDR)               ; physical address of a pt
+    or eax, 0b11                            ; writable + present
+    mov dword [pd], eax                     ; put in first entry
+                                            ; bits 29:21 all 0's
 
-.map_p2_table:
-    ; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
-    mov eax, 0x200000  ; 2MiB
-    mul ecx            ; start address of ecx-th page
-    or eax, 0b10000011 ; present + writable + huge
-    mov [p2_table + ecx * 8], eax ; map ecx-th entry
+                                            ; one pt can map 2MiB of memory, so linker.ld
+                                            ; asserts that the kernel is smaller than 2MiB
+                                            ; so we can map it all with one pt,
+                                            ; if the assertion fails we need a second pt
 
-    inc ecx            ; increase counter
-    cmp ecx, 512       ; if counter == 512, the whole P2 table is mapped
-    jne .map_p2_table  ; else map the next entry
+    xor rax, rax                            ; begin mapping physical address 0
+    xor ebx, ebx                            ; page table entry, start at index 0
 
+.map_pt:                                    ; now map the page table to
+                                            ; the physical addresses up to the end of the kernel
+
+    cmp rax, _kernel_end                    ; passed kernel binary?
+    je .done                                ; yes, done mapping
+    or rax, 0b11                            ; writable + present
+    mov qword [pt + ebx], rax               ; put into pt
+    add ebx, 8                              ; next index
+    and rax, ~0b11                          ; clear bottom two bits
+    add rax, 4096                           ; next physical 4KiB frame
+    jmp .map_pt                             ; map next entry
+
+.done:
     ret
 
 enable_paging:
-    ; enable PAE-flag in cr4 (Physical Address Extension)
     mov eax, cr4
-    or eax, 1 << 5
-    or eax, 1 << 4
+                
+    or eax, 1 << 5                          ; set PAE
     mov cr4, eax
 
-    ; load P4 to cr3 register (cpu uses this to access the P4 table)
-    mov eax, p4_table
+    mov eax, p4_table                       ; point cr3 to pml4
     mov cr3, eax
 
-    ; set the long mode bit in the EFER MSR (model specific register)
-    mov ecx, 0xC0000080
+    mov ecx, 0xC0000080                     ; get EFER MSR
     rdmsr
-    or eax, 1 << 8
+    or eax, 1 << 8                          ; set LME
     wrmsr
 
-    ; enable paging in the cr0 register
     mov eax, cr0
-    or eax, 1 << 31
+    or eax, 1 << 31                         ; set PG
     mov cr0, eax
 
     ret
 
 section .rodata
 gdt64:
-    dq 0 ; zero entry
-.code: equ $ - gdt64 ; new
-    dq (1<<43) | (1<<44) | (1<<47) | (1<<53) ; code segment
+    dq 0                                    ; zero entry
+.code: equ $ - gdt64                        ; code segment
+                                            ; executable | code | present | x86_64 code
+    dq (1<<43) | (1<<44) | (1<<47) | (1<<53) 
 .pointer:
     dw $ - gdt64 - 1
     dq gdt64
-
-; global long_mode_start
 
 section .text
 bits 64
@@ -185,10 +202,10 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-    ; call global constructors
+                                            ; call global constructors
     lea rbx, [rel init_array_end-8]
-                               ; Since all of our code and data is within +/-2GiB
-                               ;     we can use a RIP relative instruction with disp32
+                                            ; Since all of our code and data is within +/-2GiB
+                                            ; we can use a RIP relative instruction with disp32
     jmp .getaddr
 .docall:
     call r12
@@ -196,7 +213,7 @@ long_mode_start:
     mov r12, [rbx]
     sub rbx, 8
     test r12, r12
-;    cmp r12, -1               ; Should we be testing for 0 or -1?
+;    cmp r12, -1                            ; Should we be testing for 0 or -1?
     jnz .docall
 
     cld

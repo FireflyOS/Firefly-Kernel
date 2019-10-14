@@ -1,26 +1,35 @@
 ENTRY(start)
 
-SECTIONS {
-    . = 1M;
+VIRT_BASE = 0xFFFFFFFF80000000;
 
-    .boot :
+SECTIONS {
+    . = 0x00100000;
+
+    /* this is all used before mapping
+       so give its labels physical addresses */
+    .pm_stub :
     {
         *(.multiboot_header)
+        *(.pm_stub)
     }
 
-    .text :
+    . += VIRT_BASE;
+
+    /* physical start address */
+    _kernel_start = . - VIRT_BASE;
+    .text ALIGN (4096) : AT (ADDR (.text) - VIRT_BASE)
     {
         *(.text*)
     }
 
-    .data :
+    .data ALIGN (4096) : AT (ADDR (.data) - VIRT_BASE)
     {
         /* *(.eh_frame)
         *(.eh_frame_hdr) */
         *(.data*)
     }
 
-    .rodata :
+    .rodata ALIGN (4096) : AT (ADDR (.rodata) - VIRT_BASE)
     {
         *(.rodata*)
         init_array_start = .;
@@ -29,9 +38,18 @@ SECTIONS {
         init_array_end = .;
     }
 
-    .bss :
+    .bss ALIGN (4096) : AT (ADDR (.bss) - VIRT_BASE)
     {
         *(COMMON)
         *(.bss*)
     }
+    /* physical end address */
+    _kernel_end = ALIGN(4096) - VIRT_BASE;
+
+    ASSERT(_kernel_end - _kernel_start < 2M, "Error: ");
+
+    /DISCARD/ :
+    {
+       *(*);
+   }
 }
