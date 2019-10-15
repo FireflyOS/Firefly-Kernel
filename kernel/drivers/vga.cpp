@@ -6,7 +6,7 @@ vga_char cursor::character(char c) {
     return { c, fg, bg };
 }
 
-cursor& cursor::operator<<(const char *c) {
+cursor& cursor::operator<<(const char* c) {
     vga::write(c, *this);
     return *this;
 }
@@ -72,7 +72,7 @@ void vga::clear() {
 bool vga::handle_special_characters(const char c, cursor& crs) {
     bool ret = false;
 
-    switch(c) {
+    switch (c) {
         case '\n':
             crs.x = 0;
             crs.y++;
@@ -154,7 +154,7 @@ void vga::enable_hw_cursor() {
 
 void vga::disable_hw_cursor() {
     _visual_cursor = false;
-    
+
     // set disable bit
     firefly::outb(0x3D4, 0x0A);
     firefly::outb(0x3D5, 0x20);
