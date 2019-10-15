@@ -4,7 +4,7 @@ extern _kernel_start
 extern kernel_main
 extern init_array_end
 
-VIRT_ADDR = 0xFFFFFFFF80100000
+VIRT_ADDR equ 0xFFFFFFFF80100000
 
 section .multiboot_header
 header_start:
@@ -22,8 +22,7 @@ header_start:
     dd 8    ; size
 header_end:
 
-                                            ; reserve space for the paging structures
-section .bss
+section .bss                                ; reserve space for the paging structures
 align 4096
 pml4:
     resb 4096
@@ -40,19 +39,41 @@ stack_top:
 section .pm_stub
 bits 32
 start:
-    ; mov esp, stack_top
+    mov esp, stack_top - VIRT_ADDR
 
-    call check_multiboot 
-    call check_cpuid 
-    call check_long_mode 
+    call check_multiboot
+    call check_cpuid
+    call check_long_mode
 
     call enable_sse
-    call set_up_page_tables 
-    call enable_paging
+    call set_up_page_tables
 
-    lgdt [gdt64.pointer]
-    jmp gdt64.code:long_mode_start
+    mov eax, cr4                            ; enable long mode and paging
+    or eax, 1 << 5                          ; set PAE
+    mov cr4, eax
 
+    mov eax, pml4 - VIRT_ADDR               ; point cr3 to pml4
+    mov cr3, eax
+
+    mov ecx, 0xC0000080                     ; get EFER MSR
+    rdmsr
+    or eax, 1 << 8                          ; set LME
+    wrmsr
+
+    mov eax, cr0
+    or eax, 1 << 31                         ; set PG
+    mov cr0, eax
+
+    lgdt [(gdt64.pointer - VIRT_ADDR)]
+    jmp (gdt64.code - VIRT_ADDR):.stub64    ; warning: word data exceeds bounds
+
+bits 64
+.stub64:                                    ; trampoline to higher half
+    mov rsp, stack_top
+    mov rax, qword long_mode_start
+    jmp rax
+
+bits 32
 error:                                      ; Prints `ERR: ` and the given error code to screen and hangs.
                                             ; parameter: error code (in ascii) in al
     mov dword [0xb8000], 0x4f524f45
@@ -123,20 +144,20 @@ enable_sse:
     ret
 
 set_up_page_tables:
-    mov eax, (pdpt - VIRT_ADDR)             ; physical address of a pdpt
-    or eax, 0b11                            ; writable + present
-    mov dword [pml4 + 4058], eax            ; put in last entry of pml4, so
-                                            ; bits 63:39 of virtual address all 1's
+    mov eax, pdpt - VIRT_ADDR                   ; physical address of a pdpt
+    or eax, 0b11                                ; writable + present
+    mov dword [(pml4 - VIRT_ADDR) + 4058], eax  ; put in last entry of pml4, so
+                                                ; bits 63:39 of virtual address all 1's
 
-    mov eax, (pd - VIRT_ADDR)               ; physical address of a pd
-    or eax, 0b11                            ; writable + present
-    mov dword [pdpt + 4050], eax            ; put in second-to-last entry of pdpt so 
-                                            ; bits 38:31 are all 1's, and bit 30 is 0,
-                                            ; 0xFFFF_FFFF_8nnn_nnnn
+    mov eax, pd - VIRT_ADDR                     ; physical address of a pd
+    or eax, 0b11                                ; writable + present
+    mov dword [(pdpt - VIRT_ADDR) + 4050], eax  ; put in second-to-last entry of pdpt so 
+                                                ; bits 38:31 are all 1's, and bit 30 is 0,
+                                                ; 0xFFFF_FFFF_8nnn_nnnn
 
-    mov eax, (pt - VIRT_ADDR)               ; physical address of a pt
+    mov eax, pt - VIRT_ADDR                 ; physical address of a pt
     or eax, 0b11                            ; writable + present
-    mov dword [pd], eax                     ; put in first entry
+    mov dword [(pd - VIRT_ADDR)], eax                     ; put in first entry
                                             ; bits 29:21 all 0's
 
                                             ; one pt can map 2MiB of memory, so linker.ld
@@ -144,42 +165,22 @@ set_up_page_tables:
                                             ; so we can map it all with one pt,
                                             ; if the assertion fails we need a second pt
 
-    xor rax, rax                            ; begin mapping physical address 0
+    xor eax, eax                            ; begin mapping physical address 0
     xor ebx, ebx                            ; page table entry, start at index 0
 
 .map_pt:                                    ; now map the page table to
                                             ; the physical addresses up to the end of the kernel
 
-    cmp rax, _kernel_end                    ; passed kernel binary?
+    cmp eax, _kernel_end - VIRT_ADDR        ; passed kernel binary?
     je .done                                ; yes, done mapping
-    or rax, 0b11                            ; writable + present
-    mov qword [pt + ebx], rax               ; put into pt
+    or eax, 0b11                            ; writable + present
+    mov dword [(pt - VIRT_ADDR) + ebx], eax               ; put into pt
     add ebx, 8                              ; next index
-    and rax, ~0b11                          ; clear bottom two bits
-    add rax, 4096                           ; next physical 4KiB frame
+    and eax, ~0b11                          ; clear bottom two bits
+    add eax, 4096                           ; next physical 4KiB frame
     jmp .map_pt                             ; map next entry
 
 .done:
-    ret
-
-enable_paging:
-    mov eax, cr4
-                
-    or eax, 1 << 5                          ; set PAE
-    mov cr4, eax
-
-    mov eax, p4_table                       ; point cr3 to pml4
-    mov cr3, eax
-
-    mov ecx, 0xC0000080                     ; get EFER MSR
-    rdmsr
-    or eax, 1 << 8                          ; set LME
-    wrmsr
-
-    mov eax, cr0
-    or eax, 1 << 31                         ; set PG
-    mov cr0, eax
-
     ret
 
 section .rodata

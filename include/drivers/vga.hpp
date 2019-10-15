@@ -124,7 +124,7 @@ constexpr static size_t height = 15;
 /**
  *                          Address of VGA character buffer
  */
-constexpr static size_t display_buff_addr = 0xB8000;
+constexpr static size_t display_buff_addr = 0xFFFFFFFF800B8000;
 vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
 
 static bool _visual_cursor = false;

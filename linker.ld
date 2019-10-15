@@ -14,9 +14,10 @@ SECTIONS {
     }
 
     . += VIRT_BASE;
+    . = ALIGN(4096);
 
-    /* physical start address */
-    _kernel_start = . - VIRT_BASE;
+    /* virtual start address */
+    _kernel_start = .;
     .text ALIGN (4096) : AT (ADDR (.text) - VIRT_BASE)
     {
         *(.text*)
@@ -44,12 +45,7 @@ SECTIONS {
         *(.bss*)
     }
     /* physical end address */
-    _kernel_end = ALIGN(4096) - VIRT_BASE;
+    _kernel_end = ALIGN(4096);
 
-    ASSERT(_kernel_end - _kernel_start < 2M, "Error: ");
-
-    /DISCARD/ :
-    {
-       *(*);
-   }
+    /* ASSERT(((_kernel_end - _kernel_start) < 0x200000), "Error: Kernel larger than 2MiB"); */
 }
