@@ -5,7 +5,7 @@ BUILD_DIR = binaries/boot
 QEMU_BP := kernel_main
 QEMU_FLAGS :=
 
-CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -mcmodel=kernel -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 LIB_OBJS = ./include/stl/cstd.o
 
@@ -47,18 +47,20 @@ clean:
 	rm $(BUILD_DIR)/../../include/stl/cstd.o
 
 run:
-	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso
+	qemu-system-x86_64 -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
 
 debug: build FireflyOS.iso $(BUILD_DIR)/kernel.bin
-	qemu-system-x86_64 -cdrom FireflyOS.iso $(QEMU_FLAGS) -S -s &
+	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso \
+	$(QEMU_FLAGS) -S -s &
 	gdb $(BUILD_DIR)/kernel.bin \
 		-ex 'target remote localhost:1234' \
 		-ex 'layout src' \
 		-ex 'layout regs' \
-		-ex 'break $(QEMU_BP)' \
+		-ex 'break *0x100018' \
 		-ex 'continue'
 
-$(BUILD_DIR)/kernel.bin: $(OBJ_FILES) 
-	ld --no-undefined -T linker.ld -o $(BUILD_DIR)/kernel.bin $(OBJ_FILES)
+$(BUILD_DIR)/kernel.bin: $(OBJ_FILES)
+	ld -o $(BUILD_DIR)/kernel.bin --no-undefined -T linker.ld \
+		-nostdlib $(OBJ_FILES)
 
 	grub-mkrescue -o FireflyOS.iso binaries
