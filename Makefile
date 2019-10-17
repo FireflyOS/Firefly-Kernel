@@ -47,10 +47,10 @@ clean:
 	rm $(BUILD_DIR)/../../include/stl/cstd.o
 
 run:
-	qemu-system-x86_64 -boot d -d int -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
+	qemu-system-x86_64 -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
 
 debug: build FireflyOS.iso $(BUILD_DIR)/kernel.bin
-	qemu-system-x86_64 -boot d -d int -cdrom ./FireflyOS.iso \
+	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso \
 	$(QEMU_FLAGS) -S -s &
 	gdb $(BUILD_DIR)/kernel.bin \
 		-ex 'target remote localhost:1234' \

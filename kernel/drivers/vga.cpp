@@ -31,7 +31,8 @@ void cursor::handle_bounds() {
         x = 0;
     }
     if (y >= height) {
-        firefly::std::copy(display_buffer + width, display_buffer + ((height - 1) * width), display_buffer);
+        firefly::std::copy(display_buffer + width, display_buffer + (height * width), display_buffer);
+        firefly::std::fill(display_buffer + ((height - 1) * width), display_buffer + (height * width), vga_char{ ' ', color::white, color::black });
         y = height - 1;
     }
     vga::update_hw_cursor(x, y);
