@@ -33,10 +33,10 @@ SECTIONS {
     .rodata ALIGN (4096) : AT (ADDR (.rodata) - VIRT_BASE)
     {
         *(.rodata*)
-        init_array_start = .;
+        _init_array_start = .;
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))
-        init_array_end = .;
+        _init_array_end = .;
     }
 
     .bss ALIGN (4096) : AT (ADDR (.bss) - VIRT_BASE)

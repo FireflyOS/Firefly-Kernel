@@ -47,20 +47,20 @@ clean:
 	rm $(BUILD_DIR)/../../include/stl/cstd.o
 
 run:
-	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso
+	qemu-system-x86_64 -boot d -d int -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
 
 debug: build FireflyOS.iso $(BUILD_DIR)/kernel.bin
-	qemu-system-x86_64 -cdrom FireflyOS.iso $(QEMU_FLAGS) -S -s &
+	qemu-system-x86_64 -boot d -d int -cdrom ./FireflyOS.iso \
+	$(QEMU_FLAGS) -S -s &
 	gdb $(BUILD_DIR)/kernel.bin \
 		-ex 'target remote localhost:1234' \
 		-ex 'layout src' \
 		-ex 'layout regs' \
-		-ex 'break $(QEMU_BP)' \
+		-ex 'break *0x100018' \
 		-ex 'continue'
 
-$(BUILD_DIR)/kernel.bin: $(OBJ_FILES) 
-	clang++ -target x86_64-unknown-elf -m64 -mcmodel=kernel -mno-red-zone \
-		-fno-pic -fno-PIE -Wl,-z,notext -ffreestanding -nostdlib \
-		-T linker.ld -o $(BUILD_DIR)/kernel.bin $(OBJ_FILES)
+$(BUILD_DIR)/kernel.bin: $(OBJ_FILES)
+	ld -o $(BUILD_DIR)/kernel.bin --no-undefined -T linker.ld \
+		-nostdlib $(OBJ_FILES)
 
 	grub-mkrescue -o FireflyOS.iso binaries

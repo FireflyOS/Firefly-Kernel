@@ -1,10 +1,34 @@
 global start
 extern _kernel_end
 extern _kernel_start
+extern _init_array_end
 extern kernel_main
-extern init_array_end
 
 VIRT_ADDR equ 0xFFFFFFFF80100000
+
+section .rodata
+gdt64:
+    dq 0                                    ; zero entry
+.code: equ $ - gdt64                        ; code segment
+                                            ; executable | code | present | x86_64 code
+    dq (1<<43) | (1<<44) | (1<<47) | (1<<53) 
+.pointer:
+    dw $ - gdt64 - 1
+    dq gdt64 - VIRT_ADDR                    ; point to physical address of gdt
+
+section .bss                                ; reserve space for the paging structures
+align 4096
+pml4:
+    resb 4096
+pdpt:
+    resb 4096
+pd:
+    resb 4096
+pt:
+    resb 4096
+stack_bottom:
+    resb 65536
+stack_top:
 
 section .multiboot_header
 header_start:
@@ -22,20 +46,6 @@ header_start:
     dd 8    ; size
 header_end:
 
-section .bss                                ; reserve space for the paging structures
-align 4096
-pml4:
-    resb 4096
-pdpt:
-    resb 4096
-pd:
-    resb 4096
-pt:
-    resb 4096
-stack_bottom:
-    resb 65536
-stack_top:
-
 section .pm_stub
 bits 32
 start:
@@ -48,8 +58,10 @@ start:
     call enable_sse
     call set_up_page_tables
 
-    mov eax, cr4                            ; enable long mode and paging
-    or eax, 1 << 5                          ; set PAE
+                                            ; enable long mode and paging
+
+    mov eax, cr4
+    or eax, 0b110000                        ; set PAE and PSE
     mov cr4, eax
 
     mov eax, pml4 - VIRT_ADDR               ; point cr3 to pml4
@@ -65,7 +77,7 @@ start:
     mov cr0, eax
 
     lgdt [(gdt64.pointer - VIRT_ADDR)]
-    jmp (gdt64.code - VIRT_ADDR):.stub64    ; warning: word data exceeds bounds
+    jmp gdt64.code:.stub64
 
 bits 64
 .stub64:                                    ; trampoline to higher half
@@ -144,58 +156,70 @@ enable_sse:
     ret
 
 set_up_page_tables:
+                                                ; first map to lower virtual address
+    mov eax, pdpt - VIRT_ADDR
+    or eax, 0b11
+    mov [pml4 - VIRT_ADDR], eax
+
+    mov eax, pd - VIRT_ADDR
+    or eax, 0b11
+    mov [pdpt - VIRT_ADDR], eax
+
+    mov ecx, 0                                  ; count entries
+
+.map_pd:
+                                                ; map ecx-th page directory entry to a 2MiB page
+                                                ; that starts at address 2MiB*ecx
+    mov eax, 0x200000                           ; 2MiB
+    mul ecx                                     ; start address of ecx-th page
+    or eax, 0b10000011                          ; present + writable + page size
+    mov [(pd - VIRT_ADDR) + ecx * 8], eax       ; map ecx-th entry
+
+    inc ecx                                     ; increase counter
+    cmp ecx, 512                                ; if counter == 512, the whole page directory table is mapped
+    jne .map_pd                                 ; else map the next entry
+
+                                                ; now set up higher virtual address
+
     mov eax, pdpt - VIRT_ADDR                   ; physical address of a pdpt
     or eax, 0b11                                ; writable + present
-    mov dword [(pml4 - VIRT_ADDR) + 4058], eax  ; put in last entry of pml4, so
+    mov dword [(pml4 - VIRT_ADDR) + 4088], eax  ; put in last entry of pml4, so
                                                 ; bits 63:39 of virtual address all 1's
 
     mov eax, pd - VIRT_ADDR                     ; physical address of a pd
     or eax, 0b11                                ; writable + present
-    mov dword [(pdpt - VIRT_ADDR) + 4050], eax  ; put in second-to-last entry of pdpt so 
+    mov dword [(pdpt - VIRT_ADDR) + 4080], eax  ; put in second-to-last entry of pdpt so 
                                                 ; bits 38:31 are all 1's, and bit 30 is 0,
                                                 ; 0xFFFF_FFFF_8nnn_nnnn
 
-    mov eax, pt - VIRT_ADDR                 ; physical address of a pt
-    or eax, 0b11                            ; writable + present
-    mov dword [(pd - VIRT_ADDR)], eax                     ; put in first entry
-                                            ; bits 29:21 all 0's
+    xor eax, eax                                ; begin mapping physical address 0
+    xor ebx, ebx                                ; page table entry, start at index 0
 
-                                            ; one pt can map 2MiB of memory, so linker.ld
-                                            ; asserts that the kernel is smaller than 2MiB
-                                            ; so we can map it all with one pt,
-                                            ; if the assertion fails we need a second pt
+.map_pt:                                        ; now map the page table to
+                                                ; the physical addresses up to the end of the kernel
 
-    xor eax, eax                            ; begin mapping physical address 0
-    xor ebx, ebx                            ; page table entry, start at index 0
-
-.map_pt:                                    ; now map the page table to
-                                            ; the physical addresses up to the end of the kernel
-
-    cmp eax, _kernel_end - VIRT_ADDR        ; passed kernel binary?
-    je .done                                ; yes, done mapping
-    or eax, 0b11                            ; writable + present
-    mov dword [(pt - VIRT_ADDR) + ebx], eax               ; put into pt
-    add ebx, 8                              ; next index
-    and eax, ~0b11                          ; clear bottom two bits
-    add eax, 4096                           ; next physical 4KiB frame
-    jmp .map_pt                             ; map next entry
+    cmp eax, _kernel_end - VIRT_ADDR            ; passed kernel binary?
+    je .done                                    ; yes, done mapping
+    or eax, 0b11                                ; writable + present
+    mov dword [(pt - VIRT_ADDR) + ebx], eax     ; put into pt
+    add ebx, 8                                  ; next index
+    and eax, ~0b11                              ; clear bottom two bits
+    add eax, 4096                               ; next physical 4KiB frame
+    jmp .map_pt                                 ; map next entry
 
 .done:
     ret
 
-section .rodata
-gdt64:
-    dq 0                                    ; zero entry
-.code: equ $ - gdt64                        ; code segment
-                                            ; executable | code | present | x86_64 code
-    dq (1<<43) | (1<<44) | (1<<47) | (1<<53) 
-.pointer:
-    dw $ - gdt64 - 1
-    dq gdt64
-
 section .text
 bits 64
 long_mode_start:
+
+                                            ; now make pd's first entry point to a pt
+                                            ; since earlier it mapped a 2MiB page
+    mov eax, pt - VIRT_ADDR                 ; physical address of a pt
+    or eax, 0b11                            ; writable + present
+    mov dword [(pd - VIRT_ADDR)], eax       ; put in first entry
+
     mov ax, 0
     mov ss, ax
     mov ds, ax
@@ -204,7 +228,7 @@ long_mode_start:
     mov gs, ax
 
                                             ; call global constructors
-    lea rbx, [rel init_array_end-8]
+    lea rbx, [rel _init_array_end-8]
                                             ; Since all of our code and data is within +/-2GiB
                                             ; we can use a RIP relative instruction with disp32
     jmp .getaddr
