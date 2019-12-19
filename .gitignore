@@ -35,10 +35,11 @@
 /.vscode
 
 # Binaries
-*.iso
+*.bin
+
+# except for clean.bin
+!clean.bin
 
 # Buildsystem
 /building/__pycache__
-binaries/
-!binaries/boot/grub.cfg
 .idea
