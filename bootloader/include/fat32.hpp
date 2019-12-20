@@ -5,6 +5,77 @@
  */
 namespace fat32 {
     /**
+     *                      A CHS address
+     */
+    struct __attribute__((packed)) chs_address {
+        /**
+         *              
+         */
+        unsigned head : 8;
+        /**
+         *              a
+         */
+        unsigned sect : 6;
+        /**
+         *              a
+         */
+        unsigned cyl : 10;
+    };
+
+    static_assert(3 == sizeof(chs_address), "sizeof chs_address is incorrect");
+
+    /**
+     *                      A partition entry in the MBR.
+     */
+    struct __attribute__((packed)) part_entry {
+        /**
+         *                  Whether the partition is bootable.
+         *                  Any other values are invalid.
+         */
+        enum status : unsigned char {
+            INACTIVE = 0x00,
+            ACTIVE = 0x80
+        } status;
+        /**
+         *                  CHS address of first sector of partition.
+         */
+        chs_address start_chs;
+        /**
+         *                  Partition ID.
+         */
+        unsigned char type;
+        /**
+         *                  CHS address of first sector of partition.
+         */
+        chs_address end_chs;
+        /**
+         *                  LBA of first sector of partition.
+         */
+        unsigned long start_lba;
+        /**
+         *                  Number of sectors in partition.
+         */
+        unsigned long num_sects;
+    };
+
+    struct __attribute__((packed)) mbr {
+        /**
+         *                  Ignored.
+         */
+        unsigned char rsv[446];
+        /**
+         *                  Primary partition table.
+         */
+        part_entry part_table[4];
+        /**
+         *                  Should be 0xaa55.
+         */
+        unsigned short boot_sig;
+    };
+
+    static_assert(512 == sizeof(mbr), "sizeof mbr is incorrect");
+
+    /**
      *                      Sector 0 of the FAT32 boot record.
      */
     struct __attribute__((packed)) vbr {
@@ -179,6 +250,76 @@ namespace fat32 {
     };
 
     static_assert(512 == sizeof(boot3), "sizeof boot3 is incorrect");
+
+    /**
+     *                      Creation time of a file.
+     */
+    struct __attribute__((packed)) ctime {
+        /**
+         *                  Seconds / 2.
+         *                  0 - 29
+         */
+        unsigned second : 5;
+        /**
+         *                  0 - 59.
+         */
+        unsigned minute : 6;
+        /**
+         *                  0 - 23
+         */
+        unsigned hour : 5;
+    };
+
+    static_assert(2 == sizeof(ctime), "sizeof ctime is incorrect");
+
+    /**
+     *                      Creation time of a file.
+     */
+    struct __attribute__((packed)) cdate {
+        /**
+     *                      1 - 31
+     */
+        unsigned day : 5;
+        /**
+     *                      1 - 12
+     */
+        unsigned month : 4;
+        /**
+     *                      0 - 127
+     *                      Offset from 1980
+     */
+        unsigned year : 7;
+    };
+
+    static_assert(2 == sizeof(cdate), "sizeof cdate is incorrect");
+
+    struct __attribute__((packed)) dir_entry {
+        /**
+         *                  Space-padded name.
+         */
+        char name[8];
+        /**
+         *                  Space-padded extension.
+         */
+        char ext[3];
+        struct __attribute__((packed)) {
+            bool readonly : 1;
+            bool hidden : 1;
+            bool system : 1;
+            bool vol_label : 1;
+            bool subdir : 1;
+            bool archive : 1;
+            bool device : 1;
+            bool rsv : 1;
+        } attr;
+        unsigned char rsv0[8];
+        unsigned int cluster_high;
+        unsigned char rsv1[4];
+        unsigned int cluster_low;
+        unsigned long size;
+    };
+
+    static_assert(32 == sizeof(dir_entry), "sizeof dir_entry is incorrect");
 
     /**
      *                      Pointer to VBR saved in vbr.asm.

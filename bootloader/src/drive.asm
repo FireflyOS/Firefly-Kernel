@@ -19,23 +19,22 @@ read:
     mov bp, sp
     push bx
     push esi
-    push word 0                     ; create disk address packet
-    push word 0
-    push word 0
+    mov ax, word [bp+4]
+    mov word [address_packet+4], ax
+    mov ax, word [bp+6]
+    mov word [address_packet+6], ax
     mov ax, word [bp+8]
-    push ax
-    push word [bp+4]
-    push word [bp+6]
-    push word [bp+10]
-    push word 0x0010
-    mov si, sp
+    mov word [address_packet+8], ax
+    mov ax, word [bp+10]
+    mov word [address_packet+2], ax
+    mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
     mov ax, 0x4200                  ; extended read
     mov bx, [boot_vbr]              ; get boot drive
     mov dl, byte [bx+0x40]
     int 0x13                        ; read
     jc .err
-    mov ax, word [si+8]             ; get block transferred
+    mov ax, word [address_packet+2] ; get block transferred
     pop dx
     cmp ax, dx                      ; is it what we expected?
     jne .err
@@ -44,7 +43,6 @@ read:
 .err:
     mov ax, 1
 .done:
-    add sp, 16
     pop esi
     pop bx
     pop bp
@@ -65,23 +63,22 @@ write:
     mov bp, sp
     push bx
     push esi
-    push word 0                     ; create disk address packet
-    push word 0
-    push word 0
+    mov ax, word [bp+4]
+    mov word [address_packet+4], ax
+    mov ax, word [bp+6]
+    mov word [address_packet+6], ax
     mov ax, word [bp+8]
-    push ax
-    push word [bp+4]
-    push word [bp+6]
-    push word [bp+10]
-    push word 0x0010
-    mov si, sp
+    mov word [address_packet+8], ax
+    mov ax, word [bp+10]
+    mov word [address_packet+2], ax
+    mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
     mov ax, 0x4300                  ; extended write
     mov bx, [boot_vbr]              ; get boot drive
     mov dl, byte [bx+0x40]    
     int 0x13                        ; write
     jc .err
-    mov ax, word [si+8]             ; get blocks transferred
+    mov ax, word [address_packet+2] ; get blocks transferred
     pop dx
     cmp ax, dx                      ; is it what we expected?
     jne .err
@@ -90,8 +87,14 @@ write:
 .err:
     mov ax, 1
 .done:
-    add sp, 16
     pop esi
     pop bx
     pop bp
     ret
+
+address_packet:
+    db 0x10                         ; packet size
+    db 0                            ; reserved
+    dw 0                            ; # blocks to transfer
+    dd 0                            ; destination buffer
+    dq 0                            ; starting LBA

@@ -6,16 +6,15 @@ global start
 section .start
 bits 16
 start:
-    jmp bmain                       ; uh
                                     ; call global constructors
-    lea bx, [rel _init_array_end-4]
+    lea bx, [rel _init_array_end-2]
     jmp .getaddr
 .docall:
     call dx
 .getaddr:
     mov dx, word [bx]
-    sub bx, 4
-    test dx, dx                     ; uh
+    sub bx, 2
+    test dx, dx
     jnz .docall
 
     cld
