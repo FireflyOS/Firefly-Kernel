@@ -17,7 +17,6 @@ global write
 read:
     push bp
     mov bp, sp
-    push ebx
     push esi
     mov ax, word [bp+6]
     mov word [address_packet+4], ax
@@ -30,21 +29,19 @@ read:
     mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
     mov ax, 0x4200                  ; extended read
-    mov bx, [boot_vbr]              ; get boot drive
-    mov dl, byte [bx+0x40]
+    mov dl, byte [0xfe40]            ; get boot drive
     int 0x13                        ; read
     jc .err
     mov ax, word [address_packet+2] ; get block transferred
     pop dx
     cmp ax, dx                      ; is it what we expected?
     jne .err
-    xor ax, ax
+    mov ax, 1
     jmp .done
 .err:
-    mov ax, 1
+    xor ax, ax
 .done:
     pop esi
-    pop ebx
     pop bp
     ret
 
@@ -61,7 +58,6 @@ read:
 write:
     push bp
     mov bp, sp
-    push ebx
     push esi
     mov ax, word [bp+6]
     mov word [address_packet+4], ax
@@ -74,21 +70,19 @@ write:
     mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
     mov ax, 0x4300                  ; extended write
-    mov bx, [boot_vbr]              ; get boot drive
-    mov dl, byte [bx+0x40]    
+    mov dl, byte [0xfe40]            ; get boot drive    
     int 0x13                        ; write
     jc .err
     mov ax, word [address_packet+2] ; get blocks transferred
     pop dx
     cmp ax, dx                      ; is it what we expected?
     jne .err
-    xor ax, ax
+    mov ax, 1
     jmp .done
 .err:
-    mov ax, 1
+    xor ax, ax
 .done:
     pop esi
-    pop ebx
     pop bp
     ret
 

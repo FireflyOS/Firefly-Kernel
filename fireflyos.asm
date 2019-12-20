@@ -10,10 +10,10 @@
     incbin "bootloader/bootloader.bin"
         ; zero out rest of hidden sectors
     times 1048576-($-$$) db 0
-        ; boot jmp
-    incbin "bootloader/build/vbr.bin", 0, 3
+        ; jmp + OEM
+    incbin "bootloader/build/vbr.bin", 0, 11
         ; keep FAT BPB
-    incbin "fireflyos.bin",1048579 , 59
+    incbin "fireflyos.bin",1048587, 51
         ; rest of boot sector
     incbin "bootloader/build/vbr.bin", 62
         ; rest of image

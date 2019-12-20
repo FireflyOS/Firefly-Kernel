@@ -1,7 +1,7 @@
 #include <err.hpp>
 #include <paging.hpp>
 
-void setup_pages(unsigned long kernel_size) {
+void setup_pages(unsigned long binary_size) {
     asm volatile(
         "movw %%ax, %%ds"
         :
@@ -11,7 +11,7 @@ void setup_pages(unsigned long kernel_size) {
     page_map *pdpt = reinterpret_cast<page_map *>(0x1000);
     page_map *pd = reinterpret_cast<page_map *>(0x2000);
 
-    unsigned long kernel_end = 0x00100000 + kernel_size;
+    unsigned long kernel_end = 0x00100000 + binary_size;
 
     // identity map to lower and higher virtual address space
     pml4->entries[0] = pml4->entries[511] = { true,
@@ -43,7 +43,7 @@ void setup_pages(unsigned long kernel_size) {
     unsigned long long pt_start = 0x3000;
 
     // Iterate until we've mapped all of the kernel, or until we've filled the entire 64K segment with tables
-    // which would allow for a 26MiB kernel.
+    // which would allow for a 25MiB kernel + modules.
     for (unsigned int pd_entry = 0; target < kernel_end && pt_start < 0xf000; pd_entry++, pt_start += 0x1000) {
         pd->entries[pd_entry] = { true,
                                   true,
@@ -66,7 +66,7 @@ void setup_pages(unsigned long kernel_size) {
 
     // already used last 4K table and still not mapped all of kernel
     if (pt_start == 0xf000 && target < kernel_end)
-        err();
+        err("kernel is larger than 26MiB");
 
     asm volatile(
         "mov %%ax, %%ds"

@@ -3,24 +3,18 @@
 #include <fat32.hpp>
 #include <mmap.hpp>
 #include <paging.hpp>
+#include <stdio.hpp>
 
 unsigned char *buffer = reinterpret_cast<unsigned char *>(0xfc00);
 
 extern "C" void __attribute__((noreturn)) bmain() {
     read_mmap();
+    unsigned long binary_size = fat32::loadfs();
 
-    if (drive::read(buffer, 0, 0, 1))
-        err();
+    if (!binary_size)
+        err("failed to read kernel");
 
-    fat32::mbr *mbr = reinterpret_cast<fat32::mbr *>(buffer);
-
-    if (mbr->boot_sig != 0xaa55)
-        err();
-    else
-        asm volatile(
-            "int $0x10\n"
-            :
-            : "a"(0x0e00 | 'S'));
+    setup_pages(binary_size);
 
     // load kernel at 1M
     // and modules after it
@@ -34,4 +28,4 @@ extern "C" void __attribute__((noreturn)) bmain() {
 // module files could probably simply have the format:
 // 8 byte offset into payload of init function
 // 8 byte offset into payload of destruct function
-// payload
+// payloadz

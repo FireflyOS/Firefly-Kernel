@@ -251,6 +251,13 @@ namespace fat32 {
 
     static_assert(512 == sizeof(boot3), "sizeof boot3 is incorrect");
 
+    struct __attribute__((packed)) fat_entry {
+        unsigned link : 28;
+        unsigned rsv : 4;
+    };
+
+    static_assert(4 == sizeof(fat_entry), "sizeof fat_entry is incorrect");
+
     /**
      *                      Creation time of a file.
      */
@@ -302,16 +309,14 @@ namespace fat32 {
          *                  Space-padded extension.
          */
         char ext[3];
-        struct __attribute__((packed)) {
-            bool readonly : 1;
-            bool hidden : 1;
-            bool system : 1;
-            bool vol_label : 1;
-            bool subdir : 1;
-            bool archive : 1;
-            bool device : 1;
-            bool rsv : 1;
-        } attr;
+        bool readonly : 1;
+        bool hidden : 1;
+        bool system : 1;
+        bool vol_label : 1;
+        bool subdir : 1;
+        bool archive : 1;
+        bool device : 1;
+        bool rsv : 1;
         unsigned char rsv0[8];
         unsigned short cluster_high;
         unsigned char rsv1[4];
@@ -321,9 +326,27 @@ namespace fat32 {
 
     static_assert(32 == sizeof(dir_entry), "sizeof dir_entry is incorrect");
 
+    struct __attribute__((packed)) vfat_dir_entry {
+        unsigned seq_num : 5;
+        bool last_part : 1;
+        unsigned rsv : 1;
+        unsigned short name0[5];
+        unsigned char attr;
+        unsigned char type;
+        unsigned char shortname_checksum;
+        unsigned short name1[6];
+        unsigned short first_cluster;
+        unsigned short name2[2];
+    };
+
+    static_assert(32 == sizeof(vfat_dir_entry), "sizeof vfat_dir_entry is incorrect");
+
     /**
      *                      Poshorter to VBR saved in vbr.asm.
      */
-    extern "C" vbr *const boot_vbr;
+    //#define boot_vbr (reinterpret_cast<vbr *>(0xfe00))
+    vbr *const boot_vbr = reinterpret_cast<vbr *>(0xfe00);
+
+    unsigned long loadfs();
 
 }  // namespace fat32
