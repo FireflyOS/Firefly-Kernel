@@ -7,8 +7,7 @@ Kernel for FireflyOS
  * NASM
  * qemu
  * clang++
- * [ia16-elf-gcc](https://sourcery.mentor.com/GNUToolchain/release3298) Download the recommended package, give it executable permission, run the installer,
-    and ensure its bin directory is in your PATH.
+ * g++
 
 ## Run ##
  * git clone https://github.com/FireflyOS/Firefly-Kernel

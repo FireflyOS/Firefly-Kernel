@@ -12,22 +12,22 @@ struct __attribute__((packed)) virtual_address {
     unsigned rsv0 : 12;
 
     /**
-     *                  Index into a page table
+     *                  Index shorto a page table
      */
     unsigned idx_pt : 9;
 
     /**
-     *                  Index into a page directory
+     *                  Index shorto a page directory
      */
     unsigned idx_pd : 9;
 
     /**
-     *                  Index into a page directory pointer table
+     *                  Index shorto a page directory poshorter table
      */
     unsigned idx_pdpt : 9;
 
     /**
-     *                  Index into a page map level 4 table
+     *                  Index shorto a page map level 4 table
      */
     unsigned idx_pml4 : 9;
 

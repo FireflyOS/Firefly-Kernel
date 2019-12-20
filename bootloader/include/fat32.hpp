@@ -90,7 +90,7 @@ namespace fat32 {
         /**
          *                  Bytes per sector.
          */
-        unsigned int sector_size;
+        unsigned short sector_size;
         /**
          *                  Sectors per cluster.
          */
@@ -98,7 +98,7 @@ namespace fat32 {
         /**
          *                  Reserved sectors between this sector and the first FAT.
          */
-        unsigned int reserved_sectors;
+        unsigned short reserved_sectors;
         /**
          *                  Amount of copies of the FAT.
          */
@@ -106,11 +106,11 @@ namespace fat32 {
         /**
          *                  Ignored.
          */
-        unsigned int rsv1;
+        unsigned short rsv1;
         /**
          *                  Ignored.
          */
-        unsigned int rsv2;
+        unsigned short rsv2;
         /**
          *                  Should be 0xf8 for hard drive.
          */
@@ -118,15 +118,15 @@ namespace fat32 {
         /**
          *                  Ignored.
          */
-        unsigned int rsv3;
+        unsigned short rsv3;
         /**
          *                  .
          */
-        unsigned int sectors_per_track;
+        unsigned short sectors_per_track;
         /**
          *                  .
          */
-        unsigned int num_heads;
+        unsigned short num_heads;
         /**
          *                  Sectors before this one.
          */
@@ -142,11 +142,11 @@ namespace fat32 {
         /**
          *                  Drive description/mirrorring flags.
          */
-        unsigned int drive_desc;
+        unsigned short drive_desc;
         /**
          *                  FAT32 version.
          */
-        unsigned int version;
+        unsigned short version;
         /**
          *                  Cluster of start of root directory.
          */
@@ -154,11 +154,11 @@ namespace fat32 {
         /**
          *                  Logical sector of FS information sector.
          */
-        unsigned int fs_info_sect;
+        unsigned short fs_info_sect;
         /**
          *                  Logical sector of FAT32 backup sectors.
          */
-        unsigned int backup_sect;
+        unsigned short backup_sect;
         /**
          *                  Ignored.
          */
@@ -194,7 +194,7 @@ namespace fat32 {
         /**
          *                  Should be 0xaa55.
          */
-        unsigned int boot_sig;
+        unsigned short boot_sig;
     };
 
     static_assert(512 == sizeof(vbr), "sizeof vbr is incorrect");
@@ -313,16 +313,16 @@ namespace fat32 {
             bool rsv : 1;
         } attr;
         unsigned char rsv0[8];
-        unsigned int cluster_high;
+        unsigned short cluster_high;
         unsigned char rsv1[4];
-        unsigned int cluster_low;
+        unsigned short cluster_low;
         unsigned long size;
     };
 
     static_assert(32 == sizeof(dir_entry), "sizeof dir_entry is incorrect");
 
     /**
-     *                      Pointer to VBR saved in vbr.asm.
+     *                      Poshorter to VBR saved in vbr.asm.
      */
     extern "C" vbr *const boot_vbr;
 

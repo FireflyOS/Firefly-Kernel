@@ -17,15 +17,15 @@ global write
 read:
     push bp
     mov bp, sp
-    push bx
+    push ebx
     push esi
-    mov ax, word [bp+4]
-    mov word [address_packet+4], ax
     mov ax, word [bp+6]
-    mov word [address_packet+6], ax
-    mov ax, word [bp+8]
-    mov word [address_packet+8], ax
+    mov word [address_packet+4], ax
     mov ax, word [bp+10]
+    mov word [address_packet+6], ax
+    mov ax, word [bp+14]
+    mov word [address_packet+8], ax
+    mov ax, word [bp+18]
     mov word [address_packet+2], ax
     mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
@@ -44,7 +44,7 @@ read:
     mov ax, 1
 .done:
     pop esi
-    pop bx
+    pop ebx
     pop bp
     ret
 
@@ -61,15 +61,15 @@ read:
 write:
     push bp
     mov bp, sp
-    push bx
+    push ebx
     push esi
-    mov ax, word [bp+4]
-    mov word [address_packet+4], ax
     mov ax, word [bp+6]
-    mov word [address_packet+6], ax
-    mov ax, word [bp+8]
-    mov word [address_packet+8], ax
+    mov word [address_packet+4], ax
     mov ax, word [bp+10]
+    mov word [address_packet+6], ax
+    mov ax, word [bp+14]
+    mov word [address_packet+8], ax
+    mov ax, word [bp+18]
     mov word [address_packet+2], ax
     mov si, address_packet
     push ax                         ; keep # blocks to read for error checking
@@ -88,7 +88,7 @@ write:
     mov ax, 1
 .done:
     pop esi
-    pop bx
+    pop ebx
     pop bp
     ret
 

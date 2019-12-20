@@ -4,7 +4,7 @@ INC_DIR = include
 LIB_DIR = dependencies
 OUTPUT = bootloader.bin
 
-CXX_FLAGS = -I$(INC_DIR)/ -c -fno-pie -Wall -Wextra -pedantic -std=c++17 -nostdlib -nostartfiles -ffreestanding -fno-builtin -fno-PIC -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -fno-exceptions -fno-rtti
+CXX_FLAGS = -I$(INC_DIR)/ -c -m16 -fno-pie -Wall -Wextra -pedantic -std=c++17 -nostdlib -nostartfiles -ffreestanding -fno-builtin -fno-PIC -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -fno-exceptions -fno-rtti
 CXX_OPT_FLAG := -Os
 
 LIBRARIES =
@@ -28,7 +28,7 @@ $(BUILD_DIR)/vbr.bin: $(SRC_DIR)/boot/vbr.asm
 
 # compile C and asm files into objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
-	ia16-elf-g++ -o $@ $(CXX_FLAGS) $(CXX_OPT_FLAG) $<
+	g++ -o $@ $(CXX_FLAGS) $(CXX_OPT_FLAG) $<
 
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm -o $@ -f elf32 $<
