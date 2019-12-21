@@ -1,9 +1,10 @@
-[bits 16]
+bits 16
 extern boot_vbr
 
 global read
 global write
 
+section .text
 ;;
 ; @fn                       unsigned short read(void *dest, unsigned int segment, unsigned int sector, unsigned int amt)
 ;                           Reads an amount of sectors from the drive into dest.

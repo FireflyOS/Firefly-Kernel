@@ -1,8 +1,8 @@
+bits 16
 global read_mmap
 global count_free
 
 section .text
-bits 16
 
 ;; @fn                      void read_mmap()
 ;                           Uses int 15h, ax=e820 to construct a list of memory ranges.

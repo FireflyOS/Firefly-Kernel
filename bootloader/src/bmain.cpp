@@ -1,12 +1,14 @@
 #include <drive.hpp>
 #include <err.hpp>
 #include <fat32.hpp>
+#include <handover.hpp>
 #include <mmap.hpp>
 #include <paging.hpp>
 #include <stdio.hpp>
 
-unsigned char *buffer = reinterpret_cast<unsigned char *>(0xfc00);
-
+/**
+ *                          Bootloader main entry point.
+ */
 extern "C" void __attribute__((noreturn)) bmain() {
     read_mmap();
     unsigned long binary_size = fat32::loadfs();
@@ -21,7 +23,11 @@ extern "C" void __attribute__((noreturn)) bmain() {
     // then give kernel pointer to list of memory ranges
     // and list of module descriptions
 
-    while (1)
+    printf("done\r\n");
+
+    handover();
+
+    while (true)
         ;
 }
 

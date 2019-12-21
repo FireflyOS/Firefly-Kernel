@@ -26,6 +26,7 @@ SECTIONS {
         *(.rodata*)
         _init_array_start = .;
         LONG(0)
+        LONG(0)
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))
         _init_array_end = .;

@@ -328,8 +328,9 @@ namespace fat32 {
 
     struct __attribute__((packed)) vfat_dir_entry {
         unsigned seq_num : 5;
+        unsigned rsv0 : 1;
         bool last_part : 1;
-        unsigned rsv : 1;
+        unsigned rsv1 : 1;
         unsigned short name0[5];
         unsigned char attr;
         unsigned char type;
@@ -341,12 +342,22 @@ namespace fat32 {
 
     static_assert(32 == sizeof(vfat_dir_entry), "sizeof vfat_dir_entry is incorrect");
 
+    struct __attribute__((packed)) module_description {
+        unsigned long long base;
+        unsigned long long size;
+    };
+
+    static_assert(16 == sizeof(module_description), "sizeof module_description is incorrect");
+
     /**
      *                      Poshorter to VBR saved in vbr.asm.
      */
-    //#define boot_vbr (reinterpret_cast<vbr *>(0xfe00))
     vbr *const boot_vbr = reinterpret_cast<vbr *>(0xfe00);
 
+    /**
+     *                          Loads the kernel and modules into memory.
+     * @return                  The total number of bytes read.
+     */
     unsigned long loadfs();
 
 }  // namespace fat32

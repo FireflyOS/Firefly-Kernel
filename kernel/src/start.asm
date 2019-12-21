@@ -6,6 +6,8 @@ bits 64
 
 section .start
 start:
+    mov rsp, stack_top
+
                                                 ; call global constructors
     lea rbx, [rel _init_array_end-8]
                                                 ; Since all of our code and data is within +/-2GiB
@@ -22,3 +24,7 @@ start:
     cld
 
     jmp kmain
+
+section .bss
+    resb 65536
+stack_top:

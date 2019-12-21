@@ -157,7 +157,15 @@ enable_unreal:                      ; switch to unreal mode
     jmp $+2
     mov bx, 0x08
     mov ds, bx
-    and al, 0xfe
+    mov eax, cr0                    ; also enable SSE
+    and ax, 0xFFFB                  ; clear coprocessor emulation CR0.EM
+    or ax, 0x2                      ; set coprocessor monitoring  CR0.MP
+    mov cr0, eax
+    mov eax, cr4
+    or ax, 3 << 9                   ; set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time
+    mov cr4, eax
+    mov eax, cr0
+    and eax, 0xfffffffe
     mov cr0, eax
     pop ds
     ret
