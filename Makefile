@@ -1,7 +1,7 @@
 OUTPUT = fireflyos.bin
 
 # build and run code preserving file system
-all: build run
+all: create_dirs build run
 
 # build and run code creating new image with empty file system
 new: create_dirs build_new run

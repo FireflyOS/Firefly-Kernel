@@ -9,7 +9,7 @@
 /**
  *                          Bootloader main entry point.
  */
-extern "C" void __attribute__((noreturn)) bmain() {
+extern "C" [[noreturn]] void bmain() {
     read_mmap();
     unsigned long binary_size = fat32::loadfs();
 

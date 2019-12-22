@@ -53,7 +53,7 @@ struct cursor {
      *                      Foreground color to print
      */
     color fg;
-    
+
     /**
      *                      Background color to print
      */
@@ -124,8 +124,8 @@ constexpr static size_t height = 15;
 /**
  *                          Address of VGA character buffer
  */
-constexpr static size_t display_buff_addr = 0xFFFFFFFF800B8000;
-vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buff_addr);
+constexpr static size_t display_buffer_addr = 0xFFFFFFFF800B8000;
+vga_char* const display_buffer = reinterpret_cast<vga_char*>(display_buffer_addr);
 
 static bool _visual_cursor = false;
 
@@ -153,10 +153,10 @@ namespace vga {
      * @param str           pointer to null-terminated VGA string
      * @return              length of the string
      */
-     // I don't see this being necessary cause it exposes internals
-     // but idk, maybe we'll want to preserve color info along with the string
+    // I don't see this being necessary cause it exposes internals
+    // but idk, maybe we'll want to preserve color info along with the string
     //[[nodiscard]] size_t vgalen(const vga_char* str);
-    
+
     /**
      *                      Deals with printing escape characters
      * @param c             The character to handle
@@ -209,4 +209,4 @@ namespace vga {
      * @param y             The new y-coordinate
      */
     void update_hw_cursor(size_t x, size_t y);
-}
+}  // namespace vga

@@ -196,7 +196,7 @@ static unsigned long load_modules(dir_entry file, unsigned long dest) {
             for (int entry_idx = 0; dir[entry_idx].name[0] != '\x00' && entry_idx < num_sects * 16; entry_idx++) {
                 dir_entry *file = dir + entry_idx;
                 // skip deleted
-                if (file->name[0] == '\xe5' || file->name[0] == '\x05')
+                if (file->name[0] == '\xe5' || file->name[0] == '\x05' || file->name[0] == '\x2e')
                     continue;
                 if (file->readonly && file->hidden && file->system && file->vol_label) {
                     vfat_dir_entry *vfat_file = reinterpret_cast<vfat_dir_entry *>(file);
@@ -217,7 +217,7 @@ static unsigned long load_modules(dir_entry file, unsigned long dest) {
                     desc_dest += 16;
 
                     dest += fsize;
-                } else if (file->name[0] != '\x2e') {
+                } else {
                     unsigned long fsize = load_file(*file, dest);
 
                     module_description desc = { dest, fsize };
