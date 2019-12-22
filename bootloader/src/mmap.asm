@@ -32,8 +32,6 @@ read_mmap:
     pop eax
     test ebx, ebx
     jz .done
-;    cmp di, 0xffd8              ; stop if next + null descriptor would go beyond 0xffff
-;    jg .done                    ; probably not necessary/very likely to fill an entire 64K with 20 byte entries
     mov eax, 0xe820
     mov ecx, 20
     jmp .next

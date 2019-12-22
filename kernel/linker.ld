@@ -1,7 +1,7 @@
-VIRT_BASE = 0xffffffff80000000;
+VIRT_BASE = 0xffffffff80100000;
 
 SECTIONS {
-    . = VIRT_BASE + 0x00100000;
+    . = VIRT_BASE;
 
     _kernel_start = .;
 
@@ -25,8 +25,6 @@ SECTIONS {
     {
         *(.rodata*)
         _init_array_start = .;
-        LONG(0)
-        LONG(0)
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))
         _init_array_end = .;

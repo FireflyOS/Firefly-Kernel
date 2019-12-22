@@ -16,11 +16,12 @@ copy_unreal:
     push ebx
     mov ecx, dword [bp+14]
 .next:
+    sub ecx, 4
     mov ebx, dword [bp+6]
     mov eax, dword [ebx + ecx]
-    mov ebx, dword[bp+10]
+    mov ebx, dword [bp+10]
     mov dword [ebx + ecx], eax
-    sub ecx, 4
+    cmp ecx, 0
     jnz .next
     pop ebx
     pop bp

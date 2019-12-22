@@ -23,6 +23,7 @@ start:
 
     cld
 
+    cli
     jmp kmain
 
 section .bss

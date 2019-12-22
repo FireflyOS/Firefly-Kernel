@@ -15,12 +15,9 @@ void setup_pages(unsigned long binary_size) {
     page_map *map_buffer = reinterpret_cast<page_map *>(cluster_buffer);
     page_table *table_buffer = reinterpret_cast<page_table *>(cluster_buffer);
 
-    unsigned long dest = 0x00023000;
     unsigned long kernel_end = 0x00100000 + binary_size;
 
     memset(map_buffer, 0, 4096);
-
-    map_buffer->entries[0].addr = 0x00022ul;
 
     // identity map to lower and higher virtual address space
     // pml4
@@ -35,7 +32,6 @@ void setup_pages(unsigned long binary_size) {
                                                           0,
                                                           0x00021ul,
                                                           0 };
-    //err("fail");
     copy_unreal(static_cast<unsigned short>(reinterpret_cast<unsigned int>(map_buffer)), 0x00020000, 4096);
     memset(map_buffer, 0, 4096);
 
@@ -55,22 +51,24 @@ void setup_pages(unsigned long binary_size) {
     memset(map_buffer, 0, 4096);
 
     unsigned long target = 0;
+    unsigned long dest = 0x00023000;
 
     // Iterate until we've mapped all of the kernel, or until we've filled the entire 64K segment with tables
     // which would allow for a 25MiB kernel + modules.
-    for (unsigned int pd_entry = 0; target < kernel_end && dest < 0x0002f000; pd_entry++, dest += 0x1000) {
-        page_table_entry pt_entry = { true,
-                                      true,
-                                      false,
-                                      false,
-                                      false,
-                                      false,
-                                      0,
-                                      0,
-                                      0,
-                                      dest >> 12,
-                                      0 };
-        copy_unreal(static_cast<unsigned short>(reinterpret_cast<unsigned int>(&pt_entry)), 0x00022000 + (8 * pd_entry), 8);
+    for (unsigned int pd_entry_idx = 0; target < kernel_end && dest < 0x0002f000; pd_entry_idx++, dest += 0x1000) {
+        // pd
+        page_map_entry pd_entry = { true,
+                                    true,
+                                    false,
+                                    false,
+                                    false,
+                                    false,
+                                    0,
+                                    0,
+                                    0,
+                                    dest >> 12,
+                                    0 };
+        copy_unreal(static_cast<unsigned short>(reinterpret_cast<unsigned int>(&pd_entry)), 0x00022000ul + (8 * pd_entry_idx), 8);
 
         for (int pt_entry = 0; pt_entry < 512 && target < kernel_end; pt_entry++, target += 4096) {
             // pt

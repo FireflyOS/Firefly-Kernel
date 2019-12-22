@@ -16,22 +16,14 @@ extern "C" void __attribute__((noreturn)) bmain() {
     if (!binary_size)
         err("failed to read kernel");
 
-    setup_pages(binary_size);
-
-    // load kernel at 1M
-    // and modules after it
-    // then give kernel pointer to list of memory ranges
-    // and list of module descriptions
+    //setup_pages(binary_size);
 
     printf("done\r\n");
 
     handover();
-
-    while (true)
-        ;
 }
 
 // module files could probably simply have the format:
 // 8 byte offset into payload of init function
 // 8 byte offset into payload of destruct function
-// payloadz
+// payload
