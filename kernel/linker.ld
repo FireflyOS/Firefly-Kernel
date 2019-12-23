@@ -24,6 +24,8 @@ SECTIONS {
     .rodata ALIGN (4096) : AT (ADDR (.rodata) - VIRT_BASE)
     {
         *(.rodata*)
+        LONG(0);
+        LONG(0);
         _init_array_start = .;
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))

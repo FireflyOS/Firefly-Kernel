@@ -136,6 +136,7 @@ static unsigned long load_file(dir_entry file, unsigned long dest) {
 
     // read each cluster of the file
     do {
+        unsigned long read_lba = cluster_start + (cluster * cluster_size);
         // split the cluster into parts if the size is greater than the buffer
         for (int clust_part = 0; clust_part < cluster_size; clust_part += 8) {
             int num_sects = (cluster_size - clust_part) >= 8 ? 8 : (cluster_size - clust_part) % 8;

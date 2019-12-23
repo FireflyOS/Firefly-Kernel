@@ -52,7 +52,7 @@ startup:
     jmp 0000:read_kernel            ; jump to new location
 
 read_kernel:
-                                    ; read kernel into KERNEL_OFFSET
+                                    ; read bootloader into BLOADER_OFFSET
     mov byte [bootdr], dl           ; keep boot drive num
 
     mov ah, 0x42
@@ -77,12 +77,12 @@ enable_a20:                         ; enable the A20 line
     mov si, 0x7e0e
     mov al, byte [es:di]
     cmp al, byte [ds:si]
-    jne .done                        ; already enabled if not equal
+    jne .done                       ; already enabled if not equal
                                     ; otherwise it may be by chance
     add byte [es:di], 1             ; so change value in lower memory and check again
     mov al, byte [es:di]
     cmp al, byte [ds:si]
-    jne .done                        ; if different now then for sure enabled
+    jne .done                       ; if different now then for sure enabled
 
     call a20wait                    ; otherwise enable it
     mov al, 0xad
@@ -120,12 +120,12 @@ enable_a20:                         ; enable the A20 line
 .ensure:
     mov al, byte [es:di]
     cmp al, byte [ds:si]
-    jne .done                        ; already enabled if not equal
+    jne .done                       ; already enabled if not equal
                                     ; otherwise it may be by chance
     add byte [es:di], 1             ; so change value in lower memory and check again
     mov al, byte [es:di]
     cmp al, byte [ds:si]
-    jne .done                        ; if different now then for sure enabled
+    jne .done                       ; if different now then for sure enabled
 
     loop .ensure
 
