@@ -48,7 +48,7 @@ bool vga::init() {
 
 void vga::clear() {
     firefly::std::fill(
-        display_buffer, display_buffer + (height * width), vga_char{ ' ', color::white, color::black });
+        display_buffer, display_buffer + 9, vga_char{ ' ', color::white, color::black });
 }
 
 [[nodiscard]] size_t vgalen(const vga_char* str) {

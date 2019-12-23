@@ -3,6 +3,8 @@
 #include <drivers/vga.hpp>
 #include <interrupt.hpp>
 
+extern "C" void interrupt_wrapper();
+
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char* VERSION_STRING = "0.0";
@@ -24,9 +26,13 @@ void write_ff_info(cursor& crs) {
     crs << "\n";
 }
 
-extern "C" [[noreturn]] void kmain() {
-    //vga::init();
-    //vga::clear();
+extern "C" [[noreturn]] void kmain(uint64_t bin_size) {
+    vga::init();
+    //interrupt::init();
+    //interrupt::test_int();
+    vga::clear();
+
+    (void)bin_size;
 
     *(char*)0xb8000 = 'F';
 

@@ -7,6 +7,8 @@ global handover
 section .text
 
 handover:
+    mov bp, sp
+    mov esi, dword [bp+4]
     lgdt [gdt32.pointer]
     mov eax, cr0
     or al, 1
@@ -181,6 +183,8 @@ long_mode_start:
     mov es, ax
     mov fs, ax
     mov gs, ax
+
+    mov ecx, esi
 
     jmp 0x00100000 + VIRT_ADDR
 

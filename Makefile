@@ -17,7 +17,7 @@ run:
 	qemu-system-x86_64 -m 512M -drive format=raw,file=$(OUTPUT)
 
 debug: build
-	gdb -command=./.gdbinit
+	gdb kernel/build/kernel.elf -command=./.gdbinit
 
 clean:
 	rm -f bootloader/build/*.*
@@ -25,10 +25,10 @@ clean:
 	rm -f bootloader/bootloader.bin
 	rm -f kernel/kernel.bin
 
-bootloader/bootloader.bin: bootloader/src/** bootloader/include/**
+bootloader/bootloader.bin: bootloader/src/* bootloader/include/*
 	make -C bootloader
 
-kernel/kernel.bin: kernel/src/** kernel/include/**
+kernel/kernel.bin: kernel/src/* kernel/src/drivers/* kernel/include/* kernel/include/drivers/*
 	make -C kernel
 
 # build image preserving file system

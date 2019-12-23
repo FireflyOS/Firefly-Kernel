@@ -8,7 +8,8 @@ section .start
 start:
     mov rsp, stack_top
     cli
-    jmp kmain
+    push rcx
+    ; call kmain
                                                 ; call global constructors
     lea rbx, [rel _init_array_end-8]
                                                 ; Since all of our code and data is within +/-2GiB
@@ -25,7 +26,9 @@ start:
 
     cld
 
-    jmp kmain
+    call kmain
+
+
 
 section .bss
     resb 65536

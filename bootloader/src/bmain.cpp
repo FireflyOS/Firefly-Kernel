@@ -20,7 +20,7 @@ extern "C" [[noreturn]] void bmain() {
 
     printf("done\r\n");
 
-    handover();
+    handover(binary_size);
 }
 
 // module files could probably simply have the format:

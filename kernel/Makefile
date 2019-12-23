@@ -5,7 +5,7 @@ BUILD_DIR = build
 QEMU_BP := kernel_main
 QEMU_FLAGS :=
 
-CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -mcmodel=kernel -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -mcmodel=kernel -std=c++17 -Wall -Wextra -pedantic -Werror -ggdb -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 LIB_OBJS = ./include/stl/cstd.o
 
