@@ -45,6 +45,10 @@ extern "C" [[noreturn]] void kmain() {
     cursor crs{ color::white, color::black, 0, 0 };
     write_ff_info(crs);
 
+    for (uint64_t i = 0; i < 10; i++) {
+        crs << i << " ";
+    }
+
 
     while (true)
         ;

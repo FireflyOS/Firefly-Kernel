@@ -1,4 +1,5 @@
 #include <drivers/vga.hpp>
+
 #include "drivers/ports.hpp"
 #include "utils.hpp"
 
@@ -14,6 +15,28 @@ cursor& cursor::operator<<(const char* c) {
 cursor& cursor::operator<<(char c) {
     vga::write(c, *this);
     return *this;
+}
+
+cursor& cursor::operator<<(uint64_t num) {
+    /**
+     * @brief Temporary fix
+     * 
+     */
+    auto itos = [](uint64_t num, int base) {
+        static char intChars[] = "0123456789ABCDEF";
+        static char buffer[11];
+        char* ptr = buffer + 14;
+
+        *ptr = 0;
+
+        do {
+            *--ptr = intChars[num % base];
+            num /= base;
+        } while (num != 0);
+
+        return ptr;
+    };
+    return *this << itos(num, 10);
 }
 
 void cursor::set_foreground_color(color c) {
