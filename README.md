@@ -9,6 +9,7 @@ Kernel for FireflyOS
  * qemu
  * mtools
  * clang++
+ * grub
 
 ## Run ##
  * git clone https://github.com/FireflyOS/Firefly-Kernel
