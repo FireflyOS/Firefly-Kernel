@@ -107,24 +107,22 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
-namespace interrupt {
-    /**
-     *                      the interrupt descriptor table
-     */
-    namespace {
-        auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
-            return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-                    static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-                    static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
-        };
-        auto __inter = _inter(interrupt_wrapper);
-    }  // namespace
+#define idtgate(n, handler, type) [n] = { static_cast<uint16_t>(reinterpret_cast<uint64_t>(handler)), 8, 0, type, 0, 1, \
+                                          static_cast<uint16_t>(reinterpret_cast<uint64_t>(handler) >> 16),             \
+                                          static_cast<uint32_t>(reinterpret_cast<uint64_t>(handler) >> 32), 0 }
 
-    static firefly::std::array<idt_gate, 256> idt{
-        // up to int3
-        __inter, __inter, __inter, __inter
-        // all others have present flag set to 0
+namespace interrupt {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc99-extensions"
+
+    static idt_gate idt[256] = {
+        idtgate(3, interrupt_wrapper, idt_gate::GATE_TRAP),
+        idtgate(8, exception_wrapper, idt_gate::GATE_INTERRUPT),
+        idtgate(15, interrupt_wrapper, idt_gate::GATE_INTERRUPT)
     };
+
+#pragma GCC diagnostic pop
 
     /**
      *                      contents to load into the idt register
@@ -139,8 +137,8 @@ namespace interrupt {
          */
         idt_gate* base;
     } idtr = {
-        (sizeof(idt_gate) * idt.size()) - 1,
-        idt.begin()
+        (sizeof(idt_gate) * 256) - 1,
+        idt
     };
 
     static_assert(10 == sizeof(idt_reg), "idt_reg size incorrect");
@@ -180,4 +178,4 @@ namespace interrupt {
         while (1)
             ;
     }
-}
+}  // namespace interrupt

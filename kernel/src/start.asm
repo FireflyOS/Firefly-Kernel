@@ -7,8 +7,8 @@ bits 64
 section .start
 start:
     mov rsp, stack_top
-    cli
-    push rcx
+    ;cli
+    push rdi
                                                 ; call global constructors
     lea rbx, [rel _init_array_end-8]
                                                 ; Since all of our code and data is within +/-2GiB
@@ -25,7 +25,7 @@ start:
 
     cld
 
-    pop rcx
+    pop rdi
     jmp kmain
 
 section .bss

@@ -26,29 +26,15 @@ void write_ff_info(cursor& crs) {
     crs << "\n";
 }
 
-extern "C" [[noreturn]] void kmain() {
-    // passed through rcx cause it tries to access parameter by [rbx-8]
-    // when it's really at [rbx+8]
-    uint64_t bin_size;
-    asm volatile(
-        "mov %%rcx, %0"
-        :
-        : "m"(bin_size));
-
+extern "C" [[noreturn]] void kmain(uint64_t bin_size) {
     vga::init();
     interrupt::init();
-    //interrupt::test_int();
     vga::clear();
 
     (void)bin_size;
 
     cursor crs{ color::white, color::black, 0, 0 };
     write_ff_info(crs);
-
-    for (uint64_t i = 0; i < 10; i++) {
-        crs << i << " ";
-    }
-
 
     while (true)
         ;
