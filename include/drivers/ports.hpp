@@ -1,58 +1,6 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly {
-    // /**
-    //  *                      Read a byte from 8-bit port address
-    //  * @param port          The port to read from
-    //  * @return              The byte read from port
-    //  */
-    // [[nodiscard]] inline uint8_t inb(uint8_t port) {
-    //     uint8_t val;
-    //     asm volatile(
-    //         "inb %0, %%al"
-    //         : "=a"(val)
-    //         : "i"(port));
-    //     return val;
-    // }
-
-    // /**
-    //  *                      Writes a byte to 8-bit port address
-    //  * @param port          The port to write to
-    //  * @param val           The byte to write
-    //  */
-    // inline void outb(uint8_t port, uint8_t val) {
-    //     asm volatile(
-    //         "outb %%al, %0"
-    //         :
-    //         : "i"(port), "a"(val));
-    // }
-
-    // /**
-    //  *                      Read a word from 8-bit port address
-    //  * @param port          The port to read from
-    //  * @return              The word read from port
-    //  */
-    // [[nodiscard]] inline uint16_t inw(uint8_t port) {
-    //     uint16_t val;
-    //     asm volatile(
-    //         "inw %0, %%ax"
-    //         : "=a"(val)
-    //         : "i"(port));
-    //     return val;
-    // }
-
-    // /**
-    //  *                      Writes a byte to 8-bit port address
-    //  * @param port          The port to write to
-    //  * @param val           The byte to write
-    //  */
-    // inline void outw(uint8_t port, uint16_t val) {
-    //     asm volatile(
-    //         "outw %%ax, %0"
-    //         :
-    //         : "i"(port), "a"(val));
-    // }
-
     /**
      *                      Read a byte from 16-bit port address
      * @param port          The port to read from
