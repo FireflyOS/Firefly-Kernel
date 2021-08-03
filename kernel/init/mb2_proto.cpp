@@ -3,8 +3,8 @@
 
 namespace mb2proto
 {
-	void init(void *mb2_struct_address)
+	void init([[maybe_unused]] void *mb2_struct_address)
 	{
-		IGNORE_PEDANTIC_ERROR(mb2_struct_address);
+		
 	}	
 }
