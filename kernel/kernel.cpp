@@ -1,3 +1,4 @@
+#include <multiboot2.hpp>
 #include <interrupt.hpp>
 #include <drivers/ps2.hpp>
 #include <drivers/vga.hpp>
@@ -12,7 +13,7 @@ void write_ff_info(cursor &crs) {
     crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char*, 7> arr = {
-        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D"
+        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D", "V01D-NULL"
     };
 
     for (size_t i = 0; i < arr.max_size(); i++) {

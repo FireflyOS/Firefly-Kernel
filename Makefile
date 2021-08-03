@@ -5,7 +5,7 @@ BUILD_DIR = binaries/boot
 QEMU_BP := kernel_main
 QEMU_FLAGS :=
 
-CXX_FLAGS = -I./include -I./include/stl -target x86_64-unknown-elf -m64 -mcmodel=kernel -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+CXX_FLAGS = -I./include -I./include/stl -m64 -mcmodel=kernel -std=c++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti -Wno-zero-length-array
 
 LIB_OBJS = ./include/stl/cstd.o
 
@@ -23,10 +23,10 @@ OBJ_FILES = $(ROOT_OBJ_FILES) $(DRIVER_OBJ_FILES) $(ASM_OBJ_FILES) $(LIB_OBJS)
 
 # build objects
 $(BUILD_DIR)/%_cxx.o: $(SRC_DIR)/%.cpp
-	clang++ $(CXX_FLAGS) -c $< -o $@
+	g++ $(CXX_FLAGS) -c $< -o $@
 
 $(BUILD_DIR)/drivers/%_cxx.o: $(SRC_DIR)/drivers/%.cpp
-	clang++ $(CXX_FLAGS) -c $< -o $@
+	g++ $(CXX_FLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%_asm.o: $(SRC_DIR)/%.asm
 	nasm $< -f elf64 -o $@
