@@ -1,8 +1,9 @@
-#include <multiboot2.hpp>
-#include <interrupt.hpp>
+#include <int/interrupt.hpp>
 #include <drivers/ps2.hpp>
 #include <drivers/vga.hpp>
 #include <stl/array.h>
+#include <init/init.hpp>
+#include <multiboot2.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -13,7 +14,7 @@ void write_ff_info(cursor &crs) {
     crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char*, 7> arr = {
-        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D", "V01D-NULL"
+        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D"
     };
 
     for (size_t i = 0; i < arr.max_size(); i++) {
@@ -25,7 +26,9 @@ void write_ff_info(cursor &crs) {
     crs << "\n";
 }
 
-extern "C" [[noreturn]] void kernel_main() {
+extern "C" [[noreturn]]
+void kernel_main(void *mb2_proto_struct) {    
+    kernel_init(mb2_proto_struct);
     vga::init();
     ps2::init();
     interrupt::init();
