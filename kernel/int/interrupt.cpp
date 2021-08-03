@@ -2,6 +2,8 @@
 #include <stl/cstdlib/cstdint.h>
 #include <drivers/vga.hpp>
 
+using namespace firefly::drivers::vga;
+
 // type doesn't really exist in C++
 // so just decl as function so it decays into a pointer
 extern "C" void interrupt_wrapper();
@@ -107,7 +109,7 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
-namespace interrupt {
+namespace firefly::kernel::interrupt {
     /**
      *                      the interrupt descriptor table
      */

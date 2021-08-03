@@ -2,6 +2,8 @@
 #include "drivers/ports.hpp"
 #include "utils.hpp"
 
+using namespace firefly::drivers::vga;
+
 vga_char cursor::character(char c) {
     return { c, fg, bg };
 }
@@ -40,8 +42,8 @@ void cursor::handle_bounds() {
 
 bool vga::init() {
     // move CRT controller registers to 0x3Dn
-    uint8_t msr = firefly::inb(0x3CC);
-    firefly::outb(0x3C2, msr & 0x01);
+    uint8_t msr = kernel::io::inb(0x3CC);
+    kernel::io::outb(0x3C2, msr & 0x01);
     enable_hw_cursor();
     return true;
 }
@@ -147,25 +149,25 @@ void vga::enable_hw_cursor() {
     _visual_cursor = true;
 
     // draw cursor on lowest scan line
-    firefly::outb(0x3D4, 0x0A);
-    firefly::outb(0x3D5, 15);
-    firefly::outb(0x3D4, 0x0B);
-    firefly::outb(0x3D5, 15 | 0x60);
+    kernel::io::outb(0x3D4, 0x0A);
+    kernel::io::outb(0x3D5, 15);
+    kernel::io::outb(0x3D4, 0x0B);
+    kernel::io::outb(0x3D5, 15 | 0x60);
 }
 
 void vga::disable_hw_cursor() {
     _visual_cursor = false;
 
     // set disable bit
-    firefly::outb(0x3D4, 0x0A);
-    firefly::outb(0x3D5, 0x20);
+    kernel::io::outb(0x3D4, 0x0A);
+    kernel::io::outb(0x3D5, 0x20);
 }
 
 void vga::update_hw_cursor(size_t x, size_t y) {
     uint16_t pos = y * width + x;
 
-    firefly::outb(0x3D4, 0x0F);
-    firefly::outb(0x3D5, static_cast<uint8_t>(pos & 0xFF));
-    firefly::outb(0x3D4, 0x0E);
-    firefly::outb(0x3D5, static_cast<uint8_t>((pos >> 8) & 0xFF));
+    kernel::io::outb(0x3D4, 0x0F);
+    kernel::io::outb(0x3D5, static_cast<uint8_t>(pos & 0xFF));
+    kernel::io::outb(0x3D4, 0x0E);
+    kernel::io::outb(0x3D5, static_cast<uint8_t>((pos >> 8) & 0xFF));
 }

@@ -8,7 +8,7 @@
 /**
  *                          The PS/2 port driver
  */
-namespace ps2 {
+namespace firefly::drivers::ps2 {
     /**
      *                      Initializes the driver
      * @return true :       Driver was successfully initialized
@@ -29,5 +29,5 @@ namespace ps2 {
      * @param scancode      Scancode that was receieved from the keyboard
      * @param crs           Where to print the input
      */
-    void handle_input(unsigned char scancode, cursor& crs);
+    void handle_input(unsigned char scancode, vga::cursor& crs);
 }

@@ -1,6 +1,6 @@
 #include <cstdlib/cstdint.h>
 
-namespace firefly {
+namespace firefly::kernel::io {
     /**
      *                      Read a byte from 16-bit port address
      * @param port          The port to read from
