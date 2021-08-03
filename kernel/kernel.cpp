@@ -13,8 +13,9 @@ void write_ff_info(cursor &crs) {
     vga::clear();
     crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
-    firefly::std::array<const char*, 7> arr = {
-        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha", "Burokkoru ", "extation", "RedEye2D"
+    firefly::std::array<const char*, 8> arr = {
+        "Lime\t  ", "JohnkaS", "EyeDevelop", "4lpha",
+        "Burokkoru ", "extation", "RedEye2D", "V01D-NULL"
     };
 
     for (size_t i = 0; i < arr.max_size(); i++) {
@@ -28,6 +29,7 @@ void write_ff_info(cursor &crs) {
 
 extern "C" [[noreturn]]
 void kernel_main(void *mb2_proto_struct) {    
+    
     kernel_init(mb2_proto_struct);
     vga::init();
     ps2::init();
