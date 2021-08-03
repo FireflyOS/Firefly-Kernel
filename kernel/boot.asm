@@ -191,6 +191,7 @@ set_up_page_tables:
                                                 ; bits 38:31 are all 1's, and bit 30 is 0,
                                                 ; 0xFFFF_FFFF_8nnn_nnnn
 
+    mov edx, ebx                                ; Preserve multiboot2 structure
     xor eax, eax                                ; begin mapping physical address 0
     xor ebx, ebx                                ; page table entry, start at index 0
 
@@ -242,4 +243,5 @@ long_mode_start:
 
     cld
 
+    mov rdi, rdx
     jmp kernel_main
