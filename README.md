@@ -12,10 +12,6 @@ Kernel for FireflyOS
  * grub
 
 ## Run ##
- * git clone https://github.com/FireflyOS/Firefly-Kernel
+ * git clone https://github.com/FireflyOS/Firefly-Kernel --recursive
  * cd Firefly-Kernel
- * git submodule update --init --recursive
  * make
-
-
-## This does currently not run on ubuntu ##
