@@ -1,5 +1,7 @@
 #include <cstdlib/stdio.h>
 #include <stl/array.h>
+#include <stl/ios.h>
+#include <stl/iostream.h>
 
 #include <drivers/ps2.hpp>
 #include <drivers/vga.hpp>
@@ -12,23 +14,11 @@
 constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
-/* This allows the kernel to get a global reference to the cursor object */
-firefly::drivers::vga::cursor cur;
-firefly::drivers::vga::cursor &get_cursor() {
-    return cur;
-}
-
-void globalize_vga_writer() {
-    drivers::vga::cursor crs = { drivers::vga::color::white, drivers::vga::color::black, 0, 0};
-    cur = crs;
-}
-
 void write_ff_info() {
     using firefly::drivers::vga::clear;
-    firefly::drivers::vga::cursor &crs = get_cursor();
     clear();
 
-    crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    firefly::std::cout << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -36,11 +26,11 @@ void write_ff_info() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            crs << "\n\t";
+            firefly::std::cout << "\n\t";
         }
-        crs << arr[i] << "  ";
+        firefly::std::cout << arr[i] << "  ";
     }
-    crs << "\n";
+    firefly::std::cout << "\n";
 }
 }  // namespace firefly::kernel::main
 
@@ -49,28 +39,20 @@ extern "C" [[noreturn]] void kernel_main(uint64_t *mb2_proto_struct) {
     using firefly::drivers::vga::cursor;
 
     firefly::drivers::vga::init();
-    firefly::kernel::main::globalize_vga_writer();
+    firefly::std::globalize_vga_writer();
     firefly::kernel::main::write_ff_info();
-
     firefly::drivers::ps2::init();
     firefly::kernel::interrupt::init();
     firefly::kernel::kernel_init(mb2_proto_struct);
 
-    // eh
-    firefly::kernel::start_load("Loading VGA driver");
-    firefly::kernel::end_load("Loaded VGA driver");
-    firefly::kernel::start_load("Loading PS/2 driver");
-    firefly::kernel::end_load("Loaded PS/2 driver");
-
-    cursor &crs = firefly::kernel::main::get_cursor();
-    crs << 534982 << "\n";
-
+    firefly::std::cout << "Hello world! This is a number: " << 534982 << firefly::std::endl;
+    firefly::std::cout << firefly::std::hex(0xF123) << firefly::std::endl;
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();
         if (!key.has_value()) {
             continue;
         }
-        firefly::drivers::ps2::handle_input(*key, firefly::kernel::main::get_cursor());
+        firefly::drivers::ps2::handle_input(*key, firefly::std::get_cursor_handle());
     }
 }
