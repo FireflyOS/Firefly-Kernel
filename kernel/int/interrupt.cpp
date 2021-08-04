@@ -167,11 +167,11 @@ namespace firefly::kernel::interrupt {
     // write different handlers for each irpt + exc later
     // noreturn for testing purposes, will remove later
     extern "C" __attribute__((noreturn)) void interrupt_handler() {
-        cursor crs{ color::white, color::black, 0, 0 };
-        crs << "\nINTERRUPT OCCURRED";
+        // cursor crs{ color::white, color::black, 0, 0 };
+        // crs << "\nINTERRUPT OCCURRED";
 
-        while (1)
-            ;
+        for (;;)
+            asm("hlt");
     }
 
     extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {

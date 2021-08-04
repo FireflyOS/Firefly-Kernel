@@ -1,8 +1,8 @@
+#include <stl/cstdlib/stdio.h>
+
 #include <drivers/ports.hpp>
 #include <drivers/vga.hpp>
 #include <utils.hpp>
-
-#include <cstdlib/stdio.h>
 
 namespace firefly::drivers::vga {
 vga_char cursor::character(char c) {
@@ -20,9 +20,9 @@ cursor& cursor::operator<<(char c) {
 }
 
 cursor& cursor::operator<<(int n) {
-    char data[11];
-    write(itoa(n, data, 10), *this);
-    return *this;
+    char buffer[10];
+    itoa(n, buffer, 10);
+    return (*this) << buffer;
 }
 
 void cursor::set_foreground_color(color c) {

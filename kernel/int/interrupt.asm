@@ -44,7 +44,7 @@ interrupt_wrapper:
     cld
     pusha64
     ; also save SSE state when we figure that out
-
+        
     call interrupt_handler
 
     popa64
@@ -55,6 +55,9 @@ exception_wrapper:
     pusha64
     ; also save SSE state when we figure that out
 
+    .loop:
+        hlt
+        jmp .loop
     ; pass error code
     push qword [rsp + (13 * 8)]
     call exception_handler
