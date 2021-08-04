@@ -43,8 +43,9 @@ extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
 
     write_ff_info(crs);
 
-    char abc[10];
-    crs << "Testing " << itoa(123, abc, 10) << "\n";
+
+    // char abc[10];
+    // crs << "Testing " << 10 << "\n";
 
     // eh
     firefly::kernel::start_load(crs, "Loading VGA driver");
