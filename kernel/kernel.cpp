@@ -35,9 +35,9 @@ extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
     using firefly::drivers::vga::cursor;
 
     firefly::kernel::kernel_init(mb2_proto_struct);
+    firefly::kernel::interrupt::init();
     firefly::drivers::vga::init();
     firefly::drivers::ps2::init();
-    firefly::kernel::interrupt::init();
 
     cursor crs{ color::white, color::black, 0, 0 };
 
@@ -46,11 +46,7 @@ extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
     char abc[10];
     crs << "Testing " << itoa(123, abc, 10) << "\n";
 
-    // eh
-    firefly::kernel::start_load(crs, "Loading VGA driver");
-    firefly::kernel::end_load(crs, "Loaded VGA driver");
-    firefly::kernel::start_load(crs, "Loading PS/2 driver");
-    firefly::kernel::end_load(crs, "Loaded PS/2 driver");
+    crs << "Testing2 " << itoa(124, abc, 10) << "\n" << 5;
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();
