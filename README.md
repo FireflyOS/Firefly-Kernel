@@ -11,7 +11,20 @@ Kernel for FireflyOS
  * clang++
  * grub
 
-## Run ##
+## Clone the repo ##
  * git clone https://github.com/FireflyOS/Firefly-Kernel --recursive
  * cd Firefly-Kernel
- * make
+
+## Ubuntu ##
+
+```bash
+sudo apt install nasm xorriso qemu-system-x86 mtools clang grub
+```
+
+```bash
+make create_dirs
+make run
+```
+
+You can run this on WSL by forwarding your xserver
+Follow this: https://stackoverflow.com/questions/61110603/how-to-set-up-working-x11-forwarding-on-wsl2
