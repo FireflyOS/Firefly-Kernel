@@ -23,6 +23,7 @@ sudo apt install nasm xorriso qemu-system-x86 mtools clang grub
 
 ```bash
 make create_dirs
+make
 make run
 ```
 
