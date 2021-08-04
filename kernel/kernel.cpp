@@ -11,7 +11,7 @@
 constexpr const char* VERSION_STRING = "0.0";
 
 void write_ff_info(firefly::drivers::vga::cursor &crs) {
-    using firefly::drivers::vga::vga::clear;
+    using firefly::drivers::vga::clear;
     clear();
 
     crs << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
@@ -36,7 +36,7 @@ void kernel_main(uint64_t mb2_proto_struct) {
     using firefly::drivers::vga::color;
     
     firefly::kernel::kernel_init(mb2_proto_struct);
-    firefly::drivers::vga::vga::init();
+    firefly::drivers::vga::init();
     firefly::drivers::ps2::init();
     firefly::kernel::interrupt::init();
 

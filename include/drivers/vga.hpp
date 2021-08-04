@@ -133,7 +133,6 @@ namespace firefly::drivers::vga {
     /**
  *                          The VGA driver
  */
-    namespace vga {
         /**
      *                      Initializes the driver
      * @return true  :       Driver was successfully initialized
@@ -210,5 +209,4 @@ namespace firefly::drivers::vga {
      * @param y             The new y-coordinate
      */
         void update_hw_cursor(size_t x, size_t y);
-    }  // namespace vga
 }  // namespace firefly::drivers::vga
