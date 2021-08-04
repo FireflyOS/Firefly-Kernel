@@ -7,11 +7,13 @@ $(BUILD_DIR)/kernel.elf: $(CONV_FILES)
 	qemu-system-x86_64 -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso -d int
 
 
-all: create_dirs $(BUILD_DIR)/kernel.elf
+all: $(BUILD_DIR)/kernel.elf
 
 # TODO: Find a better way to copy the folder structure of kernel/ into binaries/boot
 create_dirs:
-	mkdir -vp ./binaries/boot/kernel/drivers init int
+	mkdir -vp ./binaries/boot/kernel/drivers
+	mkdir -vp ./binaries/boot/kernel/init
+	mkdir -vp ./binaries/boot/kernel/int
 
 clean:
 	rm $(OBJ_FILES)
@@ -35,4 +37,4 @@ debug: build FireflyOS.iso $(BUILD_DIR)/kernel.elf
 	$(CC) $(CXX_FLAGS) -c $< -o $(BUILD_DIR)/$@
 
 %.asm.o: %.asm
-	nasm $< -f elf64 -o $(BUILD_DIR)/$@
+	nasm $< -f elf64 -g -F dwarf -o $(BUILD_DIR)/$@
