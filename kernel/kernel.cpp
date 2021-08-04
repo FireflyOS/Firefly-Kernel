@@ -30,9 +30,10 @@ void write_ff_info(firefly::drivers::vga::cursor& crs) {
     crs << "\n";
 }
 
-extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
+extern "C" [[noreturn]] void kernel_main(void* mb2_proto_struct) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
+
 
     firefly::kernel::kernel_init(mb2_proto_struct);
     firefly::kernel::interrupt::init();
@@ -43,11 +44,8 @@ extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
 
     write_ff_info(crs);
 
+    crs << 534982 << "\n";
 
-    // char abc[10];
-    // crs << "Testing " << 10 << "\n";
-
-    crs << "Testing2 " << itoa(124, abc, 10) << "\n" << 5;
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();
