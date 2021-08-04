@@ -3,6 +3,7 @@
 #include <stl/cstdlib/cstdint.h>
 #include <stl/cstdlib/cstring.h>
 
+namespace firefly::drivers::vga {
 /**
  *                          A VGA color
  */
@@ -50,23 +51,23 @@ static_assert(2 == sizeof(vga_char), "vga_char size incorrect");
  */
 struct cursor {
     /**
-     *                      Foreground color to print
-     */
+    *                      Foreground color to print
+    */
     color fg;
-    
+
     /**
      *                      Background color to print
      */
     color bg;
 
     /**
-     *                      X-coordinate to print at
-     */
+      *   X-coordinate to print at
+      */
     size_t x;
 
     /**
-     *                      Y-coordinate to print at
-     */
+      *   Y-coordinate to print at
+      */
     size_t y;
 
     // I think the window manager should keep the min_ and max_ bounds
@@ -132,81 +133,80 @@ static bool _visual_cursor = false;
 /**
  *                          The VGA driver
  */
-namespace vga {
-    /**
+/**
      *                      Initializes the driver
      * @return true  :       Driver was successfully initialized
      */
-    bool init();
+bool init();
 
-    /**
+/**
      *                      Clears the entire screen
      */
-    // maybe not expose this and make it exclusive to window managers
-    // so they can clear only their own window?
-    // not sure how that'd work, either move the function to the wm
-    // class or make this take a wm reference
-    void clear();
+// maybe not expose this and make it exclusive to window managers
+// so they can clear only their own window?
+// not sure how that'd work, either move the function to the wm
+// class or make this take a wm reference
+void clear();
 
-    /**
+/**
      *                      Gets the length of a VGA character string
      * @param str           pointer to null-terminated VGA string
      * @return              length of the string
      */
-     // I don't see this being necessary cause it exposes internals
-     // but idk, maybe we'll want to preserve color info along with the string
-    //[[nodiscard]] size_t vgalen(const vga_char* str);
-    
-    /**
+// I don't see this being necessary cause it exposes internals
+// but idk, maybe we'll want to preserve color info along with the string
+//[[nodiscard]] size_t vgalen(const vga_char* str);
+
+/**
      *                      Deals with printing escape characters
      * @param c             The character to handle
      * @return true  :      c was an escape character
      *         false :      c was not an escape character 
      */
-    bool handle_special_characters(const char c, cursor& crs);
+bool handle_special_characters(const char c, cursor& crs);
 
-    /**
+/**
      *                      Prints a VGA character to the screen
      *                      at the default cursor
      * @param c             The character to print
      * @param _update       Whether or not to update cursor
      */
-    void write(const vga_char c, cursor& crs, bool _update = true);
+void write(const vga_char c, cursor& crs, bool _update = true);
 
-    /**
+/**
      *                      Prints a VGA string to the screen
      *                      at the defautl cursor
      * @param str           Pointer to the null-terminated VGA string
      */
-    void write(const vga_char* str, cursor& crs);
+void write(const vga_char* str, cursor& crs);
 
-    /** 
+/** 
      *                      Prints an ASCII character
      * @param c             The character to print
      * @param _update       Whether or not to update cursor
      */
-    void write(const char c, cursor& crs, bool _update = true);
+void write(const char c, cursor& crs, bool _update = true);
 
-    /**
+/**
      *                      Prints an ASCII string
      * @param arr           The null-terminated string to print
      */
-    void write(const char* str, cursor& crs);
+void write(const char* str, cursor& crs);
 
-    /**
+/**
      *                      Enables the hardware cursor
      */
-    void enable_hw_cursor();
+void enable_hw_cursor();
 
-    /**
+/**
      *                      Disables the hardware cursor
      */
-    void disable_hw_cursor();
+void disable_hw_cursor();
 
-    /**
+/**
      *                      Update the position of the hardware cursor
      * @param x             The new x-coordinate
      * @param y             The new y-coordinate
      */
-    void update_hw_cursor(size_t x, size_t y);
-}
+void update_hw_cursor(size_t x, size_t y);
+}  // namespace firefly::drivers::vga

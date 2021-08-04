@@ -23,7 +23,7 @@ DisableFormat: 'false'
 IndentCaseLabels: 'true'
 Language: Cpp
 MaxEmptyLinesToKeep: '2'
-NamespaceIndentation: All
+NamespaceIndentation: None
 SpaceBeforeAssignmentOperators: 'true'
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: 'false'

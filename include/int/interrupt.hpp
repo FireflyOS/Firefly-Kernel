@@ -1,6 +1,6 @@
 #pragma once
 
-namespace interrupt {
+namespace firefly::kernel::interrupt {
     /**
      *                      initializes the idt
      */
@@ -8,4 +8,4 @@ namespace interrupt {
 
     // test interrupt handler
     void test_int();
-}
+}  // namespace firefly::kernel::interrupt

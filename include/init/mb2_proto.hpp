@@ -1,6 +1,7 @@
 #pragma once
 
-namespace mb2proto
-{
-	void init(void *mb2_struct_address);
+#include <cstdlib/cstdint.h>
+
+namespace firefly::kernel::mb2proto {
+    void init(uint64_t mb2_struct_address);
 }

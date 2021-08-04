@@ -1,6 +1,9 @@
 #include <stl/array.h>
 #include <stl/cstdlib/cstdint.h>
+
 #include <drivers/vga.hpp>
+
+using namespace firefly::drivers::vga;
 
 // type doesn't really exist in C++
 // so just decl as function so it decays into a pointer
@@ -107,15 +110,15 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
-namespace interrupt {
+namespace firefly::kernel::interrupt {
     /**
      *                      the interrupt descriptor table
      */
     namespace {
         auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
             return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-                    static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-                    static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
+                     static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+                     static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
         };
         auto __inter = _inter(interrupt_wrapper);
     }  // namespace
@@ -180,4 +183,4 @@ namespace interrupt {
         while (1)
             ;
     }
-}
+}  // namespace firefly::kernel::interrupt

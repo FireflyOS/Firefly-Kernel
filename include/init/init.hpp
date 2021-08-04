@@ -1,3 +1,6 @@
 #pragma once
+#include <cstdlib/cstdint.h>
 
-void kernel_init(void *mb2_struct_address);
+namespace firefly::kernel {
+    void kernel_init(uint64_t mb2_struct_address);
+}
