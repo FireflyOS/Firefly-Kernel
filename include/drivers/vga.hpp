@@ -3,7 +3,7 @@
 #include <stl/cstdlib/cstdint.h>
 #include <stl/cstdlib/cstring.h>
 
-namespace firefly::drivers::vga {
+namespace firefly::drivers::vga {     
 /**
  *                          A VGA color
  */
@@ -121,6 +121,7 @@ struct cursor {
      */
     void handle_bounds();
 };
+
 
 /**
  *                          Character width of default mode

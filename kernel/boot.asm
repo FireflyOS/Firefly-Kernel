@@ -19,11 +19,11 @@ section .bss                                    ; reserve space for the paging s
 align 4096
 pml4:
     resb 4096
-pdpt:
+pml3:
     resb 4096
-pd:
+pml2:
     resb 4096
-pt:
+pml1:
     resb 4096
 stack_bottom:
     resb 65536
@@ -156,13 +156,13 @@ enable_sse:
 
 set_up_page_tables:
                                                 ; first map to lower virtual address
-    mov eax, pdpt - VIRT_ADDR
+    mov eax, pml3 - VIRT_ADDR
     or eax, 0b11
     mov [pml4 - VIRT_ADDR], eax
 
-    mov eax, pd - VIRT_ADDR
+    mov eax, pml2 - VIRT_ADDR
     or eax, 0b11
-    mov [pdpt - VIRT_ADDR], eax
+    mov [pml3 - VIRT_ADDR], eax
 
     mov ecx, 0                                  ; count entries
 
@@ -172,7 +172,7 @@ set_up_page_tables:
     mov eax, 0x200000                           ; 2MiB
     mul ecx                                     ; start address of ecx-th page
     or eax, 0b10000011                          ; present + writable + page size
-    mov [(pd - VIRT_ADDR) + ecx * 8], eax       ; map ecx-th entry
+    mov [(pml2 - VIRT_ADDR) + ecx * 8], eax       ; map ecx-th entry
 
     inc ecx                                     ; increase counter
     cmp ecx, 512                                ; if counter == 512, the whole page directory table is mapped
@@ -180,14 +180,14 @@ set_up_page_tables:
 
                                                 ; now set up higher virtual address
 
-    mov eax, pdpt - VIRT_ADDR                   ; physical address of a pdpt
+    mov eax, pml3 - VIRT_ADDR                   ; physical address of a pml3
     or eax, 0b11                                ; writable + present
     mov dword [(pml4 - VIRT_ADDR) + 4088], eax  ; put in last entry of pml4, so
                                                 ; bits 63:39 of virtual address all 1's
 
-    mov eax, pd - VIRT_ADDR                     ; physical address of a pd
+    mov eax, pml2 - VIRT_ADDR                     ; physical address of a pml2
     or eax, 0b11                                ; writable + present
-    mov dword [(pdpt - VIRT_ADDR) + 4080], eax  ; put in second-to-last entry of pdpt so 
+    mov dword [(pml3 - VIRT_ADDR) + 4080], eax  ; put in second-to-last entry of pml3 so 
                                                 ; bits 38:31 are all 1's, and bit 30 is 0,
                                                 ; 0xFFFF_FFFF_8nnn_nnnn
 
@@ -201,7 +201,7 @@ set_up_page_tables:
     cmp eax, _kernel_end - VIRT_ADDR            ; passed kernel binary?
     je .done                                    ; yes, done mapping
     or eax, 0b11                                ; writable + present
-    mov dword [(pt - VIRT_ADDR) + ebx], eax     ; put into pt
+    mov dword [(pml1 - VIRT_ADDR) + ebx], eax     ; put into pml1
     add ebx, 8                                  ; next index
     and eax, ~0b11                              ; clear bottom two bits
     add eax, 4096                               ; next physical 4KiB frame
@@ -214,11 +214,11 @@ section .text
 bits 64
 long_mode_start:
 
-                                                ; now make pd's first entry point to a pt
+                                                ; now make pml2's first entry point to a pml1
                                                 ; since earlier it mapped a 2MiB page
-    mov eax, pt - VIRT_ADDR                     ; physical address of a pt
+    mov eax, pml1 - VIRT_ADDR                     ; physical address of a pml1
     or eax, 0b11                                ; writable + present
-    mov dword [(pd - VIRT_ADDR)], eax           ; put in first entry
+    mov qword [(pml2 - VIRT_ADDR)], rax           ; put in first entry
 
     mov ax, 0
     mov ss, ax
