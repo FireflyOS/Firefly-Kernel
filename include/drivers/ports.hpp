@@ -61,4 +61,4 @@ namespace firefly::kernel::io {
         // dummy write, port 0x80 unused after POST
         asm volatile("outb %al, $0x80");
     }
-}  // namespace firefly
+}  // namespace firefly::kernel::io

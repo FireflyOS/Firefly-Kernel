@@ -30,4 +30,4 @@ namespace firefly::drivers::ps2 {
      * @param crs           Where to print the input
      */
     void handle_input(unsigned char scancode, vga::cursor& crs);
-}
+}  // namespace firefly::drivers::ps2

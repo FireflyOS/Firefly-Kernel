@@ -8,4 +8,4 @@ namespace firefly::kernel::interrupt {
 
     // test interrupt handler
     void test_int();
-}
+}  // namespace firefly::kernel::interrupt

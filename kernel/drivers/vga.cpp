@@ -1,9 +1,8 @@
-#include <drivers/vga.hpp>
 #include <drivers/ports.hpp>
+#include <drivers/vga.hpp>
 #include <utils.hpp>
 
-namespace firefly::drivers::vga
-{
+namespace firefly::drivers::vga {
     vga_char cursor::character(char c) {
         return { c, fg, bg };
     }
@@ -40,8 +39,7 @@ namespace firefly::drivers::vga
         update_hw_cursor(x, y);
     }
 
-    bool init()
-    {
+    bool init() {
         // move CRT controller registers to 0x3Dn
         uint8_t msr = firefly::kernel::io::inb(0x3CC);
         firefly::kernel::io::outb(0x3C2, msr & 0x01);
@@ -172,4 +170,4 @@ namespace firefly::drivers::vga
         firefly::kernel::io::outb(0x3D4, 0x0E);
         firefly::kernel::io::outb(0x3D5, static_cast<uint8_t>((pos >> 8) & 0xFF));
     }
-}
+}  // namespace firefly::drivers::vga

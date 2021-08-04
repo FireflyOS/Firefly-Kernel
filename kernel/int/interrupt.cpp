@@ -1,5 +1,6 @@
 #include <stl/array.h>
 #include <stl/cstdlib/cstdint.h>
+
 #include <drivers/vga.hpp>
 
 using namespace firefly::drivers::vga;
@@ -116,8 +117,8 @@ namespace firefly::kernel::interrupt {
     namespace {
         auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
             return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-                    static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-                    static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
+                     static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+                     static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
         };
         auto __inter = _inter(interrupt_wrapper);
     }  // namespace
@@ -182,4 +183,4 @@ namespace firefly::kernel::interrupt {
         while (1)
             ;
     }
-}
+}  // namespace firefly::kernel::interrupt

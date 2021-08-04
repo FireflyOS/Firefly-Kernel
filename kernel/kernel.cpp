@@ -1,16 +1,17 @@
-#include <int/interrupt.hpp>
+#include <cstdlib/stdio.h>
+#include <stl/array.h>
+
 #include <drivers/ps2.hpp>
 #include <drivers/vga.hpp>
-#include <stl/array.h>
-#include <cstdlib/stdio.h>
 #include <init/init.hpp>
+#include <int/interrupt.hpp>
 #include <multiboot2.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char* VERSION_STRING = "0.0";
 
-void write_ff_info(firefly::drivers::vga::cursor &crs) {
+void write_ff_info(firefly::drivers::vga::cursor& crs) {
     using firefly::drivers::vga::clear;
     clear();
 
@@ -30,11 +31,10 @@ void write_ff_info(firefly::drivers::vga::cursor &crs) {
     crs << "\n";
 }
 
-extern "C" [[noreturn]]
-void kernel_main(uint64_t mb2_proto_struct) {    
-    using firefly::drivers::vga::cursor;
+extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
     using firefly::drivers::vga::color;
-    
+    using firefly::drivers::vga::cursor;
+
     firefly::kernel::kernel_init(mb2_proto_struct);
     firefly::drivers::vga::init();
     firefly::drivers::ps2::init();
@@ -45,7 +45,7 @@ void kernel_main(uint64_t mb2_proto_struct) {
     write_ff_info(crs);
 
     char abc[10];
-    crs << "Testing "  << itoa(123, abc, 10) << "\n";
+    crs << "Testing " << itoa(123, abc, 10) << "\n";
 
     // eh
     firefly::kernel::start_load(crs, "Loading VGA driver");
