@@ -44,7 +44,7 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
+extern "C" [[noreturn]] void kernel_main(uint64_t *mb2_proto_struct) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
 
@@ -56,13 +56,15 @@ extern "C" [[noreturn]] void kernel_main(uint64_t mb2_proto_struct) {
     firefly::kernel::interrupt::init();
     firefly::kernel::kernel_init(mb2_proto_struct);
 
-    // crs << "Testing " << 10 << "\n";
-
     // eh
     firefly::kernel::start_load("Loading VGA driver");
     firefly::kernel::end_load("Loaded VGA driver");
     firefly::kernel::start_load("Loading PS/2 driver");
     firefly::kernel::end_load("Loaded PS/2 driver");
+
+    cursor &crs = firefly::kernel::main::get_cursor();
+    crs << 534982 << "\n";
+
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();

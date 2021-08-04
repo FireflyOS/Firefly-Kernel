@@ -7,13 +7,12 @@ CXX_FLAGS = -I./include 		\
 	-target x86_64-unknown-elf	\
 	-m64						\
 	-mcmodel=kernel				\
-	-std=gnu++17				\
+	-std=c++20   				\
 	-Wall						\
 	-Wextra 					\
 	-pedantic 					\
 	-Werror 					\
 	-g 							\
-	-O2 						\
 	-nostdlib 					\
 	-fno-builtin 				\
 	-fno-PIC 					\

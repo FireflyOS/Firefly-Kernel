@@ -21,9 +21,6 @@
 # Executables
 *.elf
 
-# VSCode
-/.vscode
-
 # Binaries
 *.iso
 

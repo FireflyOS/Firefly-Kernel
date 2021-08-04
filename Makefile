@@ -1,7 +1,6 @@
 -include flags.mk
 
 all: $(BUILD_DIR)/kernel.elf
-	qemu-system-x86_64 -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
 
 $(BUILD_DIR)/kernel.elf: $(CONV_FILES)
 	$(MAKE) -C ./include/stl # Build STL before linking
@@ -23,13 +22,8 @@ run:
 	qemu-system-x86_64 -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
 
 debug: FireflyOS.iso $(BUILD_DIR)/kernel.elf
-	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s &
-	gdb $(BUILD_DIR)/kernel.elf \
-		-ex 'target remote localhost:1234' \
-		-ex 'layout src' \
-		-ex 'layout regs' \
-		-ex 'break *0x100018' \
-		-ex 'continue'
+	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s
+
 
 %.cxx.o: %.cpp
 	$(CC) $(CXX_FLAGS) -c $< -o $(BUILD_DIR)/$@

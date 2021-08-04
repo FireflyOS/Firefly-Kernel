@@ -4,7 +4,7 @@
 #include <kernel.hpp>
 
 namespace firefly::kernel {
-void kernel_init([[maybe_unused]]uint64_t mb2_struct_address) {
+void kernel_init([[maybe_unused]]uint64_t *mb2_struct_address) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
     

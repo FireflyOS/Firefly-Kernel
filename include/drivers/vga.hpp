@@ -95,13 +95,14 @@ struct cursor {
      */
     cursor& operator<<(char c);
 
+
     /**
      *                      Prints an integer
      * @param n             The integer to print
      * @return cursor&      This cursor 
      */
     cursor& operator<<(int n);
-    
+
     /**
      *                      Sets the default foreground color
      * @param c             The color to set
