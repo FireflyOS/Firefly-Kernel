@@ -6,9 +6,9 @@ ISO = FireflyOS_$(ARCH).iso
 all: create_dirs $(TARGET)
 
 $(TARGET): $(CONV_FILES)
-
 	$(MAKE) -C ./include/stl # Build STL before linking
 	ld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
 	
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
@@ -37,11 +37,11 @@ clean:
 	rm include/stl/stdio.o include/stl/cstd.o
 
 run:
-	cp binaries/grub_loader/grub.$(ARCH) binaries/boot/grub/grub.cfg
+	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom $(ISO)
 
 debug: $(ISO) $(TARGET)
-	cp binaries/grub_loader/grub.$(ARCH) binaries/boot/grub/grub.cfg
+	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH) -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s
 
 
