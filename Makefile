@@ -1,32 +1,52 @@
 -include flags.mk
 
-all: $(BUILD_DIR)/kernel.elf
+TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
+ISO = FireflyOS_$(ARCH).iso
 
-$(BUILD_DIR)/kernel.elf: $(CONV_FILES)
+all: create_dirs $(TARGET)
+
+$(TARGET): $(CONV_FILES)
+
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld -o $@ --no-undefined -T linker.ld -nostdlib $(OBJ_FILES) $(LIB_OBJS)
-	grub-mkrescue -o FireflyOS.iso binaries
+	ld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
 	
-# TODO: Find a better way to copy the folder structure of kernel/ into binaries/boot
+# TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
-	mkdir -vp ./binaries/boot/kernel/drivers
-	mkdir -vp ./binaries/boot/kernel/init
-	mkdir -vp ./binaries/boot/kernel/int
+ifeq ($(ARCH), x86_64)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+endif
+ifeq ($(ARCH), i386)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+endif
+
+target_archs:
+	@printf "Supported architectures:\n";
+	@printf "x86_64 (Encouraged)\n";
+	@printf "i386 (Very-WIP)\n";
+	@printf "\n"
 
 clean:
-	rm $(OBJ_FILES)
-	rm $(BUILD_DIR)/kernel.elf
-	rm $(LIB_OBJS)
+	rm -rf binaries/boot/arch
+	rm binaries/boot/kernel_i386.elf || echo ""
+	rm binaries/boot/kernel_x86_64.elf || echo ""
+	rm include/stl/stdio.o include/stl/cstd.o
 
 run:
-	qemu-system-x86_64 -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom ./FireflyOS.iso
+	cp binaries/grub_loader/grub.$(ARCH) binaries/boot/grub/grub.cfg
+	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom $(ISO)
 
-debug: FireflyOS.iso $(BUILD_DIR)/kernel.elf
-	qemu-system-x86_64 -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s
+debug: $(ISO) $(TARGET)
+	cp binaries/grub_loader/grub.$(ARCH) binaries/boot/grub/grub.cfg
+	qemu-system-$(ARCH) -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s
 
 
 %.cxx.o: %.cpp
 	$(CC) $(CXX_FLAGS) -c $< -o $(BUILD_DIR)/$@
 
 %.asm.o: %.asm
-	nasm $< -f elf64 -g -F dwarf -o $(BUILD_DIR)/$@
+	$(AS) $< $(ASM_FLAGS) -o $(BUILD_DIR)/$@
