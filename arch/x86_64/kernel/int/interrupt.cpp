@@ -1,7 +1,7 @@
 #include <stl/array.h>
 #include <stl/cstdlib/cstdint.h>
 
-#include <drivers/vga.hpp>
+#include <x86_64/drivers/vga.hpp>
 
 using namespace firefly::drivers::vga;
 

@@ -1,9 +1,9 @@
 #pragma once
-#include "array.h"
-#include "drivers/ports.hpp"
-#include "drivers/vga.hpp"
-#include "optional.h"
-#include "utils.hpp"
+#include <stl/array.h>
+#include <x86_64/drivers/ports.hpp>
+#include <x86_64/drivers/vga.hpp>
+#include <stl/optional.h>
+#include <x86_64/utils.hpp>
 
 /**
  *                          The PS/2 port driver

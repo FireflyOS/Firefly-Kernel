@@ -3,6 +3,7 @@
 TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
 ISO = FireflyOS_$(ARCH).iso
 
+
 all: create_dirs $(TARGET)
 
 $(TARGET): $(CONV_FILES)
@@ -17,11 +18,13 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
 ifeq ($(ARCH), i386)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
 
 target_archs:
@@ -42,7 +45,7 @@ run:
 
 debug: $(ISO) $(TARGET)
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-	qemu-system-$(ARCH) -boot d -cdrom ./FireflyOS.iso $(QEMU_FLAGS) -S -s
+	qemu-system-$(ARCH) -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s
 
 
 %.cxx.o: %.cpp

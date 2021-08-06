@@ -1,10 +1,13 @@
 #include <stl/cstdlib/stdio.h>
 
-#include <x86_64/drivers/ports.hpp>
-#include <x86_64/drivers/vga.hpp>
-#include <x86_64/utils.hpp>
+#include <i386/drivers/ports.hpp>
+#include <i386/drivers/vga.hpp>
+// #include <utils.hpp>
 
 namespace firefly::drivers::vga {
+
+static int xPos, yPos = 0;
+
 vga_char cursor::character(char c) {
     return { c, fg, bg };
 }
@@ -171,6 +174,8 @@ void disable_hw_cursor() {
 }
 
 void update_hw_cursor(size_t x, size_t y) {
+    xPos = x;
+    yPos = y;
     uint16_t pos = y * width + x;
 
     firefly::kernel::io::outb(0x3D4, 0x0F);

@@ -1,5 +1,5 @@
 #pragma once
-#include <drivers/vga.hpp>
+#include <x86_64/drivers/vga.hpp>
 
 namespace firefly::kernel {
 

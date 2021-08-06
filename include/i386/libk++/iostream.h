@@ -2,8 +2,8 @@
 
 #include <stdarg.h>
 
-#include <x86_64/drivers/vga.hpp>
-#include <x86_64/kernel.hpp>
+#include <i386/drivers/vga.hpp>
+#include <i386/kernel.hpp>
 
 /*
  * (Listed in the most useful order)
@@ -38,7 +38,7 @@ const auto endl = '\n';
 
 template <typename... Tys>
 void print(Tys... args) {
-    ((firefly::libkern::get_cursor_handle() << args), ...);
+    ((firefly::libkern::get_cursor_handle() << ": " << args), ...);
 }
 
 }  // namespace firefly::libkern

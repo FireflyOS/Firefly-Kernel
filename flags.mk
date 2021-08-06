@@ -13,8 +13,7 @@ $(info = Firefly target architecture: x86_64 =)
 $(info )
 
 CXX_FLAGS =						\
-	-I./include/x86_64	 		\
-	-I./include/	 			\
+	-I./include/		 		\
 	-I./include/stl/			\
 	-target x86_64-unknown-elf	\
 	-m64						\
@@ -66,7 +65,6 @@ $(info = Firefly target architecture: i386 =)
 $(info )
 
 CXX_FLAGS =						\
-	-I./include/i386	 		\
 	-I./include/	 			\
 	-I./include/stl/			\
 	-target x86_64-unknown-elf	\

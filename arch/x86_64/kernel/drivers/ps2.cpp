@@ -1,4 +1,4 @@
-#include "drivers/ps2.hpp"
+#include <x86_64/drivers/ps2.hpp>
 
 
 namespace firefly::drivers::ps2 {

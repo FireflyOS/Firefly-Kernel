@@ -47,7 +47,13 @@ header_end:
 
 section .pm_stub
 bits 32
+magic: dd 0x0
+multiboot2_struct: dd 0x0
+
 start:
+    mov [magic], eax             ; Preserve multiboot2 structure
+    mov [multiboot2_struct], ebx ; Preserve multiboot2 magic
+
     mov esp, stack_top - VIRT_ADDR
 
     call check_multiboot
@@ -191,7 +197,6 @@ set_up_page_tables:
                                                 ; bits 38:31 are all 1's, and bit 30 is 0,
                                                 ; 0xFFFF_FFFF_8nnn_nnnn
 
-    mov edx, ebx                                ; Preserve multiboot2 structure
     xor eax, eax                                ; begin mapping physical address 0
     xor ebx, ebx                                ; page table entry, start at index 0
 
@@ -243,5 +248,9 @@ long_mode_start:
 
     cld
 
-    mov rdi, rdx
+    ; Note: The use of edi/esi over rdi/rsi is due to grub storing a
+    ; 32 bit value in eax/ebx, so passing a 32 bit register to kernel_main
+    ; makes our life a lot easier.
+    mov edi, [magic]
+    mov esi, [multiboot2_struct]
     jmp kernel_main
