@@ -102,6 +102,9 @@ struct cursor {
      * @return cursor&      This cursor 
      */
     cursor& operator<<(int n);
+    cursor& operator<<(short n);
+    cursor& operator<<(long n);
+    cursor& operator<<(unsigned n);
 
     /**
      *                      Sets the default foreground color

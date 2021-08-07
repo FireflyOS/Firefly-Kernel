@@ -111,76 +111,76 @@ static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
 // static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
 
 namespace firefly::kernel::interrupt {
-    /**
+/**
      *                      the interrupt descriptor table
      */
-    namespace {
-        auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
-            return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-                     static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-                     static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
-        };
-        auto __inter = _inter(interrupt_wrapper);
-    }  // namespace
+namespace {
+auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
+    return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
+             static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
+             static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
+};
+auto __inter = _inter(interrupt_wrapper);
+}  // namespace
 
-    static firefly::std::array<idt_gate, 256> idt{
-        // up to int3
-        __inter, __inter, __inter, __inter
-        // all others have present flag set to 0
-    };
+static firefly::std::array<idt_gate, 256> idt{
+    // up to int3
+    __inter, __inter, __inter, __inter
+    // all others have present flag set to 0
+};
 
-    /**
+/**
      *                      contents to load into the idt register
      */
-    struct __attribute__((packed)) idt_reg {
-        /**
+struct __attribute__((packed)) idt_reg {
+    /**
          *                  size of table in bytes - 1
          */
-        uint16_t limit;
-        /**
+    uint16_t limit;
+    /**
          *                  base address of idt
          */
-        idt_gate* base;
-    } idtr = {
-        (sizeof(idt_gate) * idt.size()) - 1,
-        idt.begin()
-    };
+    idt_gate* base;
+} idtr = {
+    (sizeof(idt_gate) * idt.size()) - 1,
+    idt.begin()
+};
 
-    static_assert(10 == sizeof(idt_reg), "idt_reg size incorrect");
+static_assert(10 == sizeof(idt_reg), "idt_reg size incorrect");
 
-    void init() {
-        asm(
-            "lidt %0"
-            :
-            : "m"(idtr));
-    }
+void init() {
+    asm(
+        "lidt %0"
+        :
+        : "m"(idtr));
+}
 
-    /**
+/**
      *                      test int3
      */
-    void test_int() {
-        cursor crs{ color::white, color::black, 0, 0 };
-        crs << "testing interrupt";
-        asm volatile("int3");
-    }
+void test_int() {
+    cursor crs{ color::white, color::black, 0, 0 };
+    crs << "testing interrupt";
+    asm volatile("int3");
+}
 
-    // write different handlers for each irpt + exc later
-    // noreturn for testing purposes, will remove later
-    extern "C" __attribute__((noreturn)) void interrupt_handler() {
-        // cursor crs{ color::white, color::black, 0, 0 };
-        // crs << "\nINTERRUPT OCCURRED";
+// write different handlers for each irpt + exc later
+// noreturn for testing purposes, will remove later
+extern "C" __attribute__((noreturn)) void interrupt_handler() {
+    // cursor crs{ color::white, color::black, 0, 0 };
+    // crs << "\nINTERRUPT OCCURRED";
 
-        for (;;)
-            asm("hlt");
-    }
+    for (;;)
+        asm("hlt");
+}
 
-    extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {
-        (void)error_code;
+extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {
+    (void)error_code;
 
-        cursor crs{ color::white, color::black, 0, 0 };
-        crs << "\nEXCEPTION OCCURRED";
+    cursor crs{ color::white, color::black, 0, 0 };
+    crs << "\nEXCEPTION OCCURRED";
 
-        while (1)
-            ;
-    }
+    while (1)
+        ;
+}
 }  // namespace firefly::kernel::interrupt

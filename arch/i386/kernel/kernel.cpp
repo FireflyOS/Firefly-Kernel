@@ -2,9 +2,11 @@
 #include <i386/libk++/iostream.h>
 #include <stdint.h>
 #include <stl/array.h>
+#include <stl/cstdlib/stdio.h>
 
 #include <i386/drivers/vga.hpp>
 #include <i386/init/init.hpp>
+#include <i386/int/interrupt.hpp>
 #include <i386/multiboot2.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -38,7 +40,7 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-extern "C" [[noreturn]] void kernel_main(mboot_param magic, [[maybe_unused]] mboot_param addr) {
+extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
 
@@ -46,7 +48,11 @@ extern "C" [[noreturn]] void kernel_main(mboot_param magic, [[maybe_unused]] mbo
     firefly::drivers::vga::cursor _cursor = { color::white, color::black, 0, 0 };
     firefly::kernel::main::cout = _cursor;
     firefly::kernel::main::write_ff_info();
-    firefly::kernel::kernel_init(magic, addr);
+    firefly::kernel::core::interrupt::init();
+
+    // firefly::kernel::core::interrupt::test_int();
+    printf("I love %c", 'C');
+    // firefly::kernel::kernel_init(magic, addr);
 
     while (1)
         ;
