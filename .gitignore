@@ -28,3 +28,5 @@
 binaries/
 !binaries/boot/grub.cfg
 .idea
+
+.vscode/*.log
