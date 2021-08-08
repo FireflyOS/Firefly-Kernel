@@ -40,6 +40,7 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
+
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
@@ -49,11 +50,16 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::main::cout = _cursor;
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
-
+    firefly::kernel::kernel_init(magic, addr);
     // firefly::kernel::core::interrupt::test_int();
-    printf("I love %c", 'C');
-    // firefly::kernel::kernel_init(magic, addr);
-
+    
+    //Printf test
+    int res = printf("Hex: %x\n", 0xabc);
+    printf("%d chars were written\n", res);
+    printf("Address of res is: %X\n", &res);
+    printf("octal: %o\n", 100);
+    printf("long hex: 0x%x\n", 0xabcdef12);
+    
     while (1)
         ;
 }

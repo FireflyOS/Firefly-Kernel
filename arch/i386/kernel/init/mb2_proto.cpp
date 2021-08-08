@@ -1,4 +1,5 @@
 #include <i386/libk++/iostream.h>
+#include <stl/cstdlib/stdio.h>
 
 #include <i386/init/mb2_proto.hpp>
 #include <i386/trace/strace.hpp>
@@ -19,16 +20,12 @@ void init(mboot_param magic, [[maybe_unused]] mboot_param mb2_struct_address) {
     unsigned size;
     size = *(unsigned *)mb2_struct_address;
     struct multiboot_tag *tag;
-    klog("MBI Size: " << size << libkern::endl);
+    printf("MBI Size: %d\n", size);
 
     for (tag = (struct multiboot_tag *)(mb2_struct_address + 8);
          tag->type != MULTIBOOT_TAG_TYPE_END;
          tag = (struct multiboot_tag *)((multiboot_uint8_t *)tag + ((tag->size + 7) & ~7))) {
-        if (tag->type == MULTIBOOT_TAG_TYPE_CMDLINE)
-        {
-            klog("cmdline tag " << ((struct multiboot_tag_string*) tag)->string << "\n");
-        }
+        printf("Type: %d | Size: %d\n", tag->type, tag->size);
     }
-    klog("ok");
 }
 }  // namespace firefly::kernel::mb2proto

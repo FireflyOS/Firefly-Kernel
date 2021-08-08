@@ -101,10 +101,11 @@ struct cursor {
      * @param n             The integer to print
      * @return cursor&      This cursor 
      */
-    cursor& operator<<(int n);
-    cursor& operator<<(short n);
-    cursor& operator<<(long n);
-    cursor& operator<<(unsigned n);
+    cursor& operator<<(size_t n);
+    //     cursor& operator<<(int n);
+    //     cursor& operator<<(short n);
+    //     cursor& operator<<(long n);
+    //     cursor& operator<<(unsigned n);
 
     /**
      *                      Sets the default foreground color

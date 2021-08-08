@@ -74,19 +74,23 @@ void init() {
 
 void test_int() {
     klog("testing interrupt 0...\n");
-    asm volatile("int $0");
+    asm volatile("int $80");
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
-    char buff[20];
-    klog("CPU exception caught (CS: 0x" << itoa(iframe->cs, buff, 16) << ")\n");
+    printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
+    printf("EIP: %X\n", iframe->eip);
+    printf("ESP: %X\n", iframe->esp);
+
 
     for (;;)
         asm("cli;hlt");
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
-    // klog("An Interrupt has occurred: " << _iframe->cs);
+    printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
+    printf("EIP: %X\n", iframe->eip);
+    printf("ESP: %X\n", iframe->esp);
 
     for (;;)
         asm("cli;hlt");

@@ -8,7 +8,7 @@ all: create_dirs $(TARGET)
 
 $(TARGET): $(CONV_FILES)
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
 	
