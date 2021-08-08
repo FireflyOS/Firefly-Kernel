@@ -12,6 +12,7 @@ vga_char cursor::character(char c) {
     return { c, fg, bg };
 }
 
+#pragma region Operator type overrides
 cursor& cursor::operator<<(const char* c) {
     write(c, *this);
     return *this;
@@ -22,11 +23,31 @@ cursor& cursor::operator<<(char c) {
     return *this;
 }
 
-cursor& cursor::operator<<(int n) {
+cursor& cursor::operator<<(size_t n) {
     char buffer[10];
     itoa(n, buffer, 10);
     return (*this) << buffer;
 }
+
+// cursor& cursor::operator<<(short n) {
+//     char buffer[10];
+//     itoa(n, buffer, 10);
+//     return (*this) << buffer;
+// }
+
+// cursor& cursor::operator<<(long n) {
+//     char buffer[10];
+//     itoa(n, buffer, 10);
+//     return (*this) << buffer;
+// }
+
+// cursor& cursor::operator<<(unsigned n) {
+//     char buffer[10];
+//     itoa(n, buffer, 10);
+//     return (*this) << buffer;
+// }
+
+#pragma endregion
 
 void cursor::set_foreground_color(color c) {
     fg = c;

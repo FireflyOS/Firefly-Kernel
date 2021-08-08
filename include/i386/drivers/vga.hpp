@@ -101,7 +101,11 @@ struct cursor {
      * @param n             The integer to print
      * @return cursor&      This cursor 
      */
-    cursor& operator<<(int n);
+    cursor& operator<<(size_t n);
+    //     cursor& operator<<(int n);
+    //     cursor& operator<<(short n);
+    //     cursor& operator<<(long n);
+    //     cursor& operator<<(unsigned n);
 
     /**
      *                      Sets the default foreground color
@@ -130,7 +134,7 @@ constexpr static size_t width = 80;
 /**
  *                          Character height of default mode
  */
-constexpr static size_t height = 15;
+constexpr static size_t height = 25;
 /**
  *                          Address of VGA character buffer
  */

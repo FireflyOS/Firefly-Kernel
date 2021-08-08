@@ -35,6 +35,11 @@ CXX_FLAGS =						\
 	-fno-exceptions 			\
 	-fno-rtti 					\
 	-Wno-zero-length-array 		\
+	-mno-80387		            \
+    -mno-mmx					\
+    -mno-3dnow					\
+	-mno-sse                    \
+    -mno-sse2	                \
 	-Wno-gnu
 
 ASM_FLAGS = -f elf64 -g -F dwarf
@@ -48,7 +53,7 @@ CONV_FILES = $(CXX_FILES:.cpp=.cxx.o) $(ASM_FILES:.asm=.asm.o) # Convert file ex
 OBJ_FILES  = $(addprefix $(BUILD_DIR)/,$(CONV_FILES))
 
 ### STL BUILD FLAGS ####
-STL_CXX_FLAGS = -m64 -std=gnu++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+STL_CXX_FLAGS = -I ../ -Dx86_64 -m64 -std=gnu++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 # Note: We use . as paths are relative to the Makefile which included flags.mk
 STL_SRC_DIR = .
@@ -69,15 +74,17 @@ CXX_FLAGS =						\
 	-I./include/stl/			\
 	-target x86_64-unknown-elf	\
 	-m32						\
+	-O2							\
 	-mcmodel=kernel				\
 	-std=c++20   				\
 	-Wall						\
 	-Wextra 					\
 	-pedantic 					\
 	-Werror 					\
-	-g 							\
+	-g -pipe					\
 	-nostdlib 					\
 	-fno-builtin 				\
+	-fno-pie 					\
 	-fno-PIC 					\
 	-mno-red-zone 				\
 	-fno-stack-check 			\
@@ -87,6 +94,11 @@ CXX_FLAGS =						\
 	-fno-exceptions 			\
 	-fno-rtti 					\
 	-Wno-zero-length-array 		\
+	-mno-80387		            \
+    -mno-mmx					\
+    -mno-3dnow					\
+	-mno-sse                    \
+    -mno-sse2	                \
 	-Wno-gnu
 
 ASM_FLAGS = -f elf32 -g -F dwarf
@@ -101,7 +113,7 @@ CONV_FILES = $(CXX_FILES:.cpp=.cxx.o) $(ASM_FILES:.asm=.asm.o) # Convert file ex
 OBJ_FILES  = $(addprefix $(BUILD_DIR)/,$(CONV_FILES))
 
 ### STL BUILD FLAGS ####
-STL_CXX_FLAGS = -m32 -std=gnu++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
+STL_CXX_FLAGS = -I ../ -DI386 -m32 -std=gnu++17 -Wall -Wextra -pedantic -Werror -g -O2 -nostdlib -fno-builtin -fno-PIC -mno-red-zone -fno-stack-check -fno-stack-protector -fno-omit-frame-pointer -ffreestanding -fno-exceptions -fno-rtti
 
 # Note: We use . as paths are relative to the Makefile which included flags.mk
 STL_SRC_DIR = .

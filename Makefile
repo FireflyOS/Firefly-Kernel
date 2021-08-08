@@ -8,7 +8,7 @@ all: create_dirs $(TARGET)
 
 $(TARGET): $(CONV_FILES)
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
 	
@@ -22,6 +22,7 @@ ifeq ($(ARCH), x86_64)
 endif
 ifeq ($(ARCH), i386)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
