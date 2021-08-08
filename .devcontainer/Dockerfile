@@ -12,5 +12,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         clang \
         nasm \
         qemu-system-x86 \
-        grub-pc-bin
+        grub-pc-bin \
+        lld
         
