@@ -3,12 +3,12 @@
 #include "cstdlib/stdio.h"
 
 namespace firefly::libkern {
-char buff[20];
-char* hex(int n) {
+inline static char buff[20];
+inline char* hex(int n) {
     return itoa(n, buff, 16);
 }
 
-char* dec(int n) {
+inline char* dec(int n) {
     return itoa(n, buff, 10);
 }
 }  // namespace firefly::libkern

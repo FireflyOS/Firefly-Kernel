@@ -1,137 +1,59 @@
-#include <stl/array.h>
-#include <stl/cstdlib/cstdint.h>
+#include <x86_64/libk++/ios.h>
+#include <x86_64/libk++/iostream.h>
 
 #include <x86_64/drivers/vga.hpp>
 
+#include "array.h"
+
 using namespace firefly::drivers::vga;
 
-// type doesn't really exist in C++
-// so just decl as function so it decays into a pointer
-extern "C" void interrupt_wrapper();
-extern "C" void exception_wrapper();
-
+namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
-    /**
-     *                      bits 15 : 0 of offset
-     */
     uint16_t offset_0;
-
-    /**
-     *                      code segment selector in GDT or LDT
-     */
     uint16_t selector;
-
-    /**
-     *                      zero
-     */
     uint8_t rsv_0;
-
-    /**
-     *                      interrupt gate type
-     */
-    enum gate_type {
-        GATE_TASK = 0x5,
-        GATE_CALL = 0xC,
-        GATE_INTERRUPT = 0xE,
-        GATE_TRAP = 0xF,
-    } type : 5;
-
-    /**
-     *                      privilege level of interrupt handler
-     */
-    unsigned desc_priv_lvl : 2;
-
-    /**
-     *                      interrupt present flag
-     */
-    unsigned present : 1;
-
-    /**
-     *                      bits 31 :16 of offset
-     */
+    uint8_t type;
     uint16_t offset_1;
-
-    /**
-     *                      bits 63 : 32 of offset
-     */
     uint32_t offset_2;
-
-    /**
-     *                      zero
-     */
     uint32_t rsv_1;
 };
 
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
-struct __attribute__((packed)) interrupt_error {
-    /**
-     *                      0 : exc source inside cpu
-     *                      1 : exc source external to cpu
-     */
-    unsigned ext : 1;
-    /**
-     *                      0 : selector refers to gdt or ldt descriptor
-     *                      1 : selector refers to idt descriptor
-     */
-    unsigned idt : 1;
-    /**
-     *                      only use when idt flag is clear
-     *                      0 : selector refers to gdt descriptor
-     *                      1 : selector refers to ldt descriptor
-     */
-    unsigned ti : 1;
-    /**
-     *                      0 : error not caused by reference to specific segment
-     *                          OR referred to null segment
-     *                      _ : index into idt or gdt or ldt
-     */
-    unsigned selector : 13;
-    /**
-     *                      zero
-     */
-    unsigned rsv_0 : 16;
-    /**
-     *                      zero
-     */
-    uint32_t rsv_1;
+struct __attribute__((packed)) iframe {
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+    uint64_t rsp;
+    uint64_t ss;
+    uint64_t err;
+    uint64_t int_no;
 };
 
-static_assert(8 == sizeof(interrupt_error), "interrupt_error size incorrect");
+__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
+__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe);
 
-// will probably not use, but keeping in case we want it
-// struct __attribute__((packed)) interrupt_frame {
-//     uint64_t rip;
-//     uint64_t cs;
-//     uint64_t rflags;
-//     uint64_t rsp;
-//     uint64_t ss;
-// }
+static idt_gate idt[256];
 
-// static_assert(8 == sizeof(interrupt_frame, "interrupt_frame size incorrect"));
+namespace change {
+void update(void (*handler)(iframe *), uint16_t cs, uint8_t type, uint8_t index) {
+    idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
+    idt[index].selector = cs;
+    idt[index].rsv_0 = 0;
+    idt[index].type = type;
+    idt[index].offset_1 = reinterpret_cast<size_t>(handler) >> 16 & 0xffff;
+    idt[index].offset_2 = reinterpret_cast<size_t>(handler) >> 32 & 0xffffffff;
+    idt[index].rsv_1 = 0;
+}
 
-namespace firefly::kernel::interrupt {
-/**
-     *                      the interrupt descriptor table
-     */
-namespace {
-auto _inter = [](auto const& interrupt_wrapper) -> idt_gate {
-    return { static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper)), 8, 0, idt_gate::GATE_INTERRUPT, 0, 1,
-             static_cast<uint16_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 16),
-             static_cast<uint32_t>(reinterpret_cast<uint64_t>(interrupt_wrapper) >> 32), 0 };
-};
-auto __inter = _inter(interrupt_wrapper);
-}  // namespace
+//Hardcoded values as this is only meant for initialisation work by interrupt.cpp
+//Use the non-static version of "update" to update the idt at a global level
+static void initial_update(void (*handler)(iframe *), uint8_t index) {
+    change::update(handler, 0x08, 0x8E, index);
+}
 
-static firefly::std::array<idt_gate, 256> idt{
-    // up to int3
-    __inter, __inter, __inter, __inter
-    // all others have present flag set to 0
-};
+}  // namespace change
 
-/**
-     *                      contents to load into the idt register
-     */
 struct __attribute__((packed)) idt_reg {
     /**
          *                  size of table in bytes - 1
@@ -142,45 +64,45 @@ struct __attribute__((packed)) idt_reg {
          */
     idt_gate* base;
 } idtr = {
-    (sizeof(idt_gate) * idt.size()) - 1,
-    idt.begin()
+    .limit = (sizeof(struct idt_gate) * 256) - 1,
+    .base = idt
 };
 
-static_assert(10 == sizeof(idt_reg), "idt_reg size incorrect");
 
 void init() {
-    asm(
-        "lidt %0"
-        :
-        : "m"(idtr));
+    int i = 0;
+    for (; i <= 31; i++)
+        change::initial_update(interrupt_wrapper, i);
+    for (; i < 256; i++)
+        change::initial_update(exception_wrapper, i);
+
+    printf("Address of idtr: %X\n", &idtr);
+    printf("idtr.base %d, idtr.limit %d\n", idtr.base, idtr.limit);
+    asm("lidt %0" ::"m"(idtr)
+        : "memory");
 }
 
-/**
-     *                      test int3
-     */
 void test_int() {
-    cursor crs{ color::white, color::black, 0, 0 };
-    crs << "testing interrupt";
-    asm volatile("int3");
+    klog("testing interrupt 0...\n");
+    asm volatile("int $80");
 }
 
-// write different handlers for each irpt + exc later
-// noreturn for testing purposes, will remove later
-extern "C" __attribute__((noreturn)) void interrupt_handler() {
-    // cursor crs{ color::white, color::black, 0, 0 };
-    // crs << "\nINTERRUPT OCCURRED";
+__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
+    printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
+    printf("EIP: %X\n", iframe->rip);
+    printf("ESP: %X\n", iframe->rsp);
+
 
     for (;;)
-        asm("hlt");
+        asm("cli;hlt");
 }
 
-extern "C" __attribute__((noreturn)) void exception_handler(interrupt_error error_code) {
-    (void)error_code;
+__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
+    printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
+    printf("EIP: %X\n", iframe->rip);
+    printf("ESP: %X\n", iframe->rsp);
 
-    cursor crs{ color::white, color::black, 0, 0 };
-    crs << "\nEXCEPTION OCCURRED";
-
-    while (1)
-        ;
+    for (;;)
+        asm("cli;hlt");
 }
-}  // namespace firefly::kernel::interrupt
+}  // namespace firefly::kernel::core::interrupt

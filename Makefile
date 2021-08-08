@@ -42,11 +42,11 @@ clean:
 
 run:
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -no-reboot -cdrom $(ISO)
+	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -monitor stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS)
 
 debug: $(ISO) $(TARGET)
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-	qemu-system-$(ARCH) -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s
+	qemu-system-$(ARCH) -M q35 -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio
 
 
 %.cxx.o: %.cpp

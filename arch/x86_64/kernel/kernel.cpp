@@ -23,7 +23,6 @@ firefly::drivers::vga::cursor &internal_cursor_handle() {
 void write_ff_info() {
     using firefly::drivers::vga::clear;
     clear();
-
     firefly::kernel::main::cout << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char *, 3> arr = {
@@ -40,7 +39,7 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-int mprintf([[maybe_unused]] const char* fmt, ...) {
+int mprintf([[maybe_unused]] const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     [[maybe_unused]] int i = 0;
@@ -59,7 +58,7 @@ int mprintf([[maybe_unused]] const char* fmt, ...) {
                     }
 
                     case 's': {
-                        char* arg = va_arg(ap, char*);
+                        char *arg = va_arg(ap, char *);
                         firefly::libkern::print(arg);
                         i += 2, (res += 2 + strlen(arg));
                         break;
@@ -83,30 +82,30 @@ int mprintf([[maybe_unused]] const char* fmt, ...) {
                         i += 2;
                         break;
                     }
-                    // case 'X': {
-                    //     int arg = va_arg(ap, int);
-                    //     char buff[20];
-                    //     firefly::libkern::print(itoa(arg, buff, 16, true));
-                    //     res += strlen(buff);
-                    //     i += 2;
-                    //     break;
-                    // }
+                        // case 'X': {
+                        //     int arg = va_arg(ap, int);
+                        //     char buff[20];
+                        //     firefly::libkern::print(itoa(arg, buff, 16, true));
+                        //     res += strlen(buff);
+                        //     i += 2;
+                        //     break;
+                        // }
 
-                    // case 'b': {
-                    //     int arg = va_arg(ap, int);
-                    //     char buff[20];
-                    //     firefly::libkern::print("0b", itoa(arg, buff, 2));
-                    //     i += 2;
-                    //     break;
-                    // }
+                        // case 'b': {
+                        //     int arg = va_arg(ap, int);
+                        //     char buff[20];
+                        //     firefly::libkern::print("0b", itoa(arg, buff, 2));
+                        //     i += 2;
+                        //     break;
+                        // }
 
-                    // case 'o': {
-                    //     // int arg = va_arg(ap, int);
-                    //     // char buff[20];
-                    //     // firefly::libkern::print(itoa(arg, buff, 8));
-                    //     i += 2;
-                    //     break;
-                    // }
+                        // case 'o': {
+                        //     // int arg = va_arg(ap, int);
+                        //     // char buff[20];
+                        //     // firefly::libkern::print(itoa(arg, buff, 8));
+                        //     i += 2;
+                        //     break;
+                        // }
                 }
             }
             default:
@@ -127,16 +126,19 @@ extern "C" [[noreturn]] void kernel_main(uint64_t magic, uint64_t mb2_proto_stru
     firefly::kernel::main::cout = { color::white, color::black, 0, 0 };
     firefly::kernel::main::write_ff_info();
     firefly::drivers::ps2::init();
-    firefly::kernel::interrupt::init();
+    firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, mb2_proto_struct);
-    
+
     //Printf test
     int res = printf("Hex: %x\n", 0xabc);
     printf("%d chars were written\n", res);
     printf("Address of res is: %X\n", &res);
     printf("octal: %o\n", 100);
     printf("long hex: 0x%x\n", 0xabcdef12);
-    
+
+    firefly::kernel::core::interrupt::test_int();
+
+    printf("Post interrupt");
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();

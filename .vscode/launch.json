@@ -4,7 +4,7 @@
             "type": "gdb",
             "request": "attach",
             "name": "Attach to gdbserver",
-            "executable": "./binaries/boot/kernel_i386.elf",
+            "executable": "./binaries/boot/kernel_x86_64.elf",
             "target": ":1234",
             "remote": true,
             "cwd": "${workspaceRoot}",
