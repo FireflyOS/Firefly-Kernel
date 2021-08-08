@@ -134,7 +134,7 @@ constexpr static size_t width = 80;
 /**
  *                          Character height of default mode
  */
-constexpr static size_t height = 15;
+constexpr static size_t height = 25;
 /**
  *                          Address of VGA character buffer
  */
