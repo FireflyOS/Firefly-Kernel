@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"3ds.h": "c",
+			"synchronization.h": "c",
+			"gpu.h": "c",
+			"brew_bgr.h": "c",
+			"*.tcc": "cpp",
+			"istream": "cpp",
+			"ostream": "cpp",
+			"memory": "cpp",
+			"exception": "cpp",
+			"initializer_list": "cpp",
+			"new": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp"
+		}
+	}
+}

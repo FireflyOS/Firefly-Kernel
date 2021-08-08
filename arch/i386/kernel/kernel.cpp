@@ -25,7 +25,7 @@ firefly::drivers::vga::cursor &internal_cursor_handle() {
 
 void write_ff_info() {
     using firefly::drivers::vga::clear;
-    clear();
+    // clear();
 
     firefly::kernel::main::cout << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
@@ -48,12 +48,14 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
 
+    //NOTE: There seems to be an issue with the vga buffer, even when
+    //not running gdt::init it won't write to the screen
+    // firefly::kernel::core::gdt::init();
     firefly::drivers::vga::init();
     firefly::drivers::vga::cursor _cursor = { color::white, color::black, 0, 0 };
     firefly::kernel::main::cout = _cursor;
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
-    firefly::kernel::core::gdt::init();
     firefly::kernel::kernel_init(magic, addr);
     // firefly::kernel::core::interrupt::test_int();
 

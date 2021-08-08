@@ -2,7 +2,7 @@
 #include "cstdlib/cstdint.h"
 
 namespace firefly::kernel::core::gdt {
-constexpr static size_t GDT_ENTRIES = 3;
+constexpr static size_t GDT_ENTRIES = 5;
 
 struct access_byte_t {
     // CPU sets to 1 when accessed.
@@ -40,16 +40,15 @@ struct __attribute__((packed)) flags_t {
     uint8_t reserved : 2 = 0;
 };
 
-struct segment_descriptor_t {
+struct __attribute__((packed)) segment_descriptor_t {
     uint16_t limit_low;  // 0 - 15
     uint16_t base_low;   // 16 - 31
 
     uint8_t base_middle;   // 32 - 39
-    access_byte_t access;  // 40 - 47
+    uint8_t access;  // 40 - 47
 
     // Maximum addressable unit
-    uint8_t limit_high : 4;  // 48 - 51
-    flags_t flags;           // 52 - 55
+    uint8_t granularity;
     uint8_t base_high;       // 56 - 63
 };
 
