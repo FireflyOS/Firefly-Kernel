@@ -10,4 +10,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         xorriso \
         grub2-common \
         clang \
-        nasm 
+        nasm \
+        qemu-system-x86 \
+        grub-pc-bin
+        

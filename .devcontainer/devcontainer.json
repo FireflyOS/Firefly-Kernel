@@ -19,7 +19,8 @@
 		"github.copilot",
 		"ms-vscode.cpptools-extension-pack",
 		"ms-vscode.cmake-tools",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"webfreak.debug"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
