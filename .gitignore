@@ -28,3 +28,6 @@
 binaries/
 !binaries/boot/grub.cfg
 .idea
+
+# Makefile plugin
+/.vscode/*.log
