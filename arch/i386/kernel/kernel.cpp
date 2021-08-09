@@ -24,7 +24,7 @@ void write_ff_info() {
     using firefly::drivers::vga::clear;
     clear();
 
-    firefly::kernel::main::cout << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    firefly::kernel::main::cout << "CursedFirefly\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"

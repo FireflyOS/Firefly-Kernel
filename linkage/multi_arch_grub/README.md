@@ -18,7 +18,7 @@ Example:
 set timeout=0
 set default=0
 
-menuentry "FireflyOS" {
+menuentry "CursedFirefly" {
     multiboot2 /boot/kernel_i386.elf
     boot
 }

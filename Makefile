@@ -1,7 +1,7 @@
 -include flags.mk
 
 TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
-ISO = FireflyOS_$(ARCH).iso
+ISO = CursedFirefly_$(ARCH).iso
 
 
 all: create_dirs $(TARGET)
@@ -10,7 +10,7 @@ $(TARGET): $(CONV_FILES)
 	$(MAKE) -C ./include/stl # Build STL before linking
 	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
+	grub-mkrescue -o CursedFirefly_$(ARCH).iso binaries
 	
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:

@@ -1,7 +1,7 @@
 # Firefly-Kernel
-Kernel for FireflyOS
+Kernel for CursedFirefly
 
-![Firefly OS](docs/progress.png)
+![Cursed Firefly](docs/progress.png)
 
 ## Dependencies ##
  * NASM
