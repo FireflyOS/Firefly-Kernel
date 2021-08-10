@@ -24,7 +24,7 @@
 
 #define klog(...) ({                                                         \
     ((firefly::libkern::get_cursor_handle() << __FUNCTION__                  \
-                                            << ": " << __VA_ARGS__ << ' ')); \
+                                            << ": " << __VA_ARGS__)); \
 })
 
 namespace firefly::libkern {

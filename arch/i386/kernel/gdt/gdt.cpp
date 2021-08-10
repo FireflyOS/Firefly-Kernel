@@ -56,9 +56,6 @@ gdt_descriptor_t gdt_descriptor;
 
 extern "C" void gdt_flush(uint32_t);
 void init() {
-    gdt_descriptor.size = sizeof(gdt_descriptor_t) * GDT_ENTRIES - 1;
-    gdt_descriptor.offset = reinterpret_cast<uint32_t>(&gdt);
-
     generate_descriptor(0, 0, 0, 0, 0);
     // Set all the flags to 0 for the null-segment
     *reinterpret_cast<uint8_t*>(&gdt[0].access) = 0;
@@ -76,6 +73,8 @@ void init() {
     generate_descriptor(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
 
+    gdt_descriptor.size = sizeof(gdt_descriptor_t) * GDT_ENTRIES - 1;
+    gdt_descriptor.offset = reinterpret_cast<uint32_t>(&gdt);
     gdt_flush((uint32_t)&gdt_descriptor);
 }
 
