@@ -6,6 +6,8 @@ extern kernel_main
 VIRT_ADDR equ 0xFFFFFFFF80000000
 
 section .rodata
+%include "arch/x86_64/kernel/multiboot2.asm"
+
 gdt64:
     dq 0                                        ; zero entry
 .code: equ $ - gdt64                            ; code segment
@@ -36,14 +38,22 @@ header_start:
     dd header_end - header_start                ; header length
                                                 ; checksum
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
+header_end:
+framebuffer_tag_start:
+    dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
+    dw MULTIBOOT_HEADER_TAG_OPTIONAL
+    dd framebuffer_tag_end - framebuffer_tag_start
+    dd 0  ; Width - no preference
+    dd 0  ; Height - no preference
+    dd 0  ; bpp - no preference
+framebuffer_tag_end:
 
-                                                ; insert optional multiboot tags here
-
-                                                ; required end tag
+align 8
+tag_end:
     dw 0    ; type
     dw 0    ; flags
     dd 8    ; size
-header_end:
+tag_end_end:
 
 section .pm_stub
 bits 32

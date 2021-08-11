@@ -15,8 +15,6 @@
 constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
-// firefly::drivers::vga::cursor cout;
-
 void write_ff_info() {
     using firefly::drivers::vga::clear;
     clear();
@@ -51,12 +49,6 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::kernel_init(magic, addr);
     // firefly::kernel::core::interrupt::test_int();
 
-    //Printf test
-    int res = printf("Hex: %x\n", 0xabc);
-    printf("%d chars were written\n", res);
-    printf("Address of res is: %X\n", &res);
-    printf("octal: %o\n", 100);
-    printf("long hex: 0x%x\n", 0xabcdef12);
 
     while (1)
         ;
