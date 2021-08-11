@@ -6,9 +6,9 @@
 namespace firefly::kernel::mb2proto {
 void init(uint64_t magic, [[maybe_unused]] uint64_t mb2_struct_address) {
     if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
-        klog("Invalid magic!\n");
+        klog() << "Invalid magic!\n";
     } else {
-        klog("Magic is valid\n");
+        klog() << "Magic is valid\n";
     }
 }
 }  // namespace firefly::kernel::mb2proto

@@ -25,6 +25,7 @@ ifeq ($(ARCH), i386)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
 
