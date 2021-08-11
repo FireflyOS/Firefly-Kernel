@@ -4,6 +4,7 @@
 #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
 
+#include <i386/drivers/serial.hpp>
 #include <i386/drivers/vga.hpp>
 #include <i386/gdt/gdt.hpp>
 #include <i386/init/init.hpp>
@@ -49,8 +50,10 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
-    // firefly::kernel::core::interrupt::test_int();
 
+    firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
+    // don't have to initialize port here for some god forsaken reason
+    
     //Printf test
     int res = printf("Hex: %x\n", 0xabc);
     printf("%d chars were written\n", res);
