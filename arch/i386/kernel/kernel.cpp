@@ -4,6 +4,8 @@
 #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
 
+#include <i386/drivers/serial.hpp>
+#include <i386/drivers/vbe.hpp>
 #include <i386/drivers/vga.hpp>
 #include <i386/gdt/gdt.hpp>
 #include <i386/init/init.hpp>
@@ -47,8 +49,12 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
-    // firefly::kernel::core::interrupt::test_int();
 
+    firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
+    port.send_chars("hello!");
+
+    for (int i = 0; i < 100; i++)
+        firefly::drivers::vbe::put_pixel(i, 0, 0xFFFFFF);
 
     while (1)
         ;
