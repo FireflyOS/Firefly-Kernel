@@ -15,17 +15,13 @@
 constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
-
-firefly::drivers::vga::cursor cout;
-firefly::drivers::vga::cursor &internal_cursor_handle() {
-    return cout;
-}
+// firefly::drivers::vga::cursor cout;
 
 void write_ff_info() {
     using firefly::drivers::vga::clear;
     clear();
 
-    firefly::kernel::main::cout << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
     firefly::std::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -33,15 +29,15 @@ void write_ff_info() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            firefly::kernel::main::cout << "\n\t";
+            puts("\n\t");
         }
-        firefly::kernel::main::cout << arr[i] << "  ";
+        printf("%s  ", arr[i]);
     }
-    firefly::kernel::main::cout << "\n";
+    puts("\n");
 }
 }  // namespace firefly::kernel::main
 
-
+firefly::kernel::main::Singleton firefly::kernel::main::Singleton::instance;
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
@@ -49,7 +45,7 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::core::gdt::init();
     firefly::drivers::vga::init();
     firefly::drivers::vga::cursor _cursor = { color::white, color::black, 0, 0 };
-    firefly::kernel::main::cout = _cursor;
+    firefly::kernel::main::Singleton::Get().internal_set_cursor_handle(_cursor);
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);

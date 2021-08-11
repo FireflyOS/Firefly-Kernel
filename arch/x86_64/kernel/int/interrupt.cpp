@@ -83,7 +83,7 @@ void init() {
 }
 
 void test_int() {
-    klog("testing interrupt 0...\n");
+    klog() << "testing interrupt 0...\n";
     asm volatile("int $80");
 }
 

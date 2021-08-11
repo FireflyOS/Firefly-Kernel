@@ -22,10 +22,7 @@
  *     firefly::libkern::get_cursor_handle() << "Num: " << 123 << firefly::libkern::endl;
 */
 
-#define klog(...) ({                                                         \
-    ((firefly::libkern::get_cursor_handle() << __FUNCTION__                  \
-                                            << ": " << __VA_ARGS__)); \
-})
+#define klog() firefly::libkern::get_cursor_handle() << __FUNCTION__ << ":" << static_cast<size_t>(__LINE__) << ": "
 
 namespace firefly::libkern {
 using namespace firefly::drivers::vga;
