@@ -9,6 +9,7 @@
 #include <i386/init/init.hpp>
 #include <i386/int/interrupt.hpp>
 #include <i386/multiboot2.hpp>
+#include <i386/drivers/serial.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -49,6 +50,14 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
+
+    firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
+    port.initialize();
+
+    port.send_chars("hello", 6);
+    char buff[10];
+    port.read_string(buff, 10);
+    klog() << "Serial port received: " << buff << '\n';
     // firefly::kernel::core::interrupt::test_int();
 
     //Printf test
