@@ -6,6 +6,8 @@ extern kernel_main
 VIRT_ADDR equ 0xFFFFFFFF80000000
 
 section .rodata
+%include "arch/x86_64/kernel/multiboot2.asm"
+
 gdt64:
     dq 0                                        ; zero entry
 .code: equ $ - gdt64                            ; code segment
@@ -36,14 +38,22 @@ header_start:
     dd header_end - header_start                ; header length
                                                 ; checksum
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start))
+header_end:
+framebuffer_tag_start:
+    dw MULTIBOOT_HEADER_TAG_FRAMEBUFFER
+    dw MULTIBOOT_HEADER_TAG_OPTIONAL
+    dd framebuffer_tag_end - framebuffer_tag_start
+    dd 0  ; Width - no preference
+    dd 0  ; Height - no preference
+    dd 0  ; bpp - no preference
+framebuffer_tag_end:
 
-                                                ; insert optional multiboot tags here
-
-                                                ; required end tag
+align 8
+tag_end:
     dw 0    ; type
     dw 0    ; flags
     dd 8    ; size
-header_end:
+tag_end_end:
 
 section .pm_stub
 bits 32
@@ -191,7 +201,6 @@ set_up_page_tables:
 
 .map_pt:                                        ; now map the page table to
                                                 ; the physical addresses up to the end of the kernel
-
     cmp eax, _kernel_end - VIRT_ADDR            ; passed kernel binary?
     je .done                                    ; yes, done mapping
     or eax, 0b11                                ; writable + present
@@ -234,3 +243,22 @@ long_mode_start:
     mov edi, [magic]
     mov esi, [multiboot2_struct]
     jmp kernel_main
+
+
+early_map:
+.setup:
+    ; early_map(void* from, void* to, int flags)
+    ; rsi = from
+    ; rdi = to
+    ; rdx = flags
+.map:
+    cmp eax, [rsi]; - VIRT_ADDR            ; Done mapping?
+    je .done                                    ; Done mapping
+    or eax, [rdx]                                 ; Set flags
+    mov dword [(pml1 - VIRT_ADDR) + ebx], eax   ; put into pml1
+    add ebx, 8                                  ; next index
+    and eax, ~0b11                              ; clear bottom two bits
+    add eax, 4096                               ; next physical 4KiB frame
+    jmp .map                                    ; map next entry
+.done:
+    ret

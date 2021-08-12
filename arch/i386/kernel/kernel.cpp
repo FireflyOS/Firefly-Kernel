@@ -5,6 +5,7 @@
 #include <stl/cstdlib/stdio.h>
 
 #include <i386/drivers/serial.hpp>
+#include <i386/drivers/vbe.hpp>
 #include <i386/drivers/vga.hpp>
 #include <i386/gdt/gdt.hpp>
 #include <i386/init/init.hpp>
@@ -16,8 +17,6 @@
 constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
-// firefly::drivers::vga::cursor cout;
-
 void write_ff_info() {
     using firefly::drivers::vga::clear;
     clear();
@@ -38,29 +37,17 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-firefly::kernel::main::Singleton firefly::kernel::main::Singleton::instance;
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
-    using firefly::drivers::vga::color;
-    using firefly::drivers::vga::cursor;
-
     firefly::kernel::core::gdt::init();
-    firefly::drivers::vga::init();
-    firefly::drivers::vga::cursor _cursor = { color::white, color::black, 0, 0 };
-    firefly::kernel::main::Singleton::Get().internal_set_cursor_handle(_cursor);
-    firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
+    firefly::kernel::main::write_ff_info();
 
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
-    // don't have to initialize port here for some god forsaken reason
-    
-    //Printf test
-    int res = printf("Hex: %x\n", 0xabc);
-    printf("%d chars were written\n", res);
-    printf("Address of res is: %X\n", &res);
-    printf("octal: %o\n", 100);
-    printf("long hex: 0x%x\n", 0xabcdef12);
+    port.send_chars("hello!");
 
+    klog("Klog test..");
+    
     while (1)
         ;
 }

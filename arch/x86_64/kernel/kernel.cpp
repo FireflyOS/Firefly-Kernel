@@ -5,6 +5,7 @@
 
 #include <x86_64/drivers/ps2.hpp>
 #include <x86_64/drivers/serial.hpp>
+// #include <x86_64/drivers/vbe.hpp>
 #include <x86_64/drivers/vga.hpp>
 #include <x86_64/init/init.hpp>
 #include <x86_64/int/interrupt.hpp>
@@ -53,17 +54,6 @@ extern "C" [[noreturn]] void kernel_main(uint64_t magic, uint64_t mb2_proto_stru
 
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("Hello world!");
-
-    //Printf test
-    int res = printf("Hex: %x\n", 0xabc);
-    printf("%d chars were written\n", res);
-    printf("Address of res is: %X\n", &res);
-    printf("octal: %o\n", 100);
-    printf("long hex: 0x%x\n", 0xabcdef12);
-
-    firefly::kernel::core::interrupt::test_int();
-
-    printf("Post interrupt");
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();

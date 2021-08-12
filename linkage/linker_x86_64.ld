@@ -3,7 +3,7 @@ ENTRY(start)
 VIRT_BASE = 0xFFFFFFFF80000000;
 
 SECTIONS {
-    . = 0x00200000;
+    . = 0x00100000;
 
     /* this is all used before mapping
        so give its labels physical addresses */

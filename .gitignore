@@ -31,3 +31,6 @@ binaries/
 
 # Makefile plugin
 /.vscode/*.log
+
+/Firefly-Kernel.code-workspace
+*.code-workspace
