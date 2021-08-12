@@ -1,7 +1,11 @@
 # Firefly-Kernel
 Kernel for FireflyOS
 
-![Firefly OS](docs/progress.png)
+## x64 demo:
+![Firefly OS](docs/x64-progress.png)
+
+## x86 demo:
+![Firefly OS x86](docs/x86-progress.png)
 
 ## Dependencies ##
  * NASM
