@@ -201,7 +201,6 @@ set_up_page_tables:
 
 .map_pt:                                        ; now map the page table to
                                                 ; the physical addresses up to the end of the kernel
-
     cmp eax, _kernel_end - VIRT_ADDR            ; passed kernel binary?
     je .done                                    ; yes, done mapping
     or eax, 0b11                                ; writable + present
@@ -244,3 +243,22 @@ long_mode_start:
     mov edi, [magic]
     mov esi, [multiboot2_struct]
     jmp kernel_main
+
+
+early_map:
+.setup:
+    ; early_map(void* from, void* to, int flags)
+    ; rsi = from
+    ; rdi = to
+    ; rdx = flags
+.map:
+    cmp eax, [rsi]; - VIRT_ADDR            ; Done mapping?
+    je .done                                    ; Done mapping
+    or eax, [rdx]                                 ; Set flags
+    mov dword [(pml1 - VIRT_ADDR) + ebx], eax   ; put into pml1
+    add ebx, 8                                  ; next index
+    and eax, ~0b11                              ; clear bottom two bits
+    add eax, 4096                               ; next physical 4KiB frame
+    jmp .map                                    ; map next entry
+.done:
+    ret

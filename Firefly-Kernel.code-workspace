@@ -18,7 +18,8 @@
 			"initializer_list": "cpp",
 			"new": "cpp",
 			"type_traits": "cpp",
-			"utility": "cpp"
+			"utility": "cpp",
+			"gfx.h": "c"
 		}
 	}
 }

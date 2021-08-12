@@ -53,8 +53,12 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("hello!");
 
-    for (int i = 0; i < 100; i++)
-        firefly::drivers::vbe::put_pixel(i, 0, 0xFFFFFF);
+    firefly::drivers::vbe::puts("Hello VBE!\n");
+    // firefly::drivers::vbe::puts("Hello!\n");
+    // firefly::drivers::vbe::puts("world!!\n");
+    // firefly::drivers::vbe::puts("Watch the above strings get moved up!\n");
+    // firefly::drivers::vbe::scroll();
+    // firefly::drivers::vbe::scroll();
 
     while (1)
         ;
