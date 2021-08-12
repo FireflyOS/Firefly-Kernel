@@ -37,29 +37,17 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-firefly::kernel::main::Singleton firefly::kernel::main::Singleton::instance;
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
-    using firefly::drivers::vga::color;
-    using firefly::drivers::vga::cursor;
-
     firefly::kernel::core::gdt::init();
-    firefly::drivers::vga::init();
-    firefly::drivers::vga::cursor _cursor = { color::white, color::black, 0, 0 };
-    firefly::kernel::main::Singleton::Get().internal_set_cursor_handle(_cursor);
-    firefly::kernel::main::write_ff_info();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
+    firefly::kernel::main::write_ff_info();
 
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("hello!");
 
-    firefly::drivers::vbe::puts("Hello VBE!\n");
-    // firefly::drivers::vbe::puts("Hello!\n");
-    // firefly::drivers::vbe::puts("world!!\n");
-    // firefly::drivers::vbe::puts("Watch the above strings get moved up!\n");
-    // firefly::drivers::vbe::scroll();
-    // firefly::drivers::vbe::scroll();
-
+    klog("Klog test..");
+    
     while (1)
         ;
 }

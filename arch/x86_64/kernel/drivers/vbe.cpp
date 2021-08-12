@@ -17,6 +17,8 @@ static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
 static uint8_t VBE_FONT[4096];
 
+static bool check_special(char c);
+
 void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h) {
     if (size > 4096) {
         //Font size not supported...
@@ -31,6 +33,7 @@ void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h) {
 }
 
 void putc(char c, int x, int y) {
+    check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
             if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
@@ -38,9 +41,11 @@ void putc(char c, int x, int y) {
             }
         }
     }
+    console_x += glyph_width;
 }
 
 void putc(char c, int x, int y, int color) {
+    check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
             if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
@@ -48,12 +53,18 @@ void putc(char c, int x, int y, int color) {
             }
         }
     }
+    console_x += glyph_width;
+}
+
+void putc(char c)
+{
+    putc(c, console_x, console_y);
 }
 
 static bool check_special(char c) {
     //Todo: Check if c will go out of bounds
     if (c == '\n') {
-        if ((size_t)console_y > framebuffer_height) {
+        if (static_cast<size_t>(console_y) > framebuffer_height) {
             scroll();
         }
         console_y += glyph_height;
@@ -79,7 +90,6 @@ void puts(const char* str) {
             continue;
         }
         putc(str[i++], console_x, console_y);
-        console_x += glyph_width;
     }
 }
 
@@ -95,7 +105,7 @@ void put_pixel(int x, int y, int color) {
 
 void early_init(multiboot_tag_framebuffer* grub_fb) {
     //TODO: Identity map the framebuffer before using it! (Requires a vmm, we'll get back to it later)
-    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr))+0xFFFFFFFF80000000;
+    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr)) + 0xFFFFFFFF80000000;
     framebuffer_pitch = grub_fb->common.framebuffer_pitch;
     framebuffer_height = grub_fb->common.framebuffer_height;
     framebuffer_width = grub_fb->common.framebuffer_width;

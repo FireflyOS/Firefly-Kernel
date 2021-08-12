@@ -15,6 +15,8 @@ static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
 static uint8_t VBE_FONT[4096];
 
+static bool check_special(char);
+
 void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h) {
     if (size > 4096) {
         //Font size not supported...
@@ -29,23 +31,32 @@ void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h) {
 }
 
 void putc(char c, int x, int y) {
+    check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
-            if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
+            if (VBE_FONT[(c * glyph_height) + height] bitand (1 << width)) {
                 put_pixel(x + glyph_width - width, y + height, 0xFFFFFF);
             }
         }
     }
+    console_x += glyph_width;
+}
+
+void putc(char c)
+{
+    putc(c, console_x, console_y);
 }
 
 void putc(char c, int x, int y, int color) {
+    check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
-            if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
+            if (VBE_FONT[(c * glyph_height) + height] bitand (1 << width)) {
                 put_pixel(x + glyph_width - width, y + height, color);
             }
         }
     }
+    console_x += glyph_width;
 }
 
 static bool check_special(char c) {
@@ -77,7 +88,6 @@ void puts(const char* str) {
             continue;
         }
         putc(str[i++], console_x, console_y);
-        console_x += glyph_width;
     }
 }
 
