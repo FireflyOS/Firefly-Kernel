@@ -36,7 +36,7 @@ void putc(char c, int x, int y) {
     check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
-            if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
+            if (VBE_FONT[(c * glyph_height) + height] bitand (1 << width)) {
                 put_pixel(x + glyph_width - width, y + height, 0xFFFFFF);
             }
         }
@@ -48,7 +48,7 @@ void putc(char c, int x, int y, int color) {
     check_special(c);
     for (int height = 0; height < glyph_height; height++) {
         for (int width = 0; width < glyph_width; width++) {
-            if (VBE_FONT[(c * glyph_height) + height] & (1 << width)) {
+            if (VBE_FONT[(c * glyph_height) + height] bitand (1 << width)) {
                 put_pixel(x + glyph_width - width, y + height, color);
             }
         }
