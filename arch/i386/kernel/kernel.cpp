@@ -39,10 +39,10 @@ void write_ff_info() {
 
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     firefly::kernel::core::gdt::init();
-    firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
     firefly::kernel::main::write_ff_info();
-
+    firefly::kernel::core::interrupt::init();
+    firefly::kernel::core::interrupt::test_int();
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("hello!");
 

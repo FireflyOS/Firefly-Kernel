@@ -2,7 +2,7 @@
 
 namespace firefly::kernel::core::gdt {
 
-segment_descriptor_t gdt[GDT_ENTRIES];
+static segment_descriptor_t gdt[GDT_ENTRIES];
 
 void generate_descriptor(int index, uint32_t base, size_t limit, uint8_t access, uint8_t gran) {
     *reinterpret_cast<uint32_t*>(&gdt) = 0;
@@ -40,9 +40,9 @@ void init() {
     generate_descriptor(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 
 
-    gdt_descriptor.size = sizeof(gdt_descriptor_t) * GDT_ENTRIES - 1;
+    gdt_descriptor.size = sizeof(struct gdt_descriptor_t) * GDT_ENTRIES - 1;
     gdt_descriptor.offset = reinterpret_cast<uint32_t>(&gdt);
-    gdt_flush(reinterpret_cast<uint32_t>(&gdt_descriptor));
+    gdt_flush((uint32_t)&gdt_descriptor);
 }
 
 }  // namespace firefly::kernel::core::gdt

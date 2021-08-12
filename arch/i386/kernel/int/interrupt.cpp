@@ -28,7 +28,7 @@ struct __attribute__((packed)) iframe {
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
 __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe);
 
-idt_gate idt[256] = {};
+static idt_gate idt[256] = {};
 namespace change {
 void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = handler & 0xffff;
@@ -41,7 +41,7 @@ void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index) {
 //Hardcoded values as this is only meant for initialisation work by interrupt.cpp
 //Use the non-static version of "update" to update the idt at a global level
 static void initial_update(uint32_t handler, uint8_t index) {
-    change::update(handler, 0x10 /* CHANGE ME */, 0x8E, index);
+    change::update(handler, 0x08, 0x8E, index);
 }
 
 }  // namespace change
@@ -68,13 +68,13 @@ void init() {
     for (; i < 256; i++)
         change::initial_update(reinterpret_cast<uint32_t>(exception_wrapper), i);
 
-    asm("lidt %0" ::"m"(idtr)
+    asm volatile("lidt %0" ::"m"(idtr)
         : "memory");
 }
 
 void test_int() {
     klog("testing interrupt 0...\n");
-    asm volatile("int $80");
+    asm volatile("int $0");
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {

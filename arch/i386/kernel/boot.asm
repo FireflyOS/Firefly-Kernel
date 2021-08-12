@@ -31,8 +31,15 @@ tag_end:
 tag_end_end:
 header_end:
 
+section .bss
+stack_bottom:
+    resb 65536
+stack_top:
+
 section .pm_stub
 start:
+    mov esp, stack_top
+
     push 0
     popf
     
