@@ -57,8 +57,9 @@ namespace firefly::kernel::io {
      *                      Delays a small amount of time
      *                      to give devices time to process
      */
-    inline void io_pause() {
+    inline void io_wait() {
         // dummy write, port 0x80 unused after POST
-        asm volatile("outb %al, $0x80");
+        outb(0x80, 0);
     }
+
 }  // namespace firefly::kernel::io
