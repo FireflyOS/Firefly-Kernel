@@ -18,8 +18,8 @@ static_assert(8 == sizeof(idt_gate), "idt_gate size incorrect");
 
 struct __attribute__((packed)) iframe {
     uint32_t eip;
-    uint32_t cs; 
-    uint32_t eflags; 
+    uint32_t cs;
+    uint32_t eflags;
     uint32_t esp;
     uint32_t ss;
 };
@@ -64,12 +64,13 @@ void init() {
     int i = 0;
     for (; i <= 31; i++)
         change::initial_update(reinterpret_cast<uint32_t>(interrupt_wrapper), i);
-    for (; i < 256; i++)
-        change::initial_update(reinterpret_cast<uint32_t>(exception_wrapper), i);
 
     firefly::kernel::core::pic::PIC pic{};
     pic.initialize(0x20, 0x28);
     
+    for (; i < 256; i++)
+        change::initial_update(reinterpret_cast<uint32_t>(exception_wrapper), i);
+
     asm volatile("lidt %0" ::"m"(idtr)
                  : "memory");
 }

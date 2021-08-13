@@ -3,7 +3,6 @@
 
 #include <x86_64/drivers/vga.hpp>
 
-#include "array.h"
 
 using namespace firefly::drivers::vga;
 
@@ -62,7 +61,7 @@ struct __attribute__((packed)) idt_reg {
     /**
          *                  base address of idt
          */
-    idt_gate* base;
+    idt_gate *base;
 } idtr = {
     .limit = (sizeof(struct idt_gate) * 256) - 1,
     .base = idt
@@ -76,15 +75,13 @@ void init() {
     for (; i < 256; i++)
         change::initial_update(exception_wrapper, i);
 
-    printf("Address of idtr: %X\n", &idtr);
-    printf("idtr.base %d, idtr.limit %d\n", idtr.base, idtr.limit);
     asm("lidt %0" ::"m"(idtr)
         : "memory");
 }
 
 void test_int() {
     klog() << "testing interrupt 0...\n";
-    asm volatile("int $80");
+    asm volatile("int $0");
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
