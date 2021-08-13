@@ -7,6 +7,7 @@ section .rodata
 %include "arch/i386/kernel/multiboot2.asm"
 
 section .multiboot_header
+; align 8
 header_start:
     dd MULTIBOOT2_HEADER_MAGIC                  ; magic number (multiboot 2)
     dd 0                                        ; architecture 0 (protected mode i386)

@@ -15,12 +15,14 @@ $(TARGET): $(CONV_FILES)
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
 ifeq ($(ARCH), i386)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init

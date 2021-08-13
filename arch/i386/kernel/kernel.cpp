@@ -18,9 +18,6 @@ constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
 void write_ff_info() {
-    using firefly::drivers::vga::clear;
-    clear();
-
     printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
     firefly::std::array<const char *, 3> arr = {
@@ -42,7 +39,6 @@ extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[m
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
     firefly::kernel::main::write_ff_info();
-    firefly::kernel::core::interrupt::test_int();
     
     while (1)
         ;
