@@ -2,6 +2,7 @@
 #include <i386/libk++/iostream.h>
 
 #include <i386/drivers/vga.hpp>
+#include <i386/int/pic.hpp>
 
 using namespace firefly::drivers::vga;
 
@@ -17,18 +18,16 @@ static_assert(8 == sizeof(idt_gate), "idt_gate size incorrect");
 
 struct __attribute__((packed)) iframe {
     uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
+    uint32_t cs; 
+    uint32_t eflags; 
     uint32_t esp;
     uint32_t ss;
-    uint32_t err;
-    uint32_t int_no;
 };
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
 __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe);
 
-idt_gate idt[256] = {};
+static idt_gate idt[256] = {};
 namespace change {
 void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = handler & 0xffff;
@@ -41,7 +40,7 @@ void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index) {
 //Hardcoded values as this is only meant for initialisation work by interrupt.cpp
 //Use the non-static version of "update" to update the idt at a global level
 static void initial_update(uint32_t handler, uint8_t index) {
-    change::update(handler, 0x10 /* CHANGE ME */, 0x8E, index);
+    change::update(handler, 0x08, 0x8E, index);
 }
 
 }  // namespace change
@@ -68,16 +67,19 @@ void init() {
     for (; i < 256; i++)
         change::initial_update(reinterpret_cast<uint32_t>(exception_wrapper), i);
 
-    asm("lidt %0" ::"m"(idtr)
-        : "memory");
+    firefly::kernel::core::pic::PIC pic{};
+    pic.initialize(0x20, 0x28);
+    
+    asm volatile("lidt %0" ::"m"(idtr)
+                 : "memory");
 }
 
 void test_int() {
     klog("testing interrupt 0...\n");
-    asm volatile("int $80");
+    asm volatile("int $0");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
+__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper(iframe *iframe) {
     printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->eip);
     printf("ESP: %X\n", iframe->esp);
@@ -87,7 +89,7 @@ __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[ma
         asm("cli;hlt");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
+__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper(iframe *iframe) {
     printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->eip);
     printf("ESP: %X\n", iframe->esp);

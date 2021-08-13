@@ -40,8 +40,6 @@ void write_ff_info() {
 
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     firefly::kernel::core::gdt::init();
-    // firefly::kernel::core::pic::PIC pic{};
-    // pic.initialize(0x20, 0x28);
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
     firefly::kernel::main::write_ff_info();
