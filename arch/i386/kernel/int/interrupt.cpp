@@ -41,7 +41,7 @@ void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index) {
 //Hardcoded values as this is only meant for initialisation work by interrupt.cpp
 //Use the non-static version of "update" to update the idt at a global level
 static void initial_update(uint32_t handler, uint8_t index) {
-    change::update(handler, 0x10 /* CHANGE ME */, 0x8E, index);
+    change::update(handler, 0x08, 0x8E, index);
 }
 
 }  // namespace change

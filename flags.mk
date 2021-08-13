@@ -72,6 +72,7 @@ $(info )
 CXX_FLAGS =						\
 	-I./include/		 		\
 	-I./include/stl/			\
+	-ggdb						\
 	-target i386-unknown-elf	\
 	-m32						\
 	-mcmodel=kernel				\

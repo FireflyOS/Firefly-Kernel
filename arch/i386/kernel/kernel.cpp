@@ -9,7 +9,6 @@
 #include <i386/drivers/vga.hpp>
 #include <i386/gdt/gdt.hpp>
 #include <i386/init/init.hpp>
-#include <i386/int/pic.hpp>
 #include <i386/int/interrupt.hpp>
 #include <i386/multiboot2.hpp>
 
@@ -40,16 +39,12 @@ void write_ff_info() {
 
 extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
     firefly::kernel::core::gdt::init();
-    // firefly::kernel::core::pic::PIC pic{};
-    // pic.initialize(0x20, 0x28);
-    firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
     firefly::kernel::main::write_ff_info();
-
+    firefly::kernel::core::interrupt::init();
+    firefly::kernel::core::interrupt::test_int();
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("hello!");
-
-    firefly::kernel::core::interrupt::test_int();
 
     klog("Klog test..");
     
