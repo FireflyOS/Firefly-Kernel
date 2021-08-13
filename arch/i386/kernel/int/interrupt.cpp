@@ -2,6 +2,7 @@
 #include <i386/libk++/iostream.h>
 
 #include <i386/drivers/vga.hpp>
+#include <i386/int/pic.hpp>
 
 using namespace firefly::drivers::vga;
 
@@ -21,8 +22,6 @@ struct __attribute__((packed)) iframe {
     uint32_t eflags;
     uint32_t esp;
     uint32_t ss;
-    uint32_t err;
-    uint32_t int_no;
 };
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
@@ -65,11 +64,15 @@ void init() {
     int i = 0;
     for (; i <= 31; i++)
         change::initial_update(reinterpret_cast<uint32_t>(interrupt_wrapper), i);
+
+    firefly::kernel::core::pic::PIC pic{};
+    pic.initialize(0x20, 0x28);
+    
     for (; i < 256; i++)
         change::initial_update(reinterpret_cast<uint32_t>(exception_wrapper), i);
 
     asm volatile("lidt %0" ::"m"(idtr)
-        : "memory");
+                 : "memory");
 }
 
 void test_int() {
@@ -77,7 +80,7 @@ void test_int() {
     asm volatile("int $0");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
+__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper(iframe *iframe) {
     printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->eip);
     printf("ESP: %X\n", iframe->esp);
@@ -87,7 +90,7 @@ __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[ma
         asm("cli;hlt");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
+__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper(iframe *iframe) {
     printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->eip);
     printf("ESP: %X\n", iframe->esp);
