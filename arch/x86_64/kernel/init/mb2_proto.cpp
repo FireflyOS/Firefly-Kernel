@@ -63,3 +63,4 @@ void init(uint64_t magic, [[maybe_unused]] uint64_t mb2_struct_address) {
     }
 }
 }  // namespace firefly::kernel::mb2proto
+
