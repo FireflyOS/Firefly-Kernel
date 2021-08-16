@@ -2,6 +2,7 @@
 
 #include "cstdlib/cmath.h"
 #include "cstdlib/cstdint.h"
+#include "array.h"
 
 constexpr static inline size_t LARGEST_CHUNK = 1048576UL;
 constexpr static inline size_t SMALLEST_CHUNK = 4096 * 4 * 4UL;  // 64 kib
@@ -36,30 +37,53 @@ struct BuddyNode {
     bool is_free() const noexcept;
 
     Chunk* to_chunk(BuddyAllocator* buddy) const noexcept;
+
+    void split(BuddyAllocator* buddy) noexcept;
+    void merge_buddy(BuddyAllocator* buddy) noexcept;
 };
 
 struct Chunk {
     BuddyNode root;
     uint8_t can_be_allocated : 1;
-    uint8_t order_four_count : 1;
-    uint8_t order_three_count : 2;
-    uint8_t order_two_free : 3;
-    uint8_t order_one_free : 4;
-    uint8_t order_zero_free : 5;
+    firefly::std::array<uint8_t, 5> free_values;
+
+    bool can_allocate(uint8_t order) const noexcept;
+    BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;
 };
 
 struct BuddyInfoHeap {
-    BuddyNode* buddy;
+    Chunk* buddy;
     uint8_t largest_order_free;
 
     bool operator<(BuddyInfoHeap const& rhs) const noexcept;
     bool operator>(BuddyInfoHeap const& rhs) const noexcept;
 };
 
+struct BuddyTreeHeap {
+    BuddyInfoHeap* base;
+    size_t _size = 0;
+
+    size_t size();
+
+    size_t parent(size_t index);
+
+    size_t left(size_t index);
+
+    size_t right(size_t index);
+
+    void heapify_down(size_t i);
+
+    void heapify_up(size_t i);
+
+    BuddyInfoHeap* push(BuddyAllocator* buddy, BuddyInfoHeap key);
+
+    BuddyInfoHeap& max();
+};
 
 class BuddyAllocator {
 public:
     Chunk* base_address;
+    BuddyTreeHeap buddy_heap;
 
     BuddyAllocator(void* base_address);
 
@@ -80,23 +104,3 @@ public:
     void deallocate(void* addr);
 };
 
-struct BuddyTreeHeap {
-    BuddyInfoHeap* base;
-    size_t _size = 0;
-
-    size_t size();
-
-    size_t parent(size_t index);
-
-    size_t left(size_t index);
-
-    size_t right(size_t index);
-
-    void heapify_down(size_t i);
-
-    void heapify_up(size_t i);
-
-    BuddyInfoHeap* push(BuddyAllocator& buddy, BuddyInfoHeap key);
-
-    BuddyInfoHeap& max();
-};
