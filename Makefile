@@ -41,6 +41,10 @@ clean:
 	rm binaries/boot/kernel_x86_64.elf || echo ""
 	rm include/stl/stdio.o include/stl/cstd.o
 
+windows:
+	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
+	qemu-system-$(ARCH).exe -d int -M smm=off -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) 
+
 run:
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
