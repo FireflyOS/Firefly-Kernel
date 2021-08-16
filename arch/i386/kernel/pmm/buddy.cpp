@@ -21,9 +21,8 @@ bool BuddyNode::is_free() const noexcept {
 	return !is_split() && !is_taken();
 }
 
-Chunk* BuddyNode::to_chunk() const noexcept {
-	return nullptr;
-	// buddy allocator -> chunk_for(physical_addr);
+Chunk* BuddyNode::to_chunk(BuddyAllocator* buddy) const noexcept {
+	return buddy->chunk_for(physical_addr);
 }
 
 bool BuddyInfoHeap::operator<(BuddyInfoHeap const& rhs) const noexcept {
@@ -58,6 +57,18 @@ size_t BuddyAllocator::estimate_memory_used(size_t address_range) {
 	return calculate_nodes_for_max_order() * trees_count * sizeof(BuddyNode) +
 		// Chunk that contains the counters too
 		sizeof(Chunk);
+}
+
+// optional somehow
+int8_t BuddyAllocator::order_for(size_t bytes) noexcept {
+	if (bytes > LARGEST_CHUNK) {
+		return -1;
+	}
+	int8_t result = 0; // default with an order 0 node, we start with smallest
+	while (SMALLEST_CHUNK * pow(2, result) < bytes) { 
+		result++;		
+	}
+	return result;
 }
 
 Chunk* BuddyAllocator::chunk_for(void* address) {

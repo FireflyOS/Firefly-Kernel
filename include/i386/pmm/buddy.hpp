@@ -1,24 +1,25 @@
 #pragma once
 
-#include "cstdlib/cstdint.h"
 #include "cstdlib/cmath.h"
+#include "cstdlib/cstdint.h"
 
-constexpr static inline size_t LARGEST_CHUNK = 2 * 1048576;
-constexpr static inline size_t SMALLEST_CHUNK = 2 * 4096 * 4 * 4; // 64 kib
+constexpr static inline size_t LARGEST_CHUNK = 1048576UL;
+constexpr static inline size_t SMALLEST_CHUNK = 4096 * 4 * 4UL;  // 64 kib
 // casually casting a double to size_t because we _know_ that a power of 2 divided by a power of 2 that's larger
 // will return an integer.
 const static inline uint8_t MAXIMUM_ORDER = static_cast<uint8_t>(log2(LARGEST_CHUNK / SMALLEST_CHUNK));
 
 struct Chunk;
+class BuddyAllocator;
 
 // Do we want to store amount of memory that has been taken for the so-called zero nodes?
 // probably not cause that memory doesn't have to be located next to eachother
 struct BuddyNode {
-    void* physical_addr; // this is always the same as split_one's physical address...
+    void* physical_addr;  // this is always the same as split_one's physical address...
 
     BuddyNode* split_one;
     BuddyNode* split_two;
-    
+
     BuddyNode* parent;
 
     uint8_t order : 6;
@@ -34,16 +35,17 @@ struct BuddyNode {
     // that means that this node hasn't yet been allocated from
     bool is_free() const noexcept;
 
-    Chunk* to_chunk() const noexcept;
+    Chunk* to_chunk(BuddyAllocator* buddy) const noexcept;
 };
 
 struct Chunk {
     BuddyNode root;
+    uint8_t can_be_allocated : 1;
     uint8_t order_four_count : 1;
-    uint8_t order_three_count : 1;
-    uint8_t order_two_free : 1;
-    uint8_t order_one_free : 1;
-    uint8_t order_zero_free : 1;
+    uint8_t order_three_count : 2;
+    uint8_t order_two_free : 3;
+    uint8_t order_one_free : 4;
+    uint8_t order_zero_free : 5;
 };
 
 struct BuddyInfoHeap {
@@ -63,7 +65,8 @@ public:
 
     static size_t calculate_nodes_for_max_order();
     static size_t estimate_memory_used(size_t address_range);
-
+    
+    static int8_t order_for(size_t bytes) noexcept;
     Chunk* chunk_for(void* address);
 
     void initialize(size_t memory_available, char* memory_base);
