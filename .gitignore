@@ -31,3 +31,5 @@ binaries/
 
 # Makefile plugin
 /.vscode/*.log
+
+/build/

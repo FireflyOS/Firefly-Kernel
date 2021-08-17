@@ -52,7 +52,7 @@ BuddyNode* BuddyNode::get_right_child() {
 }
 
 BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
-    if (_order == node->order && is_free() && !is_split()) {
+    if (_order == node->order && node->is_free() && !node->is_split()) {
         return node;
     }
 
@@ -98,7 +98,7 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
         return &root;
     }
 
-    return lambda(&root)->get_parent();
+    return lambda(&root, buddy, order)->get_parent();
 }
 
 
@@ -131,7 +131,7 @@ void BuddyNode::split(BuddyAllocator* buddy) noexcept {
 }
 
 void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
-    parent->_is_split = false;
+    get_parent()->_is_split = false;
     auto chunk = to_chunk(buddy);
     if (order == MAXIMUM_ORDER) {
         // can't merge a maximum order node
@@ -232,7 +232,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         buddy_heap.push(this, BuddyInfoHeap{
                                   reinterpret_cast<Chunk*>(memory_base) + i,
-                                  MAXIMUM_ORDER });
+                                  static_cast<int8_t>(MAXIMUM_ORDER) });
     }
 }
 
@@ -284,7 +284,7 @@ void* BuddyAllocator::allocate(uint8_t order) {
         return nullptr;
     }
     auto buddy = max.buddy->get_free_buddy(this, order);
-    auto physical_addr = nullptr;
+    void* physical_addr = nullptr;
     if (order == MAXIMUM_ORDER) {
         buddy->_is_taken = true;
         physical_addr = buddy->physical_addr;
@@ -306,22 +306,20 @@ void* BuddyAllocator::allocate(uint8_t order) {
     return physical_addr;
 }
 
-// true if it's the left one
-firefly::std::pair<BuddyNode*, bool> deallocate_find(void* addr, BuddyNode* buddy, uint8_t order) {
+BuddyNode* deallocate_find(void* addr, BuddyNode* buddy, uint8_t order) {
     if (buddy->physical_addr == addr && order == buddy->order) {
-        return buddy;
-    }
+        return buddy;    }
 
     if (buddy->get_left_child() == nullptr) {
         return nullptr;
     }
 
-    auto one = deallocate_find(addr, buddy->get_left_child());
+    auto one = deallocate_find(addr, buddy->get_left_child(), order);
     if (one) {
         return one;
     }
 
-    auto two = deallocate_find(addr, buddy->get_right_child());
+    auto two = deallocate_find(addr, buddy->get_right_child(), order);
     if (two) {
         return one;
     }
@@ -332,15 +330,15 @@ firefly::std::pair<BuddyNode*, bool> deallocate_find(void* addr, BuddyNode* budd
 void BuddyAllocator::deallocate(void* addr, uint8_t order) {
     auto chunk = chunk_for(addr);
     if (order == MAXIMUM_ORDER) {
-        chunk->root->_is_taken = false;
-        chunk->root->_is_split = false;
+        chunk->root._is_taken = false;
+        chunk->root._is_split = false;
         firefly::std::fill(chunk->free_values.begin(), chunk->free_values.end(), 0);
         chunk->free_values[MAXIMUM_ORDER] = 1;
     }
 
-    auto& [allocated_buddy, is_left] = deallocate_find(chunk->root, this, order);
+    auto allocated_buddy = deallocate_find(addr, &chunk->root, order);
     if (!allocated_buddy) {
-        return nullptr;
+        return;
     }
     auto other = allocated_buddy->get_matching_buddy();
     if (other->is_free()) {
@@ -348,7 +346,7 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
     }
 
     chunk->free_values[order]--;
-    chunk->fix_heap();
+    chunk->fix_heap(this);
 }
 
 void Chunk::fix_heap(BuddyAllocator* buddy) {
@@ -359,21 +357,21 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
     }
 
     auto heap_element = buddy->heap_index(heap_index);
-    auto before = heap_element.largest_order_free;
+    auto before = heap_element->largest_order_free;
     if (max_order == before) {
         // we merged / split but the maximum available size didn't chagne
         return;
     }
-    heap_element.largest_order_free = max_order;
+    heap_element->largest_order_free = max_order;
     if (max_order > before) {
-        heap_element->heapify_up(heap_index);
+        buddy->buddy_heap.heapify_up(heap_index);
     } else {
-        heap_element->heapify_down(heap_index);
+        buddy->buddy_heap.heapify_down(heap_index);
     }
 }
 
 BuddyInfoHeap* BuddyAllocator::heap_index(size_t idx) {
-    return buddy_heap.base[idx];
+    return buddy_heap.base + idx;
 }
 
 size_t BuddyTreeHeap::size() {
