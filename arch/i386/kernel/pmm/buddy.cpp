@@ -10,25 +10,29 @@ bool Chunk::can_allocate(uint8_t order) const noexcept {
     return free_values[order] || can_allocate(order + 1);
 }
 
-BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t order) {
-    auto left = lambda(node->left_split, buddy, order);
+BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
+    if (_order == node->order && is_free() && !is_split()) {
+        return node;
+    }
+
+    auto left = lambda(node->left_split, buddy, _order);
     if (left) {
         return left->parent;
     }
 
-    auto right = lambda(node->right_split, buddy, order);
+    auto right = lambda(node->right_split, buddy, _order);
     if (right) {
         return right->parent;
     }
 
     // neither right nor left is found, we gotta split
-    auto to_split_left = lambda(node->left_split, buddy, order - 1);
+    auto to_split_left = lambda(node->left_split, buddy, _order - 1);
     if (to_split_left) {
         to_split_left->split(buddy);
         return to_split_left->split_one;
     }
 
-    auto to_split_right = lambda(node->right_split, buddy, order - 1); 
+    auto to_split_right = lambda(node->right_split, buddy, _order - 1); 
     if (to_split_right) {
         to_split_right->split(buddy);
         return to_split_right->split_one;
@@ -53,7 +57,7 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
         return &root;
     }
 
-    return lambda(&root);
+    return lambda(&root)->parent;
 }
 
 
