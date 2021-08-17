@@ -298,7 +298,7 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
         chunk->free_values[MAXIMUM_ORDER] = 1;
     }
 
-    auto& [allocated_buddy, is_left] = deallocate_find(chunk->root);
+    auto& [allocated_buddy, is_left] = deallocate_find(chunk->root, this, order);
     if (!allocated_buddy) {
         return nullptr;
     }
