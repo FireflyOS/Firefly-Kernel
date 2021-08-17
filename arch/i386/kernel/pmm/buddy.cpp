@@ -132,9 +132,9 @@ size_t BuddyAllocator::calculate_nodes_for_max_order() {
 
 size_t BuddyAllocator::estimate_memory_used(size_t address_range) {
     size_t trees_count = (address_range / LARGEST_CHUNK);
-    return calculate_nodes_for_max_order() * trees_count * sizeof(BuddyNode) +
-           // Chunk that contains the counters too
-           sizeof(Chunk);
+    auto trees_size = calculate_nodes_for_max_order() * trees_count * (sizeof(BuddyNode) + sizeof(Chunk));
+    auto heap_size = trees_count * sizeof(BuddyInfoHeap);
+    return trees_size + heap_size;
 }
 
 // optional somehow
