@@ -4,33 +4,13 @@ TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
 ISO = FireflyOS_$(ARCH).iso
 
 
-all: create_dirs $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(CONV_FILES)
-	$(MAKE) -C ./include/stl # Build STL before linking
-	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	ld.lld -o $@ --no-undefined -T $(SOURCE_DIR)/linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
 	
-# TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
-create_dirs:
-ifeq ($(ARCH), x86_64)
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
-endif
-ifeq ($(ARCH), i386)
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
-endif
-
 target_archs:
 	@printf "Supported architectures:\n";
 	@printf "x86_64\n";
