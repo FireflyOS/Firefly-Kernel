@@ -15,6 +15,9 @@ bool BuddyNode::is_right() const noexcept {
 }
 
 BuddyNode* BuddyNode::get_matching_buddy() {
+    if (order == MAXIMUM_ORDER) {
+        return nullptr;
+    }
     // if is_right -> to the left
     // else -> to the right
     auto addition = -_is_right * (pow(2, order) - 1);
@@ -22,6 +25,9 @@ BuddyNode* BuddyNode::get_matching_buddy() {
 }
 
 BuddyNode* BuddyNode::get_parent() {
+    if (order == MAXIMUM_ORDER) {
+        return nullptr;
+    }
     // if is_right -> this - pow(2, order + 1)
     // else this - 1
     auto offset = 1;
@@ -29,6 +35,20 @@ BuddyNode* BuddyNode::get_parent() {
         offset = pow(2, order + 1);
     }
     return this - offset;
+}
+
+BuddyNode* BuddyNode::get_left_child() {
+    if (order == 0) {
+        return nullptr;
+    }
+    return this + 1;
+}
+
+BuddyNode* BuddyNode::get_right_child() {
+    if (order == 0) {
+        return nullptr;
+    }
+    return this + pow(2, order);
 }
 
 BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
@@ -50,13 +70,13 @@ BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
     auto to_split_left = lambda(node->left_split, buddy, _order - 1);
     if (to_split_left) {
         to_split_left->split(buddy);
-        return to_split_left->split_one;
+        return to_split_left->get_left_child();
     }
 
     auto to_split_right = lambda(node->right_split, buddy, _order - 1); 
     if (to_split_right) {
         to_split_right->split(buddy);
-        return to_split_right->split_one;
+        return to_split_right->get_left_child();
     }
 
     return nullptr; // we couldn't find an already existing node
@@ -178,7 +198,6 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  * Initializes the BuddyNode[] @ base_address, where the nodes describe
  * the structure of memory_base address until memory_base + memory_available
  *
- *
  * char* so we get mathematical operations on the pointer
  * 
  * Creation order:
@@ -199,14 +218,14 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
         node->root.physical_addr = memory_base + (i * LARGEST_CHUNK);
         node->root.order = MAXIMUM_ORDER;
         node->free_values[MAXIMUM_ORDER] = 1;  // only an order 4 node is available.
-        node->root.split_one = alloc_buddy_node();
-        node->root.split_two = alloc_buddy_node();
-        node->root.split_one->order = 1;
-        node->root.split_two->order = 1;
+        auto left_child = alloc_buddy_node();
+        auto right_child = alloc_buddy_node();
+        left_child->order = 1;
+        right_child->order = 1;
 
         // zero-node has been created, create all the child nodes that we need.
-        create_tree_structure(node->root.split_one);
-        create_tree_structure(node->root.split_two);
+        create_tree_structure(left_child);
+        create_tree_structure(right_child);
     }
 
     // finalize, aka construct the heap.
@@ -270,9 +289,16 @@ void* BuddyAllocator::allocate(uint8_t order) {
         buddy->_is_taken = true;
         physical_addr = buddy->physical_addr;
     } else {
-        physical_addr = buddy->split_one->is_free() ? 
-                        buddy->split_one->physical_addr : 
-                        buddy->split_two->physical_addr;
+        auto left = buddy->get_left_child();
+        void* physical_addr = nullptr;
+        if (left->is_free()) {
+            left->_is_taken = true;
+            physical_addr = left->physical_addr;
+        } else {
+            auto right = buddy->get_right_child();
+            right->_is_taken = true;
+            physical_addr = right->physical_addr;
+        }
     }
     Chunk* chunk = this->chunk_for(physical_addr);
     chunk->free_values[order]--;
@@ -286,16 +312,16 @@ firefly::std::pair<BuddyNode*, bool> deallocate_find(void* addr, BuddyNode* budd
         return buddy;
     }
 
-    if (buddy->split_one == nullptr) {
+    if (buddy->get_left_child() == nullptr) {
         return nullptr;
     }
 
-    auto one = deallocate_find(addr, buddy->split_one);
+    auto one = deallocate_find(addr, buddy->get_left_child());
     if (one) {
         return one;
     }
 
-    auto two = deallocate_find(addr, buddy->split_two);
+    auto two = deallocate_find(addr, buddy->get_right_child());
     if (two) {
         return one;
     }
@@ -335,7 +361,7 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
     auto heap_element = buddy->heap_index(heap_index);
     auto before = heap_element.largest_order_free;
     if (max_order == before) {
-        // we merged but the maximum available size didn't chagne
+        // we merged / split but the maximum available size didn't chagne
         return;
     }
     heap_element.largest_order_free = max_order;

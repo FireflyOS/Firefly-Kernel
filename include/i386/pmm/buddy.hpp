@@ -18,9 +18,6 @@ class BuddyAllocator;
 struct BuddyNode {
     void* physical_addr;  // this is always the same as split_one's physical address...
 
-    BuddyNode* split_one;
-    BuddyNode* split_two;
-
     uint8_t order : 5;
     uint8_t _is_taken : 1;
     uint8_t _is_split : 1;
@@ -32,6 +29,8 @@ struct BuddyNode {
     bool is_taken() const noexcept;
     bool is_right() const noexcept;
 
+    BuddyNode* get_left_child();
+    BuddyNode* get_right_child();
     BuddyNode* get_parent();
     BuddyNode* get_matching_buddy();
 
