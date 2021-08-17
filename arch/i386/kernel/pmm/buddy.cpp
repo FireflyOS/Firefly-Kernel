@@ -238,14 +238,25 @@ void* BuddyAllocator::allocate(size_t bytes) {
     auto order = order_for(bytes);
     if (max.buddy->can_allocate(order)) {
         auto buddy = max.buddy->get_free_buddy(this, order);
+        auto physical_addr;
         if (order == MAXIMUM_ORDER) {
             buddy->_is_taken = true;
-            return buddy->physical_addr;
+            physical_addr = buddy->physical_addr;
         } else {
-            return buddy->split_one->is_free() ? 
-				   buddy->split_one->physical_addr : 
-				   buddy->split_two->physical_addr;
+            physical_addr = buddy->split_one->is_free() ? 
+				            buddy->split_one->physical_addr : 
+				            buddy->split_two->physical_addr;
         }
+        Chunk* chunk = this->chunk_for(physical_addr);
+        auto max = firefly::std::max_element(free_values.begin(), free_values.end());
+        uint8_t max_index = 0;
+        if (max == free_values.end()) {
+            max_index = -1;
+        } else {
+            max_index = *max;
+        }
+        chunk->heap_ptr.largest_order_free = max_index;
+        chunk->heap_ptr.rebalance();
     }
     return nullptr;
 }
