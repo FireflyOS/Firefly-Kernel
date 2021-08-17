@@ -56,24 +56,24 @@ BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
         return node;
     }
 
-    auto left = lambda(node->left_split, buddy, _order);
+    auto left = lambda(node->get_left_child(), buddy, _order);
     if (left) {
-        return left->get_parent();
+        return left;
     }
 
-    auto right = lambda(node->right_split, buddy, _order);
+    auto right = lambda(node->get_right_child(), buddy, _order);
     if (right) {
-        return right->get_parent();
+        return right;
     }
 
     // neither right nor left is found, we gotta split
-    auto to_split_left = lambda(node->left_split, buddy, _order - 1);
+    auto to_split_left = lambda(node->get_left_child(), buddy, _order - 1);
     if (to_split_left) {
         to_split_left->split(buddy);
         return to_split_left->get_left_child();
     }
 
-    auto to_split_right = lambda(node->right_split, buddy, _order - 1); 
+    auto to_split_right = lambda(node->get_right_child(), buddy, _order - 1); 
     if (to_split_right) {
         to_split_right->split(buddy);
         return to_split_right->get_left_child();
