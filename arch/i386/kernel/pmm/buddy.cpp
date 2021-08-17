@@ -180,6 +180,16 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  *
  *
  * char* so we get mathematical operations on the pointer
+ * 
+ * Creation order:
+ *         0
+ *        / \
+ *       1   4
+ *      / \ / \
+ *     2  3 5  6
+ * The reason get_parent() and get_buddY() work is becuase of creation strucutre
+ * cuz it means that in memory they'll be laid out like
+ * 0 1 2 3 4 5 6
  */
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
