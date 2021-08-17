@@ -56,6 +56,9 @@ struct BuddyInfoHeap {
     Chunk* buddy;
     int8_t largest_order_free;
 
+    // TODO
+    void rebalance(BuddyTreeHeap* heap);
+
     bool operator<(BuddyInfoHeap const& rhs) const noexcept;
     bool operator>(BuddyInfoHeap const& rhs) const noexcept;
 };
@@ -75,9 +78,6 @@ struct BuddyTreeHeap {
     void heapify_down(size_t i);
 
     void heapify_up(size_t i);
-
-    // TODO
-    void rebalance();
 
     BuddyInfoHeap* push(BuddyAllocator* buddy, BuddyInfoHeap key);
 

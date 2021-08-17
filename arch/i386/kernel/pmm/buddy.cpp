@@ -256,7 +256,7 @@ void* BuddyAllocator::allocate(size_t bytes) {
             max_index = *max;
         }
         chunk->heap_ptr.largest_order_free = max_index;
-        chunk->heap_ptr.rebalance();
+        chunk->heap_ptr.rebalance(&buddy_heap);
     }
     return nullptr;
 }
