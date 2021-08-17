@@ -350,7 +350,8 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
 }
 
 void Chunk::fix_heap(BuddyAllocator* buddy) {
-    auto max = firefly::std::max_element(free_values.begin(), free_values.end());
+    // auto max = firefly::std::max_element(free_values.begin(), free_values.end());
+    auto max = free_values.begin(); // TODO
     uint8_t max_order = -1;
     if (max != free_values.end()) {
         max_order = *max;

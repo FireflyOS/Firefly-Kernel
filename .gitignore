@@ -26,10 +26,10 @@
 
 # Buildsystem
 binaries/
+/build/
 !binaries/boot/grub.cfg
 .idea
 
 # Makefile plugin
 /.vscode/*.log
-
-/build/
+/.vscode/c_cpp_properties.json
