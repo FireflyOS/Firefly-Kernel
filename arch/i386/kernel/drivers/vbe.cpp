@@ -1,9 +1,13 @@
 #include <font8x16.h>
+#include <splash.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stl/cstdlib/cstring.h>
+#include <stl/cstdlib/stdio.h>
 
 #include <i386/drivers/vbe.hpp>
+#include <i386/utils.hpp>
+
 
 namespace firefly::drivers::vbe {
 static size_t* framebuffer_addr;
@@ -42,8 +46,7 @@ void putc(char c, int x, int y) {
     console_x += glyph_width;
 }
 
-void putc(char c)
-{
+void putc(char c) {
     putc(c, console_x, console_y);
 }
 
@@ -91,10 +94,15 @@ void puts(const char* str) {
     }
 }
 
+//TODO: We need to implement double buffering if we want to be able to scroll without having the logo blink.
+void clear_splash_frame();
 void scroll() {
+    clear_splash_frame();
     memcpy((void*)framebuffer_addr,
-           (void*)((size_t)framebuffer_addr + framebuffer_width * glyph_height * 4),
-           framebuffer_width * (framebuffer_height - glyph_height) * 4);
+           (void*)((size_t)framebuffer_addr + framebuffer_width * glyph_height * 8),
+           framebuffer_width * (framebuffer_height - glyph_height) * 8);
+    
+    boot_splash();
 }
 
 void put_pixel(int x, int y, int color) {
@@ -108,5 +116,37 @@ void early_init(multiboot_tag_framebuffer* grub_fb) {
     framebuffer_width = grub_fb->common.framebuffer_width;
     framebuffer_size = grub_fb->common.size;
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height);
+}
+
+void clear_splash_frame() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            uint32_t pixel = 0x0;
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
+}
+
+void boot_splash() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    int j = 0;
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            j++;
+            uint32_t pixel = (splash_screen_pixel_data[j] << 24) | (splash_screen_pixel_data[j] << 16) | (splash_screen_pixel_data[j] << 8) | splash_screen_pixel_data[j];
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
 }
 }  // namespace firefly::drivers::vbe

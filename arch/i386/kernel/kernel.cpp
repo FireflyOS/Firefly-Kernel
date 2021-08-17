@@ -11,6 +11,7 @@
 #include <i386/init/init.hpp>
 #include <i386/int/interrupt.hpp>
 #include <i386/multiboot2.hpp>
+#include <i386/utils.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -18,9 +19,6 @@ constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel::main {
 void write_ff_info() {
-    using firefly::drivers::vga::clear;
-    clear();
-
     printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
     firefly::std::array<const char *, 3> arr = {
@@ -37,12 +35,12 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
+#include <splash.h>
+extern "C" [[noreturn]] void kernel_main(mboot_param magic, mboot_param addr) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
-    firefly::kernel::main::write_ff_info();
-    firefly::kernel::core::interrupt::test_int();
+    firefly::drivers::vbe::boot_splash();
     
     while (1)
         ;

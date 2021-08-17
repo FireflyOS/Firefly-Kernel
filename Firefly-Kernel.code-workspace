@@ -6,6 +6,8 @@
 	],
 	"settings": {
 		"files.associations": {
+			"*.dproj": "xml",
+			"*.groupproj": "xml",
 			"3ds.h": "c",
 			"synchronization.h": "c",
 			"gpu.h": "c",
@@ -19,7 +21,24 @@
 			"new": "cpp",
 			"type_traits": "cpp",
 			"utility": "cpp",
-			"gfx.h": "c"
+			"gfx.h": "c",
+			"cctype": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cwchar": "cpp",
+			"cwctype": "cpp",
+			"iosfwd": "cpp",
+			"iostream": "cpp",
+			"limits": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"system_error": "cpp",
+			"typeinfo": "cpp"
 		}
 	}
 }
