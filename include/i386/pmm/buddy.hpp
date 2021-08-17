@@ -21,16 +21,19 @@ struct BuddyNode {
     BuddyNode* split_one;
     BuddyNode* split_two;
 
-    BuddyNode* parent;
-
-    uint8_t order : 6;
+    uint8_t order : 5;
     uint8_t _is_taken : 1;
     uint8_t _is_split : 1;
+    uint8_t _is_right : 1;
 
     size_t pointed_size() const noexcept;
 
     bool is_split() const noexcept;
     bool is_taken() const noexcept;
+    bool is_right() const noexcept;
+
+    BuddyNode* get_parent();
+    BuddyNode* get_matching_buddy();
 
     // if the taken_until pointer is null and this node isn't split
     // that means that this node hasn't yet been allocated from
@@ -50,6 +53,7 @@ struct Chunk {
 
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;
+    void fix_heap(BuddyAllocator* buddy);
 };
 
 struct BuddyInfoHeap {
@@ -103,5 +107,7 @@ public:
 
     void* allocate(uint8_t order);
     void deallocate(void* addr, uint8_t order);
+
+    BuddyInfoHeap* heap_index(size_t idx);
 };
 
