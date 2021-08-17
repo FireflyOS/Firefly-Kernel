@@ -47,9 +47,9 @@ struct BuddyNode {
 
 struct Chunk {
     BuddyNode root;
+    size_t heap_index;
     uint8_t can_be_allocated : 1;
     firefly::std::array<uint8_t, 5> free_values;
-    size_t heap_index;
 
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;

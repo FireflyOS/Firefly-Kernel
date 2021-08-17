@@ -17,7 +17,7 @@ bool BuddyNode::is_right() const noexcept {
 BuddyNode* BuddyNode::get_matching_buddy() {
     // if is_right -> to the left
     // else -> to the right
-    auto addition = (-1 * _is_right) + (pow(2, order) - 1);
+    auto addition = -_is_right * (pow(2, order) - 1);
     return this + addition;
 }
 
