@@ -46,7 +46,7 @@ struct Chunk {
     BuddyNode root;
     uint8_t can_be_allocated : 1;
     firefly::std::array<uint8_t, 5> free_values;
-    BuddyInfoheap* heap_ptr;
+    size_t heap_index;
 
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;
@@ -55,9 +55,6 @@ struct Chunk {
 struct BuddyInfoHeap {
     Chunk* buddy;
     int8_t largest_order_free;
-
-    // TODO
-    void rebalance(BuddyTreeHeap* heap);
 
     bool operator<(BuddyInfoHeap const& rhs) const noexcept;
     bool operator>(BuddyInfoHeap const& rhs) const noexcept;
@@ -104,7 +101,7 @@ public:
     Chunk* alloc_chunk();
     BuddyInfoHeap* alloc_heap_node();
 
-    void* allocate(size_t bytes);
-    void deallocate(void* addr);
+    void* allocate(uint8_t order);
+    void deallocate(void* addr, uint8_t order);
 };
 
