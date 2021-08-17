@@ -10,6 +10,34 @@ bool Chunk::can_allocate(uint8_t order) const noexcept {
     return free_values[order] || can_allocate(order + 1);
 }
 
+BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t order) {
+    auto left = lambda(node->left_split, buddy, order);
+    if (left) {
+        return left->parent;
+    }
+
+    auto right = lambda(node->right_split, buddy, order);
+    if (right) {
+        return right->parent;
+    }
+
+    // neither right nor left is found, we gotta split
+    auto to_split_left = lambda(node->left_split, buddy, order - 1);
+    if (to_split_left) {
+        to_split_left->split(buddy);
+        return to_split_left->split_one;
+    }
+
+    auto to_split_right = lambda(node->right_split, buddy, order - 1); 
+    if (to_split_right) {
+        to_split_right->split(buddy);
+        return to_split_right->split_one;
+    }
+
+    return nullptr; // we couldn't find an already existing node
+    // nor split a node, make sure to check heap layout please if this happens
+}
+
 // This function returns the _parent_ node that should be allocated from
 // however if this returns an order MAXIMUM_ORDER node
 // then this node should just be allocated
@@ -25,13 +53,7 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
         return &root;
     }
 
-    BuddyNode* pair_parent = &root;
-    while (!free_values[order]) {
-        pair_parent = get_free_buddy(buddy, order + 1);
-        pair_parent->split(buddy); // this updates the values
-    }
-
-    return pair_parent;
+    return lambda(&root);
 }
 
 
@@ -61,6 +83,7 @@ void BuddyNode::split(BuddyAllocator* buddy) noexcept {
     }
     chunk->free_values[order] -= 1;
     chunk->free_values[order + 1] += 2;
+    // TODO: Rebalance the heap.
 }
 
 void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
@@ -72,6 +95,7 @@ void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
     // -= 1 because the other one has already been added when it was deallocated
     chunk->free_values[order] += 1;
     chunk->free_values[order - 1] -= 1;
+    // TODO: Rebalance the heap.
 }
 
 Chunk* BuddyNode::to_chunk(BuddyAllocator* buddy) const noexcept {
