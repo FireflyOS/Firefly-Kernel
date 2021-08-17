@@ -11,6 +11,7 @@
 #include <i386/init/init.hpp>
 #include <i386/int/interrupt.hpp>
 #include <i386/multiboot2.hpp>
+#include <i386/utils.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -34,11 +35,12 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-extern "C" [[noreturn]] void kernel_main([[maybe_unused]] mboot_param magic, [[maybe_unused]] mboot_param addr) {
+#include <splash.h>
+extern "C" [[noreturn]] void kernel_main(mboot_param magic, mboot_param addr) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, addr);
-    firefly::kernel::main::write_ff_info();
+    firefly::drivers::vbe::boot_splash();
     
     while (1)
         ;
