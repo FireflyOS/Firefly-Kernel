@@ -4,11 +4,16 @@
 #include "cstdlib/cstdint.h"
 #include "array.h"
 
-constexpr static inline size_t LARGEST_CHUNK = 1048576UL;
-constexpr static inline size_t SMALLEST_CHUNK = 4096 * 4 * 4UL;  // 64 kib
+constexpr inline size_t constexpr_log2(size_t n) {
+    return ((n<2) ? 1 : 1 + constexpr_log2(n / 2));
+}
+
+constexpr static inline size_t SMALLEST_CHUNK = 4096UL;  // 1 page
+constexpr static inline size_t LARGEST_CHUNK = SMALLEST_CHUNK * 16UL; // 16 pages
+
 // casually casting a double to size_t because we _know_ that a power of 2 divided by a power of 2 that's larger
 // will return an integer.
-const static inline uint8_t MAXIMUM_ORDER = static_cast<uint8_t>(log2(LARGEST_CHUNK / SMALLEST_CHUNK));
+constexpr static inline uint8_t MAXIMUM_ORDER = static_cast<uint8_t>(constexpr_log2(LARGEST_CHUNK / SMALLEST_CHUNK));
 
 struct Chunk;
 class BuddyAllocator;
@@ -18,7 +23,7 @@ class BuddyAllocator;
 struct BuddyNode {
     void* physical_addr;  // this is always the same as split_one's physical address...
 
-    uint8_t order : 5;
+    uint8_t order : 5; // ORDER HAS TO BE SMALLER THAN 0b11111 (32)
     uint8_t _is_taken : 1;
     uint8_t _is_split : 1;
     uint8_t _is_right : 1;
@@ -48,7 +53,7 @@ struct Chunk {
     BuddyNode root;
     size_t heap_index;
     uint8_t can_be_allocated : 1;
-    firefly::std::array<uint8_t, 5> free_values;
+    firefly::std::array<uint8_t, MAXIMUM_ORDER> free_values;
 
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;

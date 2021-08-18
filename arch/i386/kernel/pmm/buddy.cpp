@@ -4,9 +4,14 @@
 #include <utility.h>
 
 bool Chunk::can_allocate(uint8_t order) const noexcept {
+    if (!can_be_allocated) {
+        return false;
+    }
+
     if (order > MAXIMUM_ORDER) {
         return false;
     }
+    
     return free_values[order] || can_allocate(order + 1);
 }
 
@@ -215,9 +220,10 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc_chunk();
+        node->can_be_allocated = true;
         node->root.physical_addr = memory_base + (i * LARGEST_CHUNK);
         node->root.order = MAXIMUM_ORDER;
-        node->free_values[MAXIMUM_ORDER] = 1;  // only an order 4 node is available.
+        node->free_values[MAXIMUM_ORDER] = 1;  // only an order MAX_ORDER node is available.
         auto left_child = alloc_buddy_node();
         auto right_child = alloc_buddy_node();
         left_child->order = 1;
@@ -350,7 +356,8 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
 }
 
 void Chunk::fix_heap(BuddyAllocator* buddy) {
-    auto max = firefly::std::max_element(free_values.begin(), free_values.end());
+    // auto max = firefly::std::max_element(free_values.begin(), free_values.end());
+    auto max = free_values.begin(); // TODO
     uint8_t max_order = -1;
     if (max != free_values.end()) {
         max_order = *max;
@@ -363,11 +370,12 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
         return;
     }
     heap_element->largest_order_free = max_order;
+    // TODO: reassign this->heap_index
     if (max_order > before) {
         buddy->buddy_heap.heapify_up(heap_index);
     } else {
         buddy->buddy_heap.heapify_down(heap_index);
-    }
+    }    
 }
 
 BuddyInfoHeap* BuddyAllocator::heap_index(size_t idx) {
@@ -390,6 +398,7 @@ size_t BuddyTreeHeap::right(size_t index) {
     return (2 * index + 2);
 }
 
+// TODO return new index, very important
 void BuddyTreeHeap::heapify_down(size_t i) {
     size_t left = this->left(i);
     size_t right = this->right(i);
@@ -410,6 +419,7 @@ void BuddyTreeHeap::heapify_down(size_t i) {
     }
 }
 
+// TODO: return new index, very important.
 void BuddyTreeHeap::heapify_up(size_t i) {
     auto parent = this->parent(i);
     if (i && base[parent] < base[i]) {
