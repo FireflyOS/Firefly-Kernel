@@ -48,9 +48,23 @@ BuddyNode* BuddyNode::get_matching_buddy() {
     if (order == MAXIMUM_ORDER) {
         return nullptr;
     }
+    // to left
+    // 1 3 7 15
+    // to right
+    // 1 3 7 15
+    // 2 ** 0 == 1
+    // 2 ** 1 == 2
+    // 2 ** 2 == 4
+    // 2 ** 3 == 8
+    // 2 ** 4 == 16
+
+    // pow(2, order + 1) - 1
+    int addition = static_cast<int>(pow(2, order + 1) - 1);
+    if (_is_right) {
+        addition = -addition;
+    }
     // if is_right -> to the left
     // else -> to the right
-    size_t addition = static_cast<size_t>(-_is_right * (pow(2, order) - 1));
     return this + addition;
 }
 
@@ -267,6 +281,8 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
         assert(node->root->get_right_child() == right_child);
         assert(left_child->get_parent() == node->root);
         assert(right_child->get_parent() == node->root);
+        assert(right_child->get_matching_buddy() == left_child);
+        assert(left_child->get_matching_buddy() == right_child);
     }
 
     buddy_heap.base = reinterpret_cast<BuddyInfoHeap*>(base_address);
