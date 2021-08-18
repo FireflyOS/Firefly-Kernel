@@ -1,2 +1,0 @@
-#include <symbols.hpp>
-sym_table_t symbol_table[] = {{0xFFFFFFFF, ""}};
