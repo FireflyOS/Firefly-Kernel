@@ -217,7 +217,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
         auto node = alloc_chunk();
         node->root.physical_addr = memory_base + (i * LARGEST_CHUNK);
         node->root.order = MAXIMUM_ORDER;
-        node->free_values[MAXIMUM_ORDER] = 1;  // only an order 4 node is available.
+        node->free_values[MAXIMUM_ORDER] = 1;  // only an order MAX_ORDER node is available.
         auto left_child = alloc_buddy_node();
         auto right_child = alloc_buddy_node();
         left_child->order = 1;
