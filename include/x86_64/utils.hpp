@@ -1,5 +1,4 @@
 #pragma once
-#include <x86_64/drivers/vga.hpp>
 
 namespace firefly::kernel {
 uint32_t bgr2rgb(uint32_t bytes[], int offset);

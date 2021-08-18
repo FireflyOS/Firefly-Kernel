@@ -89,13 +89,13 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     }
     firefly::drivers::vbe::early_init(tagfb);
     firefly::drivers::vbe::boot_splash();
-    firefly::drivers::vbe::puts("Hello x64 world!\n");
 }
 
-extern "C" void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
+extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {
     bootloader_services_init(stivale2_struct);
 
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
-    firefly::kernel::main::kernel_main(stivale2_struct);
+    firefly::kernel::main::kernel_main();
+    for (;;);
 }

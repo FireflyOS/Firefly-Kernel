@@ -4,6 +4,7 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly::kernel::io {
+void serial(const char* msg);
 class SerialPort {
 public:
     constexpr static inline size_t BAUD_BASE = 115200;
@@ -11,6 +12,7 @@ public:
     constexpr static inline uint16_t COM2 = 0x2F8;
     constexpr static inline uint16_t COM3 = 0x3E8;
     constexpr static inline uint16_t COM4 = 0x2E8;
+
 private:
     uint16_t port;
     uint16_t baud_divisor;

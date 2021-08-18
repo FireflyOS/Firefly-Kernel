@@ -75,6 +75,10 @@ static bool check_special(char c) {
         console_x += 4;
         return true;
     }
+    else if (c == '\b') {
+        console_x -= 3;
+        return true;
+    }
     //Not a special char but it needs to be handled anyway so might as well put it in this function..
     else if (static_cast<size_t>(console_x) > framebuffer_width) {
         console_x = 0;
