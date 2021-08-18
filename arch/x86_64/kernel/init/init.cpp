@@ -96,6 +96,6 @@ extern "C" void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_st
     bootloader_services_init(stivale2_struct);
 
     firefly::kernel::core::gdt::init();
-    // firefly::kernel::core::interrupt::init(); //NOTE: We need to load our own gdt first
+    firefly::kernel::core::interrupt::init();
     firefly::kernel::main::kernel_main(stivale2_struct);
 }

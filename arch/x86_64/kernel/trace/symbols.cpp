@@ -36,7 +36,7 @@ sym_table_t SymbolTable::lookup(uint64_t addr) const noexcept {
 bool backtrace(uint64_t addr, int iteration) {
     SymbolTable table{};
     auto const&[base, name] = table[addr];
-    printf("#%d %X %s\n", iteration, base, name);
+    printf("#%d %X \t%s<+%x>\n", iteration, base, name, static_cast<uint8_t>(base));
 
     /* Don't trace symbols below kernel_init */
     if (strcmp(name, "kernel_init") == 0)

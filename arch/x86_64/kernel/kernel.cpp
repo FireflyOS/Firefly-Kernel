@@ -62,7 +62,7 @@ namespace firefly::kernel::main {
 
 
 void kernel_main([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
-    trace::panic("Test\n");
+    trace::panic("Test");
     for (;;) {
         asm ("hlt");
     }

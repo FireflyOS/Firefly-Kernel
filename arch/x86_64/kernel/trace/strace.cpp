@@ -7,7 +7,7 @@ namespace firefly::trace {
 
 void trace_stack();
 void panic(const char *msg) {
-    printf("**** Kernel panic ****\nReason: %s\n", msg);
+    printf("**** Kernel panic ****\nReason: %s\n\n", msg);
     trace_stack();
 
     while (1)
