@@ -33,8 +33,8 @@ endif
 
 target_archs:
 	@printf "Supported architectures:\n";
-	@printf "x86_64\n";
-	@printf "i386\n";
+	@printf "x86_64 (Encouraged)\n";
+	@printf "i386 (Very-WIP)\n";
 	@printf "\n"
 
 clean:
@@ -50,6 +50,10 @@ run:
 debug: $(ISO) $(TARGET)
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH) -M q35 -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio
+
+
+%.cxx.o: %.cpp
+	$(CC) $(CXX_FLAGS) -c $< -o $(BUILD_DIR)/$@
 
 %.asm.o: %.asm
 	$(AS) $< $(ASM_FLAGS) -o $(BUILD_DIR)/$@
