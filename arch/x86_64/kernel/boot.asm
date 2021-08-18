@@ -4,6 +4,7 @@ extern _init_array_end
 extern kernel_main
 
 VIRT_ADDR equ 0xFFFFFFFF80000000
+GB equ 0x40000000
 
 section .rodata
 %include "arch/x86_64/kernel/multiboot2.asm"
@@ -172,9 +173,9 @@ set_up_page_tables:
     mov ecx, 0                                  ; count entries
 
 .map_pd:
-                                                ; map ecx-th page directory entry to a 2MiB page
-                                                ; that starts at address 2MiB*ecx
-    mov eax, 0x200000                           ; 2MiB
+                                                ; map ecx-th page directory entry to a 4KiB page
+                                                ; that starts at address 2KiB*ecx
+    mov eax, 4096                               ; 4k
     mul ecx                                     ; start address of ecx-th page
     or eax, 0b10000011                          ; present + writable + page size
     mov [(pml2 - VIRT_ADDR) + ecx * 8], eax       ; map ecx-th entry
@@ -201,7 +202,7 @@ set_up_page_tables:
 
 .map_pt:                                        ; now map the page table to
                                                 ; the physical addresses up to the end of the kernel
-    cmp eax, _kernel_end - VIRT_ADDR            ; passed kernel binary?
+    cmp eax, GB*4-VIRT_ADDR                     ; passed 4GB?
     je .done                                    ; yes, done mapping
     or eax, 0b11                                ; writable + present
     mov dword [(pml1 - VIRT_ADDR) + ebx], eax     ; put into pml1
@@ -213,15 +214,16 @@ set_up_page_tables:
 .done:
     ret
 
+
 section .text
 bits 64
 long_mode_start:
 
                                                 ; now make pml2's first entry point to a pml1
                                                 ; since earlier it mapped a 2MiB page
-    mov eax, pml1 - VIRT_ADDR                     ; physical address of a pml1
-    or eax, 0b11                                ; writable + present
-    mov qword [(pml2 - VIRT_ADDR)], rax           ; put in first entry
+    ;mov eax, pml1 - VIRT_ADDR                     ; physical address of a pml1
+    ;or eax, 0b11                                ; writable + present
+    ;mov qword [(pml2 - VIRT_ADDR)], rax           ; put in first entry
 
     mov ax, 0
     mov ss, ax

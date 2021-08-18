@@ -69,7 +69,7 @@ static bool check_special(char c) {
             scroll();
         }
         console_y += glyph_height;
-        console_x = 0;
+        console_x -= console_x;
         return true;
     } else if (c == '\t') {
         console_x += 4;

@@ -104,8 +104,7 @@ void put_pixel(int x, int y, int color) {
 }
 
 void early_init(multiboot_tag_framebuffer* grub_fb) {
-    //TODO: Identity map the framebuffer before using it! (Requires a vmm, we'll get back to it later)
-    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr)) + 0xFFFFFFFF80000000;
+    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr));
     framebuffer_pitch = grub_fb->common.framebuffer_pitch;
     framebuffer_height = grub_fb->common.framebuffer_height;
     framebuffer_width = grub_fb->common.framebuffer_width;

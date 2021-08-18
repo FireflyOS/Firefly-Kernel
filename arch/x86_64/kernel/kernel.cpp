@@ -5,11 +5,12 @@
 
 #include <x86_64/drivers/ps2.hpp>
 #include <x86_64/drivers/serial.hpp>
-// #include <x86_64/drivers/vbe.hpp>
+#include <x86_64/drivers/vbe.hpp>
 #include <x86_64/drivers/vga.hpp>
 #include <x86_64/init/init.hpp>
 #include <x86_64/int/interrupt.hpp>
 #include <x86_64/multiboot2.hpp>
+#include <x86_64/trace/strace.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -51,9 +52,11 @@ extern "C" [[noreturn]] void kernel_main(uint64_t magic, uint64_t mb2_proto_stru
     firefly::drivers::ps2::init();
     firefly::kernel::core::interrupt::init();
     firefly::kernel::kernel_init(magic, mb2_proto_struct);
+    // firefly::trace::panic("Test kernel panic\n");
 
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("Hello world!");
+    firefly::drivers::vbe::puts("hi!");
 
     while (true) {
         auto key = firefly::drivers::ps2::get_scancode();

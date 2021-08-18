@@ -6,15 +6,30 @@ ISO = FireflyOS_$(ARCH).iso
 
 all: create_dirs $(TARGET)
 
-$(TARGET): $(CONV_FILES)
+$(TARGET): $(CONV_FILES) symlist
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) binaries/boot/arch/$(ARCH)/symtable.o
+	python3 Scripts/symbol_table_$(ARCH).py $@
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) binaries/boot/arch/$(ARCH)/symtable.o # Rebuild kernel with symbol tables
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
-	
+
+symlist:
+ifeq ($(ARCH), i386)
+	echo '#include <symbols.hpp>' > Scripts/parsed_$(ARCH).sym
+	echo 'sym_table_t symbol_table[] = {{0xFFFFFFFF, ""}};' >> Scripts/parsed_$(ARCH).sym
+	$(CC) -ffreestanding -x c++ $(CHARDFLAGS) -I include/i386/trace -m32 -c Scripts/parsed_$(ARCH).sym -o binaries/boot/arch/$(ARCH)/symtable.o
+endif
+ifeq ($(ARCH), x86_64)
+	echo '#include <symbols.hpp>' > Scripts/parsed_$(ARCH).sym
+	echo 'sym_table_t symbol_table[] = {{0xFFFFFFFFFFFFFFFF, ""}};' >> Scripts/parsed_$(ARCH).sym
+	$(CC) -x c++ $(CHARDFLAGS) -I include/x86_64/trace -m64 -c Scripts/parsed_$(ARCH).sym -o binaries/boot/arch/$(ARCH)/symtable.o
+endif
+
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
@@ -27,6 +42,7 @@ ifeq ($(ARCH), i386)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/pmm
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
@@ -45,7 +61,7 @@ clean:
 
 run:
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) 
 
 debug: $(ISO) $(TARGET)
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
