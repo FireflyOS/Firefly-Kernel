@@ -1,11 +1,13 @@
 #pragma once
 
-#include "cstdlib/cmath.h"
-#include "cstdlib/cstdint.h"
-#include "array.h"
+#include <cmath>
+#include <cstdint>
+#include <array>
+
+#include <iostream>
 
 constexpr inline size_t constexpr_log2(size_t n) {
-    return ((n<2) ? 1 : 1 + constexpr_log2(n / 2));
+    return ((n < 2) ? 1 : 1 + constexpr_log2(n / 2));
 }
 
 constexpr static inline size_t SMALLEST_CHUNK = 4096UL;  // 1 page
@@ -13,7 +15,7 @@ constexpr static inline size_t LARGEST_CHUNK = SMALLEST_CHUNK * 16UL; // 16 page
 
 // casually casting a double to size_t because we _know_ that a power of 2 divided by a power of 2 that's larger
 // will return an integer.
-constexpr static inline uint8_t MAXIMUM_ORDER = static_cast<uint8_t>(constexpr_log2(LARGEST_CHUNK / SMALLEST_CHUNK));
+constexpr static inline uint8_t MAXIMUM_ORDER = static_cast<uint8_t>(constexpr_log2(LARGEST_CHUNK / SMALLEST_CHUNK)) - 1;
 
 struct Chunk;
 class BuddyAllocator;
@@ -50,10 +52,10 @@ struct BuddyNode {
 };
 
 struct Chunk {
-    BuddyNode root;
+    BuddyNode* root = nullptr;
     size_t heap_index;
-    uint8_t can_be_allocated : 1;
-    firefly::std::array<uint8_t, MAXIMUM_ORDER> free_values;
+    uint8_t can_be_allocated : 1 = 1;
+    std::array<uint8_t, MAXIMUM_ORDER + 1> free_values = {};
 
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;
@@ -61,15 +63,15 @@ struct Chunk {
 };
 
 struct BuddyInfoHeap {
-    Chunk* buddy;
-    int8_t largest_order_free;
+    Chunk* buddy = nullptr;
+    int8_t largest_order_free = -1;
 
     bool operator<(BuddyInfoHeap const& rhs) const noexcept;
     bool operator>(BuddyInfoHeap const& rhs) const noexcept;
 };
 
 struct BuddyTreeHeap {
-    BuddyInfoHeap* base;
+    BuddyInfoHeap* base = nullptr;
     size_t _size = 0;
 
     size_t size();
@@ -89,29 +91,38 @@ struct BuddyTreeHeap {
     BuddyInfoHeap& max();
 };
 
+
 class BuddyAllocator {
 public:
-    Chunk* base_address;
+    char* start_address;
+    char* base_address;
     BuddyTreeHeap buddy_heap;
 
     BuddyAllocator(void* base_address);
 
     static size_t calculate_nodes_for_max_order();
     static size_t estimate_memory_used(size_t address_range);
-    
+
     static int8_t order_for(size_t bytes) noexcept;
     Chunk* chunk_for(void* address);
+    Chunk* chunk_at_index(size_t index);
 
     void initialize(size_t memory_available, char* memory_base);
     void create_tree_structure(BuddyNode* parent_node);
 
-    BuddyNode* alloc_buddy_node();
-    Chunk* alloc_chunk();
-    BuddyInfoHeap* alloc_heap_node();
+    template <typename T>
+    T* alloc() {
+        T* curr = reinterpret_cast<T*>(base_address);
+        base_address += sizeof(T);
+        *curr = T{};
+        return curr;
+    }
 
     void* allocate(uint8_t order);
     void deallocate(void* addr, uint8_t order);
 
     BuddyInfoHeap* heap_index(size_t idx);
+
+    void dump(size_t memory_available);
 };
 
