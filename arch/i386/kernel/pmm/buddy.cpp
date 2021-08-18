@@ -143,8 +143,16 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
     if (order == MAXIMUM_ORDER) {
         return root;
     }
-
-    return lambda(root, buddy, order)->get_parent();
+    auto splittable_node = lambda(root, buddy, order)->get_parent();
+    auto temp = splittable_node;
+    while (temp != root) {
+        if (temp->is_split()) {
+            break;
+        }
+        temp->get_parent()->split(buddy);
+        temp = temp->get_parent();
+    }
+    return splittable_node;
 }
 
 
@@ -169,7 +177,7 @@ bool BuddyNode::is_free() const noexcept {
 void BuddyNode::split(BuddyAllocator* buddy) noexcept {
     _is_split = true;
     auto chunk = to_chunk(buddy);
-    if (order == 0) {
+    if (order == MAXIMUM_ORDER) {
         // panic; can't split a zero-order node
         return;
     }
@@ -241,8 +249,8 @@ int8_t BuddyAllocator::order_for(size_t bytes) noexcept {
 }
 
 Chunk* BuddyAllocator::chunk_for(void* address) {
-    size_t addr = reinterpret_cast<size_t>(address) - reinterpret_cast<size_t>(base_address);
-    return chunk_at_index(addr / MAXIMUM_ORDER);
+    size_t relative_address = reinterpret_cast<size_t>(address) - reinterpret_cast<size_t>(base_address);
+    return chunk_at_index(relative_address / LARGEST_CHUNK);
 }
 /*
  * Initializes the BuddyNode[] @ base_address, where the nodes describe
@@ -408,12 +416,11 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
         return;
     }
     heap_element->largest_order_free = max_order;
-    // TODO: reassign this->heap_index
     if (max_order > before) {
-        buddy->buddy_heap.heapify_up(heap_index);
+        heap_index = buddy->buddy_heap.heapify_up(heap_index);
     }
     else {
-        buddy->buddy_heap.heapify_down(heap_index);
+        heap_index = buddy->buddy_heap.heapify_down(heap_index);
     }
 }
 
@@ -437,7 +444,7 @@ size_t BuddyTreeHeap::right(size_t index) {
     return (2 * index + 2);
 }
 
-void BuddyTreeHeap::heapify_down(size_t i) {
+size_t BuddyTreeHeap::heapify_down(size_t i) {
     size_t left = this->left(i);
     size_t right = this->right(i);
 
@@ -450,30 +457,31 @@ void BuddyTreeHeap::heapify_down(size_t i) {
         largest = right;
     }
 
-    if (largest != i) {
-        std::swap(base[i].buddy->heap_index, base[largest].buddy->heap_index);
+    if (largest != i) {  
         std::swap(base[i], base[largest]);
-        heapify_down(largest);
+        base[largest].buddy->heap_index = i;
+        return heapify_down(largest);
     }
+    return i;
 }
 
 
-void BuddyTreeHeap::heapify_up(size_t i) {
+size_t BuddyTreeHeap::heapify_up(size_t i) {
     auto parent = this->parent(i);
     if (i && base[parent] < base[i]) {
-        std::swap(base[i].buddy->heap_index, base[parent].buddy->heap_index);
         std::swap(base[i], base[parent]);
-        heapify_up(parent);
+        base[parent].buddy->heap_index = i;
+        return heapify_up(parent);
     }
+    return i;
 }
 
 BuddyInfoHeap* BuddyTreeHeap::push(BuddyAllocator* buddy, BuddyInfoHeap key) {
     auto node = buddy->alloc<BuddyInfoHeap>();
     node->buddy = key.buddy;
     node->largest_order_free = key.largest_order_free;
-    size_t index = size();
-    node->buddy->heap_index = index;
-    heapify_up(index);
+    size_t index = size() - 1;
+    node->buddy->heap_index = heapify_up(index);
     _size++;
     return node;
 }
