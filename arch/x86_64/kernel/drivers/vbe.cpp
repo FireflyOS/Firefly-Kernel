@@ -1,4 +1,5 @@
 #include <font8x16.h>
+#include <splash.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stl/cstdlib/cstring.h>
@@ -6,6 +7,7 @@
 
 #include <x86_64/drivers/serial.hpp>
 #include <x86_64/drivers/vbe.hpp>
+
 
 namespace firefly::drivers::vbe {
 static uint32_t* framebuffer_addr;
@@ -56,8 +58,7 @@ void putc(char c, int x, int y, int color) {
     console_x += glyph_width;
 }
 
-void putc(char c)
-{
+void putc(char c) {
     putc(c, console_x, console_y);
 }
 
@@ -112,4 +113,36 @@ void early_init(stivale2_struct_tag_framebuffer* tagfb) {
 
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height);
 }
+void clear_splash_frame() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            uint32_t pixel = 0x0;
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
+}
+
+void boot_splash() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    int j = 0;
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            j++;
+            uint32_t pixel = (splash_screen_pixel_data[j] << 24) | (splash_screen_pixel_data[j] << 16) | (splash_screen_pixel_data[j] << 8) | splash_screen_pixel_data[j];
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
+}
+
 }  // namespace firefly::drivers::vbe

@@ -89,6 +89,7 @@ void bootloader_services_init(struct stivale2_struct *handover)
             asm("hlt");
     }
     firefly::drivers::vbe::early_init(tagfb);
+    firefly::drivers::vbe::boot_splash();
     firefly::drivers::vbe::puts("Hello x64 world!\n");
 }
 
