@@ -364,11 +364,12 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
         return;
     }
     heap_element->largest_order_free = max_order;
+    // TODO: reassign this->heap_index
     if (max_order > before) {
         buddy->buddy_heap.heapify_up(heap_index);
     } else {
         buddy->buddy_heap.heapify_down(heap_index);
-    }
+    }    
 }
 
 BuddyInfoHeap* BuddyAllocator::heap_index(size_t idx) {
@@ -391,6 +392,7 @@ size_t BuddyTreeHeap::right(size_t index) {
     return (2 * index + 2);
 }
 
+// TODO return new index, very important
 void BuddyTreeHeap::heapify_down(size_t i) {
     size_t left = this->left(i);
     size_t right = this->right(i);
@@ -411,6 +413,7 @@ void BuddyTreeHeap::heapify_down(size_t i) {
     }
 }
 
+// TODO: return new index, very important.
 void BuddyTreeHeap::heapify_up(size_t i) {
     auto parent = this->parent(i);
     if (i && base[parent] < base[i]) {
