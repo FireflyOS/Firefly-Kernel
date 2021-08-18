@@ -329,10 +329,10 @@ void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {
     assert(two->get_parent() == parent_node);
 }
 
-void* BuddyAllocator::allocate(uint8_t order) {
+BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
     auto& max = buddy_heap.max();
     if (!max.buddy->can_allocate(order)) {
-        return nullptr;
+        return { nullptr, 0 };
     }
     auto buddy = max.buddy->get_free_buddy(this, order);
     void* physical_addr = nullptr;
@@ -355,7 +355,7 @@ void* BuddyAllocator::allocate(uint8_t order) {
     Chunk* chunk = this->chunk_for(physical_addr);
     chunk->free_values[order]--;
     chunk->fix_heap(this);
-    return physical_addr;
+    return { physical_addr, order };
 }
 
 BuddyNode* deallocate_find(void* addr, BuddyNode* buddy, uint8_t order) {
@@ -393,8 +393,9 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
     if (!allocated_buddy) {
         return;
     }
+
     auto other = allocated_buddy->get_matching_buddy();
-    if (other->is_free()) {
+    if (order != MAXIMUM_ORDER && other->is_free()) {
         other->get_parent()->merge_buddy(this);
     }
 

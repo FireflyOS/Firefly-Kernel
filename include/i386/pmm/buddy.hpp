@@ -82,9 +82,9 @@ struct BuddyTreeHeap {
 
     size_t right(size_t index);
 
-    void heapify_down(size_t i);
+    size_t heapify_down(size_t i);
 
-    void heapify_up(size_t i);
+    size_t heapify_up(size_t i);
 
     BuddyInfoHeap* push(BuddyAllocator* buddy, BuddyInfoHeap key);
 
@@ -94,8 +94,8 @@ struct BuddyTreeHeap {
 
 class BuddyAllocator {
 public:
-    char* start_address;
     char* base_address;
+    size_t index = 0;
     BuddyTreeHeap buddy_heap;
 
     BuddyAllocator(void* base_address);
@@ -112,13 +112,18 @@ public:
 
     template <typename T>
     T* alloc() {
-        T* curr = reinterpret_cast<T*>(base_address);
-        base_address += sizeof(T);
+        T* curr = reinterpret_cast<T*>(base_address + index);
+        index += sizeof(T);
         *curr = T{};
         return curr;
     }
 
-    void* allocate(uint8_t order);
+    struct allocation_result_t {
+        void* mem;
+        uint8_t order;
+    };
+
+    allocation_result_t allocate(uint8_t order);
     void deallocate(void* addr, uint8_t order);
 
     BuddyInfoHeap* heap_index(size_t idx);
