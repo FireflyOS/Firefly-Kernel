@@ -22,14 +22,26 @@ $(ISO): $(TARGET)
 		iso_root -o $@
 	limine/limine-install $@
 	rm -rf iso_root
+	rm parsed_x86_64.sym
+	rm Scripts/parsed_x86_64.sym
 
-$(TARGET): $(CONV_FILES)
+$(TARGET): $(CONV_FILES) symlist
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -zmax-page-size=0x1000 -static -pie --no-dynamic-linker -ztext $(OBJ_FILES) $(LIB_OBJS) 
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) binaries/boot/arch/$(ARCH)/symtable.o
+	python3 Scripts/symbol_table_$(ARCH).py $@
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) binaries/boot/arch/$(ARCH)/symtable.o # Rebuild kernel with symbol tables
+
+symlist:
+ifeq ($(ARCH), x86_64)
+	echo '#include <symbols.hpp>' > Scripts/parsed_$(ARCH).sym
+	echo 'sym_table_t symbol_table[] = {{0xFFFFFFFFFFFFFFFF, ""}};' >> Scripts/parsed_$(ARCH).sym
+	$(CC) -x c++ $(CHARDFLAGS) -I include/x86_64/trace -m64 -c Scripts/parsed_$(ARCH).sym -o binaries/boot/arch/$(ARCH)/symtable.o
+endif
 
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init

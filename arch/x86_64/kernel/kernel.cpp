@@ -10,6 +10,8 @@
 // #include <x86_64/init/init.hpp>
 // #include <x86_64/int/interrupt.hpp>
 #include <x86_64/kernel.hpp>
+#include <x86_64/trace/strace.hpp>
+#include <x86_64/drivers/vbe.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -58,9 +60,9 @@ namespace firefly::kernel::main {
 //     }
 // }
 
-// The following will be our kernel's entry point.
-void kernel_main([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
 
+void kernel_main([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
+    trace::panic("Test\n");
     for (;;) {
         asm ("hlt");
     }

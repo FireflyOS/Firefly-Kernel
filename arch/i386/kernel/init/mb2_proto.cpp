@@ -11,11 +11,11 @@ namespace firefly::kernel::mb2proto {
 void init(mboot_param magic, [[maybe_unused]] mboot_param mb2_struct_address) {
     /* Verify magic and alignment */
     if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
-        panic("Invalid magic!\n");
+        trace::panic("Invalid magic!\n");
     }
 
     if (mb2_struct_address & 7) {
-        panic("Unaligned multiboot2 struct!\n");
+        trace::panic("Unaligned multiboot2 struct!\n");
     }
 
     unsigned size;
