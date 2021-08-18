@@ -2,11 +2,12 @@
 #include <stdint.h>
 #include <x86_64/libk++/iostream.h>
 
+#include <x86_64/drivers/vbe.hpp>
+#include <x86_64/gdt/gdt.hpp>
 #include <x86_64/init/init.hpp>
 #include <x86_64/int/interrupt.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/stivale2.hpp>
-#include <x86_64/drivers/vbe.hpp>
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -80,11 +81,9 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     }
 }
 
-void bootloader_services_init(struct stivale2_struct *handover)
-{
-    struct stivale2_struct_tag_framebuffer *tagfb = static_cast<struct stivale2_struct_tag_framebuffer*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
-    if (tagfb == NULL)
-    {
+void bootloader_services_init(struct stivale2_struct *handover) {
+    struct stivale2_struct_tag_framebuffer *tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
+    if (tagfb == NULL) {
         for (;;)
             asm("hlt");
     }
@@ -96,7 +95,7 @@ void bootloader_services_init(struct stivale2_struct *handover)
 extern "C" void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
     bootloader_services_init(stivale2_struct);
 
-
+    firefly::kernel::core::gdt::init();
     // firefly::kernel::core::interrupt::init(); //NOTE: We need to load our own gdt first
     firefly::kernel::main::kernel_main(stivale2_struct);
 }
