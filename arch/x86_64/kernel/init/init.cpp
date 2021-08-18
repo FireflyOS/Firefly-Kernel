@@ -5,7 +5,7 @@
 
 namespace firefly::kernel {
 void kernel_init() {
-    klog() << "Initialising x86_64 based kernel...\n";
+    // klog() << "Initialising x86_64 based kernel...\n";
     ;
 }
 }  // namespace firefly::kernel

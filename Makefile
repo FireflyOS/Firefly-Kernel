@@ -3,15 +3,30 @@
 TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
 ISO = FireflyOS_$(ARCH).iso
 
+# test:
+# 	clang++ $(CXX_FLAGS) -c arch/x86_64/kernel/kernel.cpp -o $(BUILD_DIR)/arch/x86_64/kernel/kernel.o
+# 	ld.lld -o $(BUILD_DIR)/kernel_x86_64.elf -T linkage/linker_x86_64.ld -nostdlib
 
-all: create_dirs $(TARGET)
+
+all: create_dirs $(ISO)
+
+$(ISO): $(TARGET)
+	$(MAKE) -C limine
+	rm -rf iso_root
+	mkdir -p iso_root
+	cp $< limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin iso_root/
+	xorriso -as mkisofs -b limine-cd.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		--efi-boot limine-eltorito-efi.bin \
+		-efi-boot-part --efi-boot-image --protective-msdos-label \
+		iso_root -o $@
+	limine/limine-install $@
+	rm -rf iso_root
 
 $(TARGET): $(CONV_FILES)
 	$(MAKE) -C ./include/stl # Build STL before linking
-	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -m elf_$(ARCH) $(OBJ_FILES) $(LIB_OBJS) 
-#	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
-#	grub-mkrescue -o FireflyOS_$(ARCH).iso binaries
-	
+	ld.lld -o $@ --no-undefined -T linkage/linker_$(ARCH).ld -nostdlib -zmax-page-size=0x1000 -static -pie --no-dynamic-linker -ztext $(OBJ_FILES) $(LIB_OBJS) 
+
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
@@ -21,20 +36,10 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
-ifeq ($(ARCH), i386)
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
-endif
 
 target_archs:
 	@printf "Supported architectures:\n";
 	@printf "x86_64 (Encouraged)\n";
-	@printf "i386 (Very-WIP)\n";
 	@printf "\n"
 
 clean:

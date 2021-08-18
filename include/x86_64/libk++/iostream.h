@@ -22,20 +22,20 @@
  *     firefly::libkern::get_cursor_handle() << "Num: " << 123 << firefly::libkern::endl;
 */
 
-#define klog() firefly::libkern::get_cursor_handle() << __FUNCTION__ << ":" << static_cast<size_t>(__LINE__) << ": "
+// #define klog() firefly::libkern::get_cursor_handle() << __FUNCTION__ << ":" << static_cast<size_t>(__LINE__) << ": "
 
-namespace firefly::libkern {
-using namespace firefly::drivers::vga;
+// namespace firefly::libkern {
+// using namespace firefly::drivers::vga;
 
-firefly::drivers::vga::cursor& get_cursor_handle();
-void globalize_vga_writer(firefly::drivers::vga::cursor& crs);
+// firefly::drivers::vga::cursor& get_cursor_handle();
+// void globalize_vga_writer(firefly::drivers::vga::cursor& crs);
 
-static auto cout = get_cursor_handle();
-const auto endl = '\n';
+// static auto cout = get_cursor_handle();
+// const auto endl = '\n';
 
-template <typename... Tys>
-void print(Tys... args) {
-    ((firefly::libkern::get_cursor_handle() << args), ...);
-}
+// template <typename... Tys>
+// void print(Tys... args) {
+//     ((firefly::libkern::get_cursor_handle() << args), ...);
+// }
 
-}  // namespace firefly::libkern
+// }  // namespace firefly::libkern
