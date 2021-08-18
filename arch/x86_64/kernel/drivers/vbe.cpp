@@ -8,11 +8,11 @@
 #include <x86_64/drivers/vbe.hpp>
 
 namespace firefly::drivers::vbe {
-static multiboot_uint64_t* framebuffer_addr;
+static uint64_t* framebuffer_addr;
 static size_t framebuffer_pitch;
 static size_t framebuffer_height;
 static size_t framebuffer_width;
-static size_t framebuffer_size;
+// static size_t framebuffer_size;
 static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
 static uint8_t VBE_FONT[4096];
@@ -103,14 +103,14 @@ void put_pixel(int x, int y, int color) {
     framebuffer_addr[y * (framebuffer_pitch / sizeof(size_t)) + x] = color;
 }
 
-void early_init(multiboot_tag_framebuffer* grub_fb) {
-    //TODO: Identity map the framebuffer before using it! (Requires a vmm, we'll get back to it later)
-    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr)) + 0xFFFFFFFF80000000;
-    framebuffer_pitch = grub_fb->common.framebuffer_pitch;
-    framebuffer_height = grub_fb->common.framebuffer_height;
-    framebuffer_width = grub_fb->common.framebuffer_width;
-    framebuffer_size = grub_fb->common.size;
+// void early_init(multiboot_tag_framebuffer* grub_fb) {
+//     //TODO: Identity map the framebuffer before using it! (Requires a vmm, we'll get back to it later)
+//     framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr)) + 0xFFFFFFFF80000000;
+//     framebuffer_pitch = grub_fb->common.framebuffer_pitch;
+//     framebuffer_height = grub_fb->common.framebuffer_height;
+//     framebuffer_width = grub_fb->common.framebuffer_width;
+//     framebuffer_size = grub_fb->common.size;
 
-    set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height);
-}
+//     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height);
+// }
 }  // namespace firefly::drivers::vbe

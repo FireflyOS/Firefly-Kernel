@@ -9,7 +9,6 @@
 #include <x86_64/drivers/vga.hpp>
 #include <x86_64/init/init.hpp>
 #include <x86_64/int/interrupt.hpp>
-#include <x86_64/multiboot2.hpp>
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -41,7 +40,7 @@ void write_ff_info() {
 }
 }  // namespace firefly::kernel::main
 
-extern "C" [[noreturn]] void kernel_main(uint64_t magic, uint64_t mb2_proto_struct) {
+extern "C" [[noreturn]] void kernel_main() {
     using firefly::drivers::vga::color;
     using firefly::drivers::vga::cursor;
 
@@ -50,7 +49,7 @@ extern "C" [[noreturn]] void kernel_main(uint64_t magic, uint64_t mb2_proto_stru
     firefly::kernel::main::write_ff_info();
     firefly::drivers::ps2::init();
     firefly::kernel::core::interrupt::init();
-    firefly::kernel::kernel_init(magic, mb2_proto_struct);
+    firefly::kernel::kernel_init();
 
     firefly::kernel::io::SerialPort port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
     port.send_chars("Hello world!");
