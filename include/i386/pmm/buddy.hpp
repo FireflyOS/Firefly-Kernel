@@ -23,7 +23,7 @@ class BuddyAllocator;
 struct BuddyNode {
     void* physical_addr;  // this is always the same as split_one's physical address...
 
-    uint8_t order : 5;
+    uint8_t order : 5; // ORDER HAS TO BE SMALLER THAN 0b11111 (32)
     uint8_t _is_taken : 1;
     uint8_t _is_split : 1;
     uint8_t _is_right : 1;

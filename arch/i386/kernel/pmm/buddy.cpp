@@ -4,9 +4,14 @@
 #include <utility.h>
 
 bool Chunk::can_allocate(uint8_t order) const noexcept {
+    if (!can_be_allocated) {
+        return false;
+    }
+
     if (order > MAXIMUM_ORDER) {
         return false;
     }
+    
     return free_values[order] || can_allocate(order + 1);
 }
 
@@ -215,6 +220,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc_chunk();
+        node->can_be_allocated = true;
         node->root.physical_addr = memory_base + (i * LARGEST_CHUNK);
         node->root.order = MAXIMUM_ORDER;
         node->free_values[MAXIMUM_ORDER] = 1;  // only an order MAX_ORDER node is available.
