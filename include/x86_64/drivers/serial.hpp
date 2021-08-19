@@ -4,7 +4,6 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly::kernel::io {
-void serial(const char* msg);
 class SerialPort {
 public:
     constexpr static inline size_t BAUD_BASE = 115200;

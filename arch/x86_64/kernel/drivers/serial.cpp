@@ -4,13 +4,6 @@
 #include <x86_64/drivers/serial.hpp>
 
 namespace firefly::kernel::io {
-
-void serial(const char *msg)
-{
-    firefly::kernel::io::SerialPort debug_port = { firefly::kernel::io::SerialPort::COM1, firefly::kernel::io::SerialPort::BAUD_BASE };
-    debug_port.send_chars(msg);
-}
-
 SerialPort::SerialPort(uint16_t port, uint32_t baud_rate)
     : port(port), baud_divisor{ static_cast<uint16_t>(BAUD_BASE / baud_rate) } {
 }

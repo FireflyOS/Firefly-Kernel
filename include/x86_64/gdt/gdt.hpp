@@ -10,6 +10,7 @@
 #define CS_USR 3
 #define DS_USR 4
 
+namespace firefly::kernel::core::gdt {
 class gdtd_t {
 public:
     uint16_t limit;
@@ -26,8 +27,6 @@ public:
     uint64_t offset;
 } PACKED;
 
-
-namespace firefly::kernel::core::gdt {
 class GDTconfig {
 public:
     void set(int offset, uint8_t flags, uint8_t access);

@@ -4,9 +4,8 @@
 
 extern "C" void load_gdt(uint64_t);
 
-static gdtd_t gdtd[GDT_MAX_ENTRIES];
-
 namespace firefly::kernel::core::gdt {
+static gdtd_t gdtd[GDT_MAX_ENTRIES];
 void GDTconfig::set(int offset, uint8_t flags, uint8_t access) {
     gdtd[offset].base0 = 0;
     gdtd[offset].base1 = 0;
