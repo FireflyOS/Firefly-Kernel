@@ -18,7 +18,7 @@ void printBT(const std::string& prefix, BuddyNode* node, bool isLeft)
 		// print the value of the node
 		std::cout <<
 			" order: " << int(node->order) <<
-			" free: " << bool(node->is_free()) <<
+			" free: " << bool(!node->is_taken()) <<
 			" split: " << bool(node->is_split())
 
 			<< std::endl;
@@ -32,6 +32,13 @@ void printBT(const std::string& prefix, BuddyNode* node, bool isLeft)
 void printBT(BuddyNode* node)
 {
 	printBT("", node, false);
+}
+
+void print(BuddyTreeHeap* node)
+{
+	for (size_t i = 0; i < node->size(); i++) {
+		std::cout << (int)node->base[i].largest_order_free << std::endl;
+	}
 }
 
 bool Chunk::can_allocate(uint8_t order) const noexcept {
@@ -102,13 +109,14 @@ BuddyNode* BuddyNode::get_right_child() {
 	return this + static_cast<size_t>(pow(2, order));
 }
 
+// returns the buddy that's allocatable
 BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
 	// no point in traversing a branch when the current node is already taken
 	if (node->is_taken()) {
 		return nullptr;
 	}
 
-	if (_order == node->order && node->is_free() && !node->is_split()) {
+	if (_order == node->order && node->is_free()) {
 		return node;
 	}
 
@@ -147,12 +155,18 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
 	if (order == MAXIMUM_ORDER) {
 		return root;
 	}
-	auto splittable_node = lambda(root, buddy, order)->get_parent();
+	auto splittable_node = lambda(root, buddy, order);
+	if (!splittable_node) {
+		// panic??
+		return nullptr;
+	}
+	splittable_node = splittable_node->get_parent();
 	auto temp = splittable_node;
 	while (temp != root) {
-		temp->get_parent()->split(buddy);
+		temp->split(buddy);
 		temp = temp->get_parent();
 	}
+	temp->split(buddy); // split the actual root node.
 	return splittable_node;
 }
 
@@ -181,12 +195,12 @@ void BuddyNode::split(BuddyAllocator* buddy) noexcept {
 	}
 	_is_split = true;
 	auto chunk = to_chunk(buddy);
-	if (order == MAXIMUM_ORDER) {
+	if (order == 0) {
 		// panic; can't split a zero-order node
 		return;
 	}
-	chunk->free_values[order] -= 1;
-	chunk->free_values[order + 1] += 2;
+	chunk->add_order(order, -1);
+	chunk->add_order(order - 1, 2);
 }
 
 void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
@@ -197,7 +211,7 @@ void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
 		return;
 	}
 	// -= 1 because the other one has already been added when it was deallocated
-	chunk->free_values[order] += 1;
+	chunk->add_order(order, 1);
 }
 
 Chunk* BuddyNode::to_chunk(BuddyAllocator* buddy) const noexcept {
@@ -225,7 +239,7 @@ size_t BuddyAllocator::calculate_nodes_for_max_order() {
 		result += current_tier_count;
 		current_tier_count *= 2;
 		order--;
-	} while (order >= 1);
+	} while (order >= 0);
 
 	// Now the state array
 	return result;
@@ -333,6 +347,11 @@ void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {
 	assert(two->get_parent() == parent_node);
 }
 
+
+void Chunk::add_order(size_t order, int count) {
+	free_values[order] += count;
+}
+
 BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
 	auto& max = buddy_heap.max();
 	if (!max.buddy->can_allocate(order)) {
@@ -346,7 +365,6 @@ BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
 	}
 	else {
 		auto left = buddy->get_left_child();
-		buddy->_is_split = true;
 		if (left->is_free()) {
 			left->_is_taken = true;
 			physical_addr = left->physical_addr;
@@ -357,8 +375,9 @@ BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
 			physical_addr = right->physical_addr;
 		}
 	}
-	max.buddy->free_values[order]--;
+	max.buddy->add_order(order, -1);
 	max.buddy->fix_heap(this);
+	std::cout << "Allocate order: " << int(order) << std::endl;
 	printBT(max.buddy->root);
 	return { physical_addr, order };
 }
@@ -408,12 +427,14 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
 }
 
 void Chunk::fix_heap(BuddyAllocator* buddy) {
-	auto max = std::max_element(free_values.begin(), free_values.end());
-	uint8_t max_order = -1;
-	if (max != free_values.end()) {
-		max_order = *max;
+	int8_t max_order = -1;
+	size_t max_value = 0;
+	for (int8_t i = 0; i < free_values.max_size(); i++) {
+		if (free_values[i] >= max_value) {
+			max_order = i;
+			max_value = free_values[i];
+		}
 	}
-
 	auto heap_element = buddy->heap_index(heap_index);
 	auto before = heap_element->largest_order_free;
 	if (max_order == before) {
@@ -485,8 +506,7 @@ BuddyInfoHeap* BuddyTreeHeap::push(BuddyAllocator* buddy, BuddyInfoHeap key) {
 	auto node = buddy->alloc<BuddyInfoHeap>();
 	node->buddy = key.buddy;
 	node->largest_order_free = key.largest_order_free;
-	size_t index = size() - 1;
-	node->buddy->heap_index = heapify_up(index);
+	node->buddy->heap_index = heapify_up(size());
 	_size++;
 	return node;
 }
@@ -496,8 +516,11 @@ BuddyInfoHeap& BuddyTreeHeap::max() {
 }
 
 Chunk* BuddyAllocator::chunk_at_index(size_t index) {
-	const static auto node_byte_count = calculate_nodes_for_max_order() * sizeof(BuddyNode);
-	auto temp = (index * sizeof(Chunk)) + (index * node_byte_count);
+	auto nodes_per_tree = calculate_nodes_for_max_order();
+	auto bytes_for_nodes = sizeof(BuddyNode) * nodes_per_tree;
+	auto bytes_for_chunk_headers = sizeof(Chunk);
+
+	auto temp = (bytes_for_nodes * index) + (bytes_for_chunk_headers * index);
 	return reinterpret_cast<Chunk*>(base_address + temp);
 }
 

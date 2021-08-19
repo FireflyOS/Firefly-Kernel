@@ -55,8 +55,10 @@ struct Chunk {
     BuddyNode* root = nullptr;
     size_t heap_index;
     uint8_t can_be_allocated : 1 = 1;
-    std::array<uint8_t, MAXIMUM_ORDER + 1> free_values = {};
+    std::array<int8_t, MAXIMUM_ORDER + 1> free_values = {};
 
+
+    void add_order(size_t order, int count);
     bool can_allocate(uint8_t order) const noexcept;
     BuddyNode* get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept;
     void fix_heap(BuddyAllocator* buddy);
@@ -69,6 +71,8 @@ struct BuddyInfoHeap {
     bool operator<(BuddyInfoHeap const& rhs) const noexcept;
     bool operator>(BuddyInfoHeap const& rhs) const noexcept;
 };
+
+
 
 struct BuddyTreeHeap {
     BuddyInfoHeap* base = nullptr;
@@ -91,6 +95,7 @@ struct BuddyTreeHeap {
     BuddyInfoHeap& max();
 };
 
+void print(BuddyTreeHeap* node);
 
 class BuddyAllocator {
 public:
