@@ -1,51 +1,61 @@
-ENTRY(start)
+/* Tell the linker that we want an x86_64 ELF64 output file */
+OUTPUT_FORMAT(elf64-x86-64)
+OUTPUT_ARCH(i386:x86-64)
 
-VIRT_BASE = 0xFFFFFFFF80000000;
+/* We want the symbol _start to be our entry point */
+ENTRY(kernel_init)
 
-SECTIONS {
-    . = 0x00100000;
+/* Define the program headers we want so the bootloader gives us the right */
+/* MMU permissions */
+PHDRS
+{
+    null    PT_NULL    FLAGS(0) ;                   /* Null segment */
+    text    PT_LOAD    FLAGS((1 << 0) | (1 << 2)) ; /* Execute + Read */
+    rodata  PT_LOAD    FLAGS((1 << 2)) ;            /* Read only */
+    data    PT_LOAD    FLAGS((1 << 1) | (1 << 2)) ; /* Write + Read */
+    dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2)) ; /* Dynamic segment needed for PIE */
+}
 
-    /* this is all used before mapping
-       so give its labels physical addresses */
-    .pm_stub :
-    {
-        *(.multiboot_header)
-        *(.pm_stub)
-    }
+SECTIONS
+{
+    /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
+    /* Since we are going to use PIE, this is just the base load address, but the */
+    /* bootloader will be able to relocate us as it sees fit. */
+    . = 0xffffffff80200000;
 
-    . += VIRT_BASE;
-    . = ALIGN(4096);
-
-    /* virtual start address */
-    _kernel_start = .;
-    .text ALIGN (4096) : AT (ADDR (.text) - VIRT_BASE)
-    {
+    .text : {
         *(.text*)
-    }
+    } :text
 
-    .data ALIGN (4096) : AT (ADDR (.data) - VIRT_BASE)
-    {
-        /* *(.eh_frame)
-        *(.eh_frame_hdr) */
-        *(.data*)
-    }
+    /* Move to the next memory page for .rodata */
+    . += 0x1000;
 
-    .rodata ALIGN (4096) : AT (ADDR (.rodata) - VIRT_BASE)
-    {
+    /* We place the .stivale2hdr section containing the header in its own section, */
+    /* and we use the KEEP directive on it to make sure it doesn't get discarded. */
+    .stivale2hdr : {
+        KEEP(*(.stivale2hdr))
+    } :rodata
+
+    .rodata : {
         *(.rodata*)
-        _init_array_start = .;
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))
-        _init_array_end = .;
-    }
+    } :rodata
 
-    .bss ALIGN (4096) : AT (ADDR (.bss) - VIRT_BASE)
-    {
+    /* Move to the next memory page for .data */
+    . += 0x1000;
+
+    .data : {
+        *(.data*)
+    } :data
+
+    /* Dynamic section needed for PIE */
+    .dynamic : {
+        *(.dynamic)
+    } :data :dynamic
+
+    .bss : {
         *(COMMON)
         *(.bss*)
-    }
-    /* physical end address */
-    _kernel_end = ALIGN(4096);
-
-    /* ASSERT(((_kernel_end - _kernel_start) < 0x200000), "Error: Kernel larger than 2MiB"); */
+    } :data
 }

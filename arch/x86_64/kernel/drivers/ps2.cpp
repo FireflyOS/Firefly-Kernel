@@ -1,5 +1,5 @@
 #include <x86_64/drivers/ps2.hpp>
-
+#include <stl/cstdlib/stdio.h>
 
 namespace firefly::drivers::ps2 {
     using namespace firefly::kernel::io;
@@ -93,7 +93,7 @@ namespace firefly::drivers::ps2 {
         return nullptr;
     }
 
-    void handle_input(unsigned char scancode, vga::cursor& crs) {
+    void handle_input(unsigned char scancode) {
         if (scancode == keys::caps_lock) {
             shift_pressed = !shift_pressed;
             return;
@@ -108,11 +108,11 @@ namespace firefly::drivers::ps2 {
                     shift_pressed = !shift_pressed;
                     break;
                 case keys::enter:
-                    crs << "\n";
+                    puts("\n");
                     append_cin('\n');
                     break;
                 case keys::backspace:
-                    crs << '\b';
+                    puts("\b");
                     append_cin('\b');
                     break;
                 default: {
@@ -121,7 +121,8 @@ namespace firefly::drivers::ps2 {
                         ascii -= 32;
                     append_cin(ascii);
                     char str[2] = { ascii, '\0' };
-                    crs << str;
+                    printf("%s\n", str);
+                    puts(str);
                 }
             }
     }

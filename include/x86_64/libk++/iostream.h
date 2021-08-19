@@ -1,9 +1,7 @@
 #pragma once
 
 #include <stdarg.h>
-
-#include <x86_64/drivers/vga.hpp>
-#include <x86_64/kernel.hpp>
+#include <stl/cstdlib/stdio.h>
 
 /*
  * (Listed in the most useful order)
@@ -22,20 +20,7 @@
  *     firefly::libkern::get_cursor_handle() << "Num: " << 123 << firefly::libkern::endl;
 */
 
-#define klog() firefly::libkern::get_cursor_handle() << __FUNCTION__ << ":" << static_cast<size_t>(__LINE__) << ": "
-
-namespace firefly::libkern {
-using namespace firefly::drivers::vga;
-
-firefly::drivers::vga::cursor& get_cursor_handle();
-void globalize_vga_writer(firefly::drivers::vga::cursor& crs);
-
-static auto cout = get_cursor_handle();
-const auto endl = '\n';
-
-template <typename... Tys>
-void print(Tys... args) {
-    ((firefly::libkern::get_cursor_handle() << args), ...);
-}
-
-}  // namespace firefly::libkern
+#define klog(...) ({                           \
+    printf("%s:%d: ", __FUNCTION__, __LINE__); \
+    printf(__VA_ARGS__);                       \
+})

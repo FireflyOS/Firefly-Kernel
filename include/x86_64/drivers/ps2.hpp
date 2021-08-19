@@ -1,7 +1,6 @@
 #pragma once
 #include <stl/array.h>
 #include <x86_64/drivers/ports.hpp>
-#include <x86_64/drivers/vga.hpp>
 #include <stl/optional.h>
 #include <x86_64/utils.hpp>
 
@@ -29,5 +28,5 @@ namespace firefly::drivers::ps2 {
      * @param scancode      Scancode that was receieved from the keyboard
      * @param crs           Where to print the input
      */
-    void handle_input(unsigned char scancode, vga::cursor& crs);
+    void handle_input(unsigned char scancode);
 }  // namespace firefly::drivers::ps2

@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# Symbol tables
+/parsed_x86_64.sym
+/Scripts/parsed_x86_64.sym
+
 # Compiled Object files
 *.o
 
@@ -26,8 +30,10 @@
 
 # Buildsystem
 binaries/
+/build/
 !binaries/boot/grub.cfg
 .idea
 
 # Makefile plugin
 /.vscode/*.log
+/.vscode/c_cpp_properties.json

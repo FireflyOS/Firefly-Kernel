@@ -1,10 +1,6 @@
 #include <x86_64/libk++/ios.h>
 #include <x86_64/libk++/iostream.h>
 
-#include <x86_64/drivers/vga.hpp>
-
-
-using namespace firefly::drivers::vga;
 
 namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
@@ -80,7 +76,6 @@ void init() {
 }
 
 void test_int() {
-    klog() << "testing interrupt 0...\n";
     asm volatile("int $0");
 }
 

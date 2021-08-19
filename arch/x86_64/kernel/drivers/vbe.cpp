@@ -1,4 +1,5 @@
 #include <font8x16.h>
+#include <splash.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stl/cstdlib/cstring.h>
@@ -7,12 +8,13 @@
 #include <x86_64/drivers/serial.hpp>
 #include <x86_64/drivers/vbe.hpp>
 
+
 namespace firefly::drivers::vbe {
-static multiboot_uint64_t* framebuffer_addr;
+static uint32_t* framebuffer_addr;
 static size_t framebuffer_pitch;
 static size_t framebuffer_height;
 static size_t framebuffer_width;
-static size_t framebuffer_size;
+// static size_t framebuffer_size;
 static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
 static uint8_t VBE_FONT[4096];
@@ -56,8 +58,7 @@ void putc(char c, int x, int y, int color) {
     console_x += glyph_width;
 }
 
-void putc(char c)
-{
+void putc(char c) {
     putc(c, console_x, console_y);
 }
 
@@ -72,6 +73,10 @@ static bool check_special(char c) {
         return true;
     } else if (c == '\t') {
         console_x += 4;
+        return true;
+    }
+    else if (c == '\b') {
+        console_x -= 3;
         return true;
     }
     //Not a special char but it needs to be handled anyway so might as well put it in this function..
@@ -100,17 +105,48 @@ void scroll() {
 }
 
 void put_pixel(int x, int y, int color) {
-    framebuffer_addr[y * (framebuffer_pitch / sizeof(size_t)) + x] = color;
+    framebuffer_addr[y * (framebuffer_pitch / sizeof(uint32_t)) + x] = color;
 }
 
-void early_init(multiboot_tag_framebuffer* grub_fb) {
-    //TODO: Identity map the framebuffer before using it! (Requires a vmm, we'll get back to it later)
-    framebuffer_addr = (multiboot_uint64_t*)((size_t)(grub_fb->common.framebuffer_addr)) + 0xFFFFFFFF80000000;
-    framebuffer_pitch = grub_fb->common.framebuffer_pitch;
-    framebuffer_height = grub_fb->common.framebuffer_height;
-    framebuffer_width = grub_fb->common.framebuffer_width;
-    framebuffer_size = grub_fb->common.size;
+void early_init(stivale2_struct_tag_framebuffer* tagfb) {
+    framebuffer_addr = reinterpret_cast<uint32_t*>(tagfb->framebuffer_addr);
+    framebuffer_pitch = tagfb->framebuffer_pitch;
+    framebuffer_height = tagfb->framebuffer_height;
+    framebuffer_width = tagfb->framebuffer_width;
+    // framebuffer_size = tagfb->common.size;
 
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height);
 }
+void clear_splash_frame() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            uint32_t pixel = 0x0;
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
+}
+
+void boot_splash() {
+    int x = framebuffer_width / 3 + (splash_width / 3);
+    int y = framebuffer_height / 3;
+
+    int j = 0;
+    for (int height = 0; height < splash_height; height++) {
+        for (int width = 0; width < splash_width; width++) {
+            j++;
+            uint32_t pixel = (splash_screen_pixel_data[j] << 24) | (splash_screen_pixel_data[j] << 16) | (splash_screen_pixel_data[j] << 8) | splash_screen_pixel_data[j];
+            put_pixel(
+                x + width,
+                y + height,
+                pixel);
+        }
+    }
+}
+
 }  // namespace firefly::drivers::vbe

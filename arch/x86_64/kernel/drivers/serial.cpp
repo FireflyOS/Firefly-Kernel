@@ -4,7 +4,6 @@
 #include <x86_64/drivers/serial.hpp>
 
 namespace firefly::kernel::io {
-
 SerialPort::SerialPort(uint16_t port, uint32_t baud_rate)
     : port(port), baud_divisor{ static_cast<uint16_t>(BAUD_BASE / baud_rate) } {
 }

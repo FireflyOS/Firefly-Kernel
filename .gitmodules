@@ -1,3 +1,7 @@
 [submodule "include/stl"]
 	path = include/stl
 	url = https://github.com/FireflyOS/Firefly-STL
+[submodule "limine"]
+	path = limine
+	url = https://github.com/limine-bootloader/limine.git
+	branch = latest-binary
