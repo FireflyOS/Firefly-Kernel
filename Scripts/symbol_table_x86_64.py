@@ -3,8 +3,7 @@ import sys
 
 PARSED =  "parsed_x86_64.sym"
 KERNEL =  sys.argv[1]
-system(f"touch {PARSED}")
-writer = open(PARSED, "w")
+writer = open(PARSED, "w+")
 
 symbol_table_naked = """
 #include <symbols.hpp>
@@ -13,12 +12,8 @@ sym_table_t symbol_table[] = {
 """
 
 def init_writer():
-    try:
-        assert(writer.mode == "w")
-    except AssertionError:
-        print("[x] Cannot open file in write mode, check your permissions and try again")
-        exit(1)
-    
+    writer.seek(0)
+    writer.truncate()
     writer.write(symbol_table_naked)
 
 # return an entry in the symbol array: {0xdeadbeef, "function"},

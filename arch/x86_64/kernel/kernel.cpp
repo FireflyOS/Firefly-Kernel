@@ -33,11 +33,7 @@ void write_ff_info() {
 
 
 void kernel_main() {
-    if (!firefly::drivers::ps2::init())
-        printf("Error initializing ps2 keyboard\n");
-
     write_ff_info();
-
-    firefly::kernel::io::serial("Hello world!\n");
+    trace::panic("Test");
 }
 }  // namespace firefly::kernel::main
