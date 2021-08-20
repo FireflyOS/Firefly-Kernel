@@ -110,7 +110,7 @@ BuddyNode* BuddyNode::get_right_child() {
 }
 
 // returns the buddy that's allocatable
-BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
+BuddyNode* allocate_find(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
 	// no point in traversing a branch when the current node is already taken
 	if (node->is_taken()) {
 		return nullptr;
@@ -127,12 +127,12 @@ BuddyNode* lambda(BuddyNode* node, BuddyAllocator* buddy, uint8_t _order) {
 		return node->get_matching_buddy();
 	}
 
-	auto left = lambda(node->get_left_child(), buddy, _order);
+	auto left = allocate_find(node->get_left_child(), buddy, _order);
 	if (left) {
 		return left;
 	}
 
-	auto right = lambda(node->get_right_child(), buddy, _order);
+	auto right = allocate_find(node->get_right_child(), buddy, _order);
 	if (right) {
 		return right;
 	}
@@ -155,7 +155,7 @@ BuddyNode* Chunk::get_free_buddy(BuddyAllocator* buddy, uint8_t order) noexcept 
 	if (order == MAXIMUM_ORDER) {
 		return root;
 	}
-	auto splittable_node = lambda(root, buddy, order);
+	auto splittable_node = allocate_find(root, buddy, order);
 	if (!splittable_node) {
 		// panic??
 		return nullptr;
@@ -506,7 +506,10 @@ BuddyInfoHeap* BuddyTreeHeap::push(BuddyAllocator* buddy, BuddyInfoHeap key) {
 	auto node = buddy->alloc<BuddyInfoHeap>();
 	node->buddy = key.buddy;
 	node->largest_order_free = key.largest_order_free;
-	node->buddy->heap_index = heapify_up(size());
+	node->buddy->heap_index = size();
+    if (size() != 0) {
+        node->buddy->heap_index = heapify_up(size());
+    }
 	_size++;
 	return node;
 }
