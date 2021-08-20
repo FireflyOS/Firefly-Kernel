@@ -320,7 +320,9 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 	for (size_t i = 0; i < zero_nodes_needed; i++) {
 		buddy_heap.push(this, BuddyInfoHeap{
 			chunk_at_index(i), static_cast<int8_t>(MAXIMUM_ORDER) });
-	}
+        auto pushed_element = heap_index(i);
+        assert(pushed_element->buddy == chunk_at_index(i));
+    }
 }
 
 void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {
