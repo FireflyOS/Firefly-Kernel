@@ -361,7 +361,10 @@ void Chunk::add_order(size_t order, int count) {
 
 BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
 	auto& max = buddy_heap.max();
-	if (!max.buddy->can_allocate(order)) {
+	auto state_before = max.buddy->free_values;
+    auto state_after = max.buddy->free_values;
+    state_after[order]--; // this should be the state afterwards
+    if (!max.buddy->can_allocate(order)) {
 		return { nullptr, 0 };
 	}
 	auto buddy = max.buddy->get_free_buddy(this, order);
@@ -384,6 +387,9 @@ BuddyAllocator::allocation_result_t BuddyAllocator::allocate(uint8_t order) {
 	}
 	max.buddy->add_order(order, -1);
 	max.buddy->fix_heap(this);
+    // heap index is hard to predict, but we could do some assertions 
+    // inside a test.cpp potentially.
+    assert(state_after == max.buddy->free_values);
 	std::cout << "Allocate order: " << int(order) << std::endl;
 	printBT(max.buddy->root);
 	return { physical_addr, order };
