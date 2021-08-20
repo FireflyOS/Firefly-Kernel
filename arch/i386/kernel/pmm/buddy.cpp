@@ -313,6 +313,8 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 		assert(right_child->get_matching_buddy() == left_child);
 		assert(left_child->get_matching_buddy() == right_child);
 		assert(node->can_be_allocated);
+        assert(chunk_at_index(i) == node);
+        assert(chunk_at_index(i).free_values[MAXIMUM_ORDER] == 1);
 	}
 
 	buddy_heap.base = reinterpret_cast<BuddyInfoHeap*>(base_address + index);
@@ -322,7 +324,10 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 			chunk_at_index(i), static_cast<int8_t>(MAXIMUM_ORDER) });
         auto pushed_element = heap_index(i);
         assert(pushed_element->buddy == chunk_at_index(i));
+        assert(pushed_element->largest_order_free == MAXIMUM_ORDER);
     }
+
+    assert(buddy_heap.size() == zero_nodes_needed);
 }
 
 void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {
