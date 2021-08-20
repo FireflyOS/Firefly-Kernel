@@ -36,9 +36,58 @@ void printBT(BuddyNode* node)
 
 void print(BuddyTreeHeap* node)
 {
-	for (size_t i = 0; i < node->size(); i++) {
-		std::cout << (int)node->base[i].largest_order_free << std::endl;
-	}
+	size_t arrlen = node->size();
+	BuddyInfoHeap arr = node->base;
+    int longest_digits = 0;
+    int tree_depth = 0;
+
+    int pos = 0;
+    int depth = 0;
+
+    for (size_t i = 0; i <arrlen; ++i) {
+        if (arr[i].largest_order_free != -1) {
+            const int len = snprintf(NULL, 0, "%d", arr[i].largest_order_free);
+            if (longest_digits < len) {
+                longest_digits = len;
+            }
+        }
+        
+        if (pos == 0) {
+            tree_depth++;
+            pos = pow2i(depth++);
+        }
+        pos--;      
+    }
+
+    //printf("%d %d\n", longest_digits, tree_depth);
+
+    pos = 0;
+    depth = 0;
+    const int additional_offset = 3;
+    int max_width = pow2i(tree_depth) * (longest_digits + additional_offset);
+    for (size_t i = 0; i < arrlen; ++i) {
+        const bool first = pos == 0;
+        if (first) {
+            pos = pow2i(depth);
+            depth++;
+        }
+        const int count_elems = pow2i(depth);
+        const int chunk = max_width / count_elems;
+        const int width = chunk + (first ? -chunk/2 : 0);
+        const int pre_spaces = width - longest_digits;
+
+        printf("%*s", pre_spaces, "");
+        if (arr[i] == -1) {
+            printf("%*s", longest_digits, "-");
+        } else {
+            printf("%*d", longest_digits, arr[i].largest_order_free);
+        }
+
+        if (pos == 1) {
+            printf("\n");
+        }
+        pos--;
+    }
 }
 
 bool Chunk::can_allocate(uint8_t order) const noexcept {
@@ -313,8 +362,8 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 		assert(right_child->get_matching_buddy() == left_child);
 		assert(left_child->get_matching_buddy() == right_child);
 		assert(node->can_be_allocated);
-        assert(chunk_at_index(i) == node);
-        assert(chunk_at_index(i).free_values[MAXIMUM_ORDER] == 1);
+		assert(chunk_at_index(i) == node);
+		assert(chunk_at_index(i).free_values[MAXIMUM_ORDER] == 1);
 	}
 
 	buddy_heap.base = reinterpret_cast<BuddyInfoHeap*>(base_address + index);
@@ -352,6 +401,8 @@ void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {
 	assert(one->get_parent() == parent_node);
 	assert(two == parent_node->get_right_child());
 	assert(two->get_parent() == parent_node);
+	assert(one->get_matching_buddy() == two);
+	assert(two->get_matching_buddy() == one);
 }
 
 
