@@ -213,15 +213,31 @@ void BuddyNode::split(BuddyAllocator* buddy) noexcept {
 	chunk->add_order(order - 1, 2);
 }
 
-void BuddyNode::merge_buddy(BuddyAllocator* buddy) noexcept {
-	if (order == MAXIMUM_ORDER) {
-		// can't merge a maximum order node
-		return;
+void BuddyNode::merge_children(BuddyAllocator* buddy, Chunk* matching_chunk) noexcept {
+	auto left = get_left_child();
+	auto right = get_right_child();
+
+	if (!left->is_free() || !right->is_free()) {
+		return; // can't merge, one of the two children is taken
 	}
-	get_parent()->_is_split = false;
-	auto chunk = to_chunk(buddy);
-	// -= 1 because the other one has already been added when it was deallocated
-	chunk->add_order(order, 1);
+
+	// can merge, let's.
+	this->_is_split = false;
+	if (!matching_chunk) {
+		matching_chunk = to_chunk(buddy);
+	}
+
+	matching_chunk->add_order(order, 1);
+
+	if (order > 0) {
+		matching_chunk->add_order(static_cast<uint8_t>(order - 1), -2);
+	}
+
+
+	auto parent = get_parent();
+	if (parent) {
+		get_parent()->merge_children(buddy, matching_chunk);
+	}
 }
 
 Chunk* BuddyNode::to_chunk(BuddyAllocator* buddy) const noexcept {
@@ -442,15 +458,10 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
 		return;
 	}
 
-	auto temp = allocated_buddy;
-	auto other = allocated_buddy->get_matching_buddy();
-	while (temp->order != MAXIMUM_ORDER && other->is_free()) {
-		other->get_parent()->merge_buddy(this);
-		temp = temp->get_parent();
-		other = temp->get_matching_buddy();
-	}
-
-	chunk->add_order(order, -1);
+	allocated_buddy->_is_taken = false;
+	chunk->add_order(order, 1);
+	allocated_buddy->get_parent()->merge_children(this, chunk);
+	
 	chunk->fix_heap(this);
 
 	std::cout << "Deallocate order: " << (int)order << std::endl;
