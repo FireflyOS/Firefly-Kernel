@@ -310,7 +310,6 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
-        node->can_be_allocated = true;
         node->root = alloc<BuddyNode>();
         node->root->physical_addr = memory_base + (i * LARGEST_CHUNK);
         node->root->order = MAXIMUM_ORDER;
@@ -331,7 +330,6 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
         assert(right_child->get_parent() == node->root);
         assert(right_child->get_matching_buddy() == left_child);
         assert(left_child->get_matching_buddy() == right_child);
-        assert(node->can_be_allocated);
         assert(chunk_at_index(i) == node);
         assert(chunk_at_index(i)->free_values[MAXIMUM_ORDER] == 1);
     }
@@ -347,6 +345,14 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     }
 
     assert(buddy_heap.size() == zero_nodes_needed);
+}
+
+void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
+    size_t start_base = start - static_cast<char*>(chunk_for(start)->root->physical_addr); 
+    size_t count = (start - end) / LARGEST_CHUNK;
+    for (size_t i = start_base; i < count; i++) {
+        chunk_at_index(i)->can_be_allocated = false;
+    }
 }
 
 void BuddyAllocator::create_tree_structure(BuddyNode* parent_node) {

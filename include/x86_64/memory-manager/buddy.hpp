@@ -53,7 +53,7 @@ struct BuddyNode {
 struct Chunk {
     BuddyNode* root = nullptr;
     size_t heap_index;
-    uint8_t can_be_allocated : 1 = 1;
+    bool can_be_allocated = true;
     firefly::std::array<int8_t, MAXIMUM_ORDER + 1> free_values = {};
 
 
@@ -74,6 +74,7 @@ private:
 
 public:
     BuddyAllocator(void* base_address);
+    void initialize(size_t memory_available, char* memory_base);
 
     struct allocation_result_t {
         void* mem;
@@ -85,12 +86,13 @@ public:
     allocation_result_t allocate(uint8_t order);
     void deallocate(void* addr, uint8_t order);
 
+    void set_unusable_memory(char* start, char* end) noexcept;
+
 private:
     static size_t calculate_nodes_for_max_order();
     static int8_t order_for(size_t bytes) noexcept;
     Chunk* chunk_at_index(size_t index);
 
-    void initialize(size_t memory_available, char* memory_base);
     void create_tree_structure(BuddyNode* parent_node);
 
     template <typename T>
@@ -100,7 +102,7 @@ private:
         *curr = T{};
         return curr;
     }
-    
+
     Chunk* chunk_for(void* address);
     BuddyInfoHeap* heap_index(size_t idx);
 };
