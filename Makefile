@@ -13,13 +13,17 @@ all: create_dirs $(ISO)
 $(ISO): $(TARGET)
 	$(MAKE) -C limine
 	rm -rf iso_root
-	mkdir -p iso_root
-	cp $< limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin iso_root/
-	xorriso -as mkisofs -b limine-cd.bin \
-		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		--efi-boot limine-eltorito-efi.bin \
-		-efi-boot-part --efi-boot-image --protective-msdos-label \
-		iso_root -o $@
+	mkdir -p iso_root/boot
+
+	cp limine/BOOTIA32.EFI limine/BOOTX64.EFI limine/limine.sys limine/limine-cd.bin \
+	limine/limine-eltorito-efi.bin limine/limine-pxe.bin limine.cfg \
+	binaries/boot/kernel_$(ARCH).elf iso_root/boot
+	
+	xorriso -as mkisofs -b boot/limine-cd.bin \
+	-no-emul-boot -boot-load-size 4 -boot-info-table \
+	--efi-boot boot/limine-eltorito-efi.bin -efi-boot-part \
+	--efi-boot-image --protective-msdos-label iso_root -o $@
+
 	limine/limine-install $@
 	rm -rf iso_root
 	rm parsed_x86_64.sym
@@ -65,12 +69,15 @@ windows:
 	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH).exe -d int -M smm=off -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) 
 
-run:
-	qemu-system-$(ARCH) -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+bios:
+	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+
+uefi:
+	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISO) $(QEMU_FLAGS) -d int
 
 debug: $(ISO) $(TARGET)
-	qemu-system-$(ARCH) -M q35 -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio
-
+	qemu-system-$(ARCH) -enable-kvm -cpu host -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio
+	
 
 %.cxx.o: %.cpp
 	$(CC) $(CXX_FLAGS) -c $< -o $(BUILD_DIR)/$@

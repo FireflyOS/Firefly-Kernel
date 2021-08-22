@@ -113,11 +113,7 @@ void video_scroll_up(void* start, void* end, void* dest) {
 void clear_splash_frame();
 void scroll() {
     clear_splash_frame();
-    for (size_t h = 0; h < framebuffer_height; h++) {
-        for (size_t w = 0; w < framebuffer_width; w++) {
-            framebuffer_addr[h * framebuffer_width + w + glyph_height] = framebuffer_addr[(h + glyph_height) * framebuffer_width + w + glyph_height];
-        }
-    }
+    memcpy((void*)framebuffer_addr, (void *)((size_t)framebuffer_addr + framebuffer_width * glyph_height * (4)), framebuffer_width * (framebuffer_height - glyph_width) * 6);
     boot_splash();
 }
 
