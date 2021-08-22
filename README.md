@@ -19,7 +19,7 @@ Kernel for FireflyOS
 ## Ubuntu 
 
 ```bash
-sudo apt install nasm xorriso qemu-system-x86 mtools clang grub
+sudo apt install nasm xorriso qemu-system-x86 clang ovmf #For UEFI emulation only
 ```
 
 ```bash
@@ -27,8 +27,10 @@ sudo apt install nasm xorriso qemu-system-x86 mtools clang grub
 # To see a list of available architectures run "make target_archs"
 # without the double qoutes ("")
 make ARCH=x86_64
-make run ARCH=x86_64
+make uefi ARCH=x86_64
 ```
+Note: FireflyOS can be booted on both bios and UEFI, change `uefi` to `bios` to boot it in qemu with bios
+
 
 ## Windows (WSL)
 
