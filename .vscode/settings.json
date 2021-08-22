@@ -1,6 +1,0 @@
-{
-    "autoSaveExt": {
-      "debounce": 1000, // default is 500
-      "extensions": [] // if no extension set will be applied to all files
-    }
-  }

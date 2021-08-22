@@ -65,9 +65,10 @@ struct Chunk {
 
 class BuddyAllocator {
     friend BuddyTreeHeap;
-public:
-    BuddyTreeHeap buddy_heap;
+    friend BuddyNode;
+    friend Chunk;
 private:
+    BuddyTreeHeap buddy_heap;
     char* base_address;
     size_t index = 0;
 
@@ -83,8 +84,6 @@ public:
 
     allocation_result_t allocate(uint8_t order);
     void deallocate(void* addr, uint8_t order);
-    Chunk* chunk_for(void* address);
-    BuddyInfoHeap* heap_index(size_t idx);
 
 private:
     static size_t calculate_nodes_for_max_order();
@@ -101,6 +100,9 @@ private:
         *curr = T{};
         return curr;
     }
+    
+    Chunk* chunk_for(void* address);
+    BuddyInfoHeap* heap_index(size_t idx);
 };
 }  // namespace firefly::kernel::mm::buddy
 #endif
