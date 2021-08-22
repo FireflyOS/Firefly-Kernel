@@ -19,7 +19,7 @@ Kernel for FireflyOS
 ## Ubuntu 
 
 ```bash
-sudo apt install nasm xorriso qemu-system-x86 clang ovmf #For UEFI emulation only
+sudo apt install nasm xorriso qemu-system-x86 clang lld ovmf #For UEFI emulation only
 ```
 
 ```bash
@@ -37,7 +37,7 @@ Note: FireflyOS can be booted on both bios and UEFI, change `uefi` to `bios` to 
 If you are on windows, you first need to install WSL. After that, you can install the dependencies by running 
 
 ```
-sudo apt-get install nasm xorriso mtools clang lld grub2-common grub-pc-bin
+sudo apt-get install nasm xorriso clang lld ovmf #For UEFI emulation only
 ```
 
 You will also need to install QEMU separately. You can get it [here](https://www.qemu.org/download/).
