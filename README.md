@@ -4,14 +4,6 @@ Kernel for FireflyOS
 ## x64 demo:
 ![Firefly OS](docs/x64-progress.png)
 
-## Dependencies ##
-
- * NASM
- * xorriso
- * qemu
- * mtools
- * clang++
-
 ### Clone the repo 
  * git clone https://github.com/FireflyOS/Firefly-Kernel --recursive
  * cd Firefly-Kernel
