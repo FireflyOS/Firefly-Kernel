@@ -34,6 +34,11 @@ void write_ff_info() {
 
 void kernel_main() {
     write_ff_info();
+    for (int i = 0; i < 47; i++)
+        printf("test %d\n", i);
+
+
+    printf("Scrolling demo complete\n");
     trace::panic("Test");
 }
 }  // namespace firefly::kernel::main

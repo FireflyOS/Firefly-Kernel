@@ -47,7 +47,7 @@ CXX_FLAGS =						\
 ASM_FLAGS = -f elf64 -g -F dwarf
 
 #### KERNEL BUILD FLAGS ####
-LIB_OBJS = ./include/stl/cstd.o ./include/stl/stdio.o
+LIB_OBJS = ./include/stl/cstd.o ./include/stl/stdio.o ./include/stl/cmath.o
 
 CXX_FILES  = $(shell find $(SRC_DIR)/ -type f -name '*.cpp')
 ASM_FILES  = $(shell find $(SRC_DIR)/ -type f -name '*.asm')
