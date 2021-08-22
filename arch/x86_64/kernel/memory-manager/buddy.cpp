@@ -351,7 +351,11 @@ void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
     size_t start_base = start - static_cast<char*>(chunk_for(start)->root->physical_addr); 
     size_t count = (start - end) / LARGEST_CHUNK;
     for (size_t i = start_base; i < count; i++) {
-        chunk_at_index(i)->can_be_allocated = false;
+        auto chunk = chunk_at_index(i);
+        chunk->can_be_allocated = false;
+        auto& values = chunk->free_values;
+        firefly::std::fill(values.begin(), values.end(), -1);
+        chunk->fix_heap(this);
     }
 }
 
@@ -478,6 +482,10 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
             max_value = free_values[i];
         }
     }
+    if (max_value == -1) {
+        max_order = -1;
+    }
+
     auto heap_element = buddy->heap_index(heap_index);
     auto before = heap_element->largest_order_free;
     if (max_order == before) {
