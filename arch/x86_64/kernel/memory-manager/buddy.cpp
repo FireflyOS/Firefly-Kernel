@@ -475,13 +475,14 @@ void BuddyAllocator::deallocate(void* addr, uint8_t order) {
 
 void Chunk::fix_heap(BuddyAllocator* buddy) {
     int8_t max_order = -1;
-    size_t max_value = 0;
+    int8_t max_value = -1;
     for (int8_t i = 0; static_cast<size_t>(i) < free_values.max_size(); i++) {
-        if (static_cast<size_t>(free_values[i]) >= max_value) {
+        if (free_values[i] >= max_value) {
             max_order = i;
             max_value = free_values[i];
         }
     }
+
     if (max_value == -1) {
         max_order = -1;
     }
