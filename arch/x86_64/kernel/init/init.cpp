@@ -1,13 +1,16 @@
+#include "x86_64/init/init.hpp"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <x86_64/libk++/iostream.h>
 
-#include <x86_64/drivers/vbe.hpp>
-#include <x86_64/gdt/gdt.hpp>
-#include <x86_64/init/init.hpp>
-#include <x86_64/int/interrupt.hpp>
-#include <x86_64/kernel.hpp>
-#include <x86_64/stivale2.hpp>
+#include "x86_64/drivers/vbe.hpp"
+#include "x86_64/gdt/gdt.hpp"
+#include "x86_64/int/interrupt.hpp"
+#include "x86_64/kernel.hpp"
+#include "x86_64/memory-manager/buddy/bootstrap-buddy.hpp"
+#include "x86_64/stivale2.hpp"
+#include "x86_64/tty/boot-tty.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -89,13 +92,19 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     }
     firefly::drivers::vbe::early_init(tagfb);
     firefly::drivers::vbe::boot_splash();
+    firefly::kernel::main::write_ff_info();
+
+    struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    firefly::kernel::tty::init();
+    firefly::kernel::mm::buddy::bootstrap_buddy(tagmem);
 }
 
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {
-    bootloader_services_init(stivale2_struct);
-
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
+
+    bootloader_services_init(stivale2_struct);
+
     firefly::kernel::main::kernel_main();
-    for (;;);
+    __builtin_unreachable();
 }

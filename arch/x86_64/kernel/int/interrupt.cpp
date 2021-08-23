@@ -80,7 +80,7 @@ void test_int() {
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
-    printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
+    printf("CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->rip);
     printf("ESP: %X\n", iframe->rsp);
 

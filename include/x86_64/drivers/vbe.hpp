@@ -1,11 +1,12 @@
 #pragma once
 
-#include <x86_64/stivale2.hpp>
+#include "x86_64/stivale2.hpp"
+#include "x86_64/libk++/vector_math.h"
 
 namespace firefly::drivers::vbe {
 void scroll();
-void putc(char c);
-void puts(const char* str);
+uint32_t* fb_addr();
+libkern::Vec2 fb_dimensions();
 void put_pixel(int x, int y, int color);
 void early_init(stivale2_struct_tag_framebuffer* tagfb);
 void boot_splash();
