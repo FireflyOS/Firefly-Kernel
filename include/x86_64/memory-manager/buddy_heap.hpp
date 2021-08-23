@@ -4,6 +4,16 @@
 #include <cstdlib/cstdint.h>
 
 namespace firefly::kernel::mm::buddy {
+/**
+ * The heap is what's used to find a free node
+ * Every order MAXIMUM_ORDER node has information in a `Chunk`
+ * It keeps track of where it's currently located in the heap AND
+ * how many of each order are free, the largest free order is updated in 
+ * BuddyInfoHeap, which matches the chunk and has a pointer to it.
+ * The heap should be updated every time add_order is called on a chunk
+ * (fix_heap())
+ */
+
 
 struct Chunk;
 class BuddyAllocator;
