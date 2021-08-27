@@ -14,13 +14,15 @@ static uint32_t* framebuffer_addr;
 static size_t framebuffer_height;
 static size_t framebuffer_width;
 static size_t framebuffer_pitch;
+static size_t framebuffer_bpp;
 
 uint32_t* fb_addr() { return framebuffer_addr; }
 libkern::Vec2 fb_dimensions()
 {
     return { framebuffer_width, framebuffer_height };
 }
-
+size_t fb_bpp() { return framebuffer_bpp; }
+size_t fb_pitch() { return framebuffer_pitch; }
 void clear_splash_frame();
 
 void put_pixel(int x, int y, int color) {
@@ -32,6 +34,7 @@ void early_init(stivale2_struct_tag_framebuffer* tagfb) {
     framebuffer_pitch = tagfb->framebuffer_pitch;
     framebuffer_height = tagfb->framebuffer_height;
     framebuffer_width = tagfb->framebuffer_width;
+    framebuffer_bpp = tagfb->framebuffer_bpp;
 }
 
 void clear_splash_frame() {

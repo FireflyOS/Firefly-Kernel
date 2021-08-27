@@ -4,7 +4,8 @@
 
 #include "font8x16.h"
 #include "x86_64/drivers/vbe.hpp"
-
+#include "x86_64/tty/double-buffering.hpp"
+#include <stl/cstdlib/stdio.h>
 namespace firefly::kernel::tty {
 static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
@@ -14,8 +15,16 @@ static bool check_special(char c);
 
 void init() {
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height, 0xFFFFFFF);
+
+    tty::DoubleBuffering db;
+    db.init_buffers();
+    db.write("Hi!", glyph_height, glyph_width, console_x, console_y);
+    
+    while (1)
+        ;
 }
 
+//DOING: Double buffer to avoid reading from memory
 void scroll() {
     // clear_splash_frame();
     libkern::Vec2 dim = drivers::vbe::fb_dimensions();
@@ -48,6 +57,9 @@ void putc(char c, int x, int y) {
         }
     }
     console_x += glyph_width;
+    // check_special(c);
+    
+    // console_x += glyph_width;
 }
 
 void putc(char c, int x, int y, int color) {

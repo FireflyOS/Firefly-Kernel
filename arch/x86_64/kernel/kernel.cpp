@@ -33,8 +33,8 @@ void write_ff_info() {
 
 
 void kernel_main() {
-    for (int i = 0; i < 58; i++)
-        printf("I = %d\n", i);
+    // for (int i = 0; i < 58; i++)
+    //     printf("I = %d\n", i);
     trace::panic("Reached the end of kernel");
 }
 }  // namespace firefly::kernel::main
