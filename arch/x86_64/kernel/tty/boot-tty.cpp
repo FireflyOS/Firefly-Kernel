@@ -1,11 +1,13 @@
 #include "x86_64/tty/boot-tty.hpp"
 
 #include <stl/cstdlib/cstring.h>
+#include <stl/cstdlib/stdio.h>
 
 #include "font8x16.h"
 #include "x86_64/drivers/vbe.hpp"
+#include "x86_64/libk++/bitmap.h"
 #include "x86_64/tty/double-buffering.hpp"
-#include <stl/cstdlib/stdio.h>
+
 namespace firefly::kernel::tty {
 static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
@@ -16,9 +18,18 @@ static bool check_special(char c);
 void init() {
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height, 0xFFFFFFF);
 
-    tty::DoubleBuffering db;
-    db.init_buffers();
-    db.write("Hi!", glyph_height, glyph_width, console_x, console_y);
+    // tty::DoubleBuffering db;
+    // db.init_buffers();
+    // db.write("Hi!", glyph_height, glyph_width, console_x, console_y);
+    
+    //Bitmap testing
+    using namespace libkern;
+    uint32_t *pool = 0;
+    bitmap_t bmp = {.pool = pool};
+    Bitmap b(&bmp, 10);
+    b.print(1);
+    b.set(1);
+    b.print(1);
     
     while (1)
         ;
@@ -58,7 +69,7 @@ void putc(char c, int x, int y) {
     }
     console_x += glyph_width;
     // check_special(c);
-    
+
     // console_x += glyph_width;
 }
 

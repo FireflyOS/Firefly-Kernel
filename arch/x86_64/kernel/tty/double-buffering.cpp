@@ -1,8 +1,9 @@
 #include "x86_64/tty/double-buffering.hpp"
-#include "font8x16.h"
 
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
+
+#include "font8x16.h"
 
 namespace firefly::kernel::tty {
 static tty_render_buffer front, back;
@@ -31,7 +32,6 @@ void DoubleBuffering::render_buffer(tty_render_buffer& buffer) {
     for (size_t x = 0; x < dimensions.x; x++) {
         for (size_t y = 0; y < dimensions.y; y++) {
             drivers::vbe::put_pixel(x, y, buffer.buffer[y]);
-
         }
     }
     // memcpy(drivers::vbe::fb_addr(), buffer.buffer, dimensions.x * dimensions.y * drivers::vbe::fb_bpp());
@@ -50,10 +50,14 @@ void DoubleBuffering::fill_buffer(tty_render_buffer buffer, uint32_t color) {
 void DoubleBuffering::write(const char* str,
                             int glyph_height, int glyph_width, int x, int y) {
     for (int i = 0, n = strlen(str); i < n; i++) {
-        this->write_char(str[i], glyph_height, glyph_width, x, y);
+        (void)x;
+        (void)y;
+        (void)glyph_height;
+        (void)glyph_width;
+        // this->write_char(str[i], glyph_height, glyph_width, x, y);
     }
-    
-    get_active().buffer[12] = 0xFFFFFF;
+
+    get_active().buffer[30] = 0xFFFFFF;
 
     swap_buffers();
 }
@@ -71,8 +75,16 @@ void DoubleBuffering::write_char(char c, int glyph_height,
 }
 
 /* Plot a pixel in the back buffer */
-void DoubleBuffering::buffer_pixel(int x, int y, uint32_t color) {
-    get_active().buffer[y * (drivers::vbe::fb_pitch() / sizeof(uint32_t)) + x] = color;
+void DoubleBuffering::buffer_pixel(size_t x, size_t y, uint32_t color) {
+    for (size_t _y = 0; _y < drivers::vbe::fb_dimensions().y; _y++) {
+        if (_y == y) {
+            for (size_t _x = 0; _x < drivers::vbe::fb_dimensions().x; _x++) {
+                if (_x == x) {
+                    get_active().buffer[_y] = color;
+                }
+            }
+        }
+    }
 }
 
 void DoubleBuffering::clear_buffer(uint32_t color) {
