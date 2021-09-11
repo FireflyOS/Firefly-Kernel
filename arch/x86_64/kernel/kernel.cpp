@@ -7,6 +7,7 @@
 #include <x86_64/drivers/vbe.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
+#include <x86_64/trace/panicReasons.hpp>
 
 
 
@@ -34,11 +35,7 @@ void write_ff_info() {
 
 void kernel_main() {
     write_ff_info();
-    for (int i = 0; i < 47; i++)
-        printf("test %d\n", i);
-
-
-    printf("Scrolling demo complete\n");
-    trace::panic("Test");
+    printf("test %d\n", 64);
+    trace::panic(PManuallyCrashed);
 }
 }  // namespace icelyos::kernel::main
