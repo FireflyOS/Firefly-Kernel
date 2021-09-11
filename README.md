@@ -8,7 +8,7 @@ Kernel for IcelyOS
 
 ### Clone the repo 
  * git clone https://github.com/SergeyMC9730/IcelyOS-Kernel --recursive
- * cd Firefly-Kernel
+ * cd IcelyOS-Kernel
 
 ## Ubuntu 
 
