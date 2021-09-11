@@ -1,5 +1,5 @@
 #pragma once
 
-namespace firefly::kernel::main {
+namespace icelyos::kernel::main {
 void kernel_main();
 }

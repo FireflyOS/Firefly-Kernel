@@ -7,7 +7,7 @@
 
 #include "buddy_heap.hpp"
 
-namespace firefly::kernel::mm::buddy {
+namespace icelyos::kernel::mm::buddy {
 /**
  * The buddy allocator operates on the premise of being able to split up memory into multiple smaller chunks
  * Our data is laid out in an array of BuddyNode, which contains information about a certain piece of memory.
@@ -83,7 +83,7 @@ struct Chunk {
     BuddyNode* root = nullptr;
     size_t heap_index;
     bool can_be_allocated = true;
-    firefly::std::array<int8_t, MAXIMUM_ORDER + 1> free_values = {};
+    icelyos::std::array<int8_t, MAXIMUM_ORDER + 1> free_values = {};
 
 
     void add_order(size_t order, int count);
@@ -135,5 +135,5 @@ private:
     Chunk* chunk_for(void* address);
     BuddyInfoHeap* heap_index(size_t idx);
 };
-}  // namespace firefly::kernel::mm::buddy
+}  // namespace icelyos::kernel::mm::buddy
 #endif

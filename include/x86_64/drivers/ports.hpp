@@ -1,6 +1,6 @@
 #include <cstdlib/cstdint.h>
 
-namespace firefly::kernel::io {
+namespace icelyos::kernel::io {
     /**
      *                      Read a byte from 16-bit port address
      * @param port          The port to read from
@@ -61,4 +61,4 @@ namespace firefly::kernel::io {
         // dummy write, port 0x80 unused after POST
         asm volatile("outb %al, $0x80");
     }
-}  // namespace firefly::kernel::io
+}  // namespace icelyos::kernel::io

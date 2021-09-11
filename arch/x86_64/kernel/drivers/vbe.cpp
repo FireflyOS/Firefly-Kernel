@@ -9,7 +9,7 @@
 #include <x86_64/drivers/vbe.hpp>
 
 
-namespace firefly::drivers::vbe {
+namespace icelyos::drivers::vbe {
 static uint32_t* framebuffer_addr;
 static size_t framebuffer_pitch;
 static size_t framebuffer_height;
@@ -162,4 +162,4 @@ void boot_splash() {
     }
 }
 
-}  // namespace firefly::drivers::vbe
+}  // namespace icelyos::drivers::vbe

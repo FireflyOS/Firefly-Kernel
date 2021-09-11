@@ -3,7 +3,7 @@
 
 #include <cstdlib/cstdint.h>
 
-namespace firefly::kernel::io {
+namespace icelyos::kernel::io {
 class SerialPort {
 public:
     constexpr static inline size_t BAUD_BASE = 115200;
@@ -35,6 +35,6 @@ public:
     void read_string(char* buffer, int len) const noexcept;
 };
 
-}  // namespace firefly::kernel::io
+}  // namespace icelyos::kernel::io
 
 #endif

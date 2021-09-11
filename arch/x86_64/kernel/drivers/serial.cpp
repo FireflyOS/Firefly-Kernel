@@ -3,7 +3,7 @@
 #include <x86_64/drivers/ports.hpp>
 #include <x86_64/drivers/serial.hpp>
 
-namespace firefly::kernel::io {
+namespace icelyos::kernel::io {
 SerialPort::SerialPort(uint16_t port, uint32_t baud_rate)
     : port(port), baud_divisor{ static_cast<uint16_t>(BAUD_BASE / baud_rate) } {
 }
@@ -77,4 +77,4 @@ void SerialPort::read_string(char* buffer, int len) const noexcept {
     buffer[read_count] = '\0';
 }
 
-}  // namespace firefly::kernel::io
+}  // namespace icelyos::kernel::io

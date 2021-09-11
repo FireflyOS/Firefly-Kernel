@@ -3,7 +3,7 @@
 
 #include <x86_64/trace/symbols.hpp>
 
-namespace firefly::trace {
+namespace icelyos::trace {
 
 void trace_stack();
 [[noreturn]] void panic(const char *msg) {
@@ -30,4 +30,4 @@ void trace_stack() {
         stkf = stkf->frame;
     }
 }
-}  // namespace firefly::trace
+}  // namespace icelyos::trace

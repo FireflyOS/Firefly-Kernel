@@ -5,7 +5,7 @@
 
 #define assert(x) (void)(x)
 
-namespace firefly::kernel::mm::buddy {
+namespace icelyos::kernel::mm::buddy {
 
 // For future debugging purposes
 // void printBT(const std::string& prefix, BuddyNode* node, bool isLeft)
@@ -354,7 +354,7 @@ void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
         auto chunk = chunk_at_index(i);
         chunk->can_be_allocated = false;
         auto& values = chunk->free_values;
-        firefly::std::fill(values.begin(), values.end(), -1);
+        icelyos::std::fill(values.begin(), values.end(), -1);
         chunk->fix_heap(this);
     }
 }
@@ -513,4 +513,4 @@ Chunk* BuddyAllocator::chunk_at_index(size_t index) {
     auto temp = (bytes_for_nodes * index) + (bytes_for_chunk_headers * index);
     return reinterpret_cast<Chunk*>(base_address + temp);
 }
-}  // namespace firefly::kernel::mm::buddy
+}  // namespace icelyos::kernel::mm::buddy

@@ -1,5 +1,5 @@
 #include <x86_64/libk++/iostream.h>
 
-namespace firefly::libkern {
+namespace icelyos::libkern {
 
-}  // namespace firefly::libkern
+}  // namespace icelyos::libkern

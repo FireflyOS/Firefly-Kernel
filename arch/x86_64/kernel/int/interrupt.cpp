@@ -2,7 +2,7 @@
 #include <x86_64/libk++/iostream.h>
 
 
-namespace firefly::kernel::core::interrupt {
+namespace icelyos::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
     uint16_t offset_0;
     uint16_t selector;
@@ -97,4 +97,4 @@ __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[ma
     for (;;)
         asm("cli;hlt");
 }
-}  // namespace firefly::kernel::core::interrupt
+}  // namespace icelyos::kernel::core::interrupt

@@ -14,11 +14,11 @@
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0";
 
-namespace firefly::kernel::main {
+namespace icelyos::kernel::main {
 void write_ff_info() {
     printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
-    firefly::std::array<const char *, 3> arr = {
+    icelyos::std::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
     };
 
@@ -41,4 +41,4 @@ void kernel_main() {
     printf("Scrolling demo complete\n");
     trace::panic("Test");
 }
-}  // namespace firefly::kernel::main
+}  // namespace icelyos::kernel::main
