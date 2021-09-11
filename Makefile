@@ -1,7 +1,7 @@
 -include flags.mk
 
 TARGET = $(BUILD_DIR)/kernel_$(ARCH).elf
-ISO = FireflyOS_$(ARCH).iso
+ISO = IcelyOS_$(ARCH).iso
 
 # test:
 # 	clang++ $(CXX_FLAGS) -c arch/x86_64/kernel/kernel.cpp -o $(BUILD_DIR)/arch/x86_64/kernel/kernel.o
