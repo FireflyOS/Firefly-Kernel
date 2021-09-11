@@ -1,13 +1,14 @@
 #include <stl/cstdlib/stdio.h>
 #include <x86_64/libk++/iostream.h>
+#include <stl/array.h>
 
 #include <x86_64/trace/symbols.hpp>
 
 namespace icelyos::trace {
 
 void trace_stack();
-[[noreturn]] void panic(const char *msg) {
-    printf("**** Kernel panic ****\nReason: %s\n\n", msg);
+[[noreturn]] void panic(const char *P_REASON) {
+    printf("**** Kernel panic ****\nReason: %s\n\n", P_REASON);
     trace_stack();
 
     while (1)

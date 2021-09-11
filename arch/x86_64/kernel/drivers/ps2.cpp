@@ -116,12 +116,15 @@ namespace icelyos::drivers::ps2 {
                     append_cin('\b');
                     break;
                 default: {
+                    //WIP
+                    printf("%d", scancode);
                     char ascii = sc_ascii[scancode];
                     if (shift_pressed)
                         ascii -= 32;
                     append_cin(ascii);
                     char str[2] = { ascii, '\0' };
-                    printf("%s\n", str);
+                    printf(" %d\n", ascii);
+                    //printf("%s", str);
                     puts(str);
                 }
             }

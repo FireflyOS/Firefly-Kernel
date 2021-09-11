@@ -7,24 +7,23 @@
 #include <x86_64/drivers/vbe.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
-#include <x86_64/trace/panicReasons.hpp>
 
 
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
-constexpr const char *VERSION_STRING = "0.0";
+constexpr const char *VERSION_STRING = "0.0 FORK";
 
 namespace icelyos::kernel::main {
 void write_ff_info() {
-    printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
+    printf("IcelyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
-    icelyos::std::array<const char *, 3> arr = {
-        "Lime\t  ", "JohnkaS", "V01D-NULL"
+    icelyos::std::array<const char *, 4> arr = {
+        "Lime\t  ", "JohnkaS", "V01D-NULL\t  ", "SergeyMC9730"
     };
 
     for (size_t i = 0; i < arr.max_size(); i++) {
-        if (i % 2 == 0) {
+        if (i % (arr.max_size() - 1) == 0) {
             puts("\n\t");
         }
         printf("%s  ", arr[i]);
@@ -35,7 +34,16 @@ void write_ff_info() {
 
 void kernel_main() {
     write_ff_info();
-    printf("test %d\n", 64);
-    trace::panic(PManuallyCrashed);
+    printf("Initialization a Keyboard...\n");
+    bool isKeyboard = false;
+    isKeyboard = icelyos::drivers::ps2::init();
+    printf("Returned a \"%s\" result\n", isKeyboard ? "true" : "false");
+    if(!isKeyboard) trace::panic(trace::P_DRIVERERROR);
+    trace::panic(trace::P_MANUALLYCRASHED);
+
+    for(;;){
+        unsigned char scancode = icelyos::drivers::ps2::get_scancode();
+        if(scancode) icelyos::drivers::ps2::handle_input(scancode);
+    }
 }
 }  // namespace icelyos::kernel::main
