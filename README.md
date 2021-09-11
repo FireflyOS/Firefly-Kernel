@@ -4,7 +4,7 @@
 Kernel for IcelyOS
 
 ## x64 demo:
-![Firefly OS](docs/x64-progress.png)
+![Firefly OS](images/2021-09-11-211114.png)
 
 ### Clone the repo 
  * git clone https://github.com/SergeyMC9730/IcelyOS-Kernel --recursive
