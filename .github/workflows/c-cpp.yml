@@ -12,17 +12,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: submodules-init
+      uses: snickerbockers/submodules-init@v4
     - uses: actions/checkout@v2
     - name: make BIOS
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
     - name: make UEFI
       run: make uefi ARCH=x86_64 && mv Firefly_x86_64.iso Firefly_UEFI_x86_64.iso
-    #- name: Upload a Build Artifact
-      ##uses: actions/upload-artifact@v2.2.4
-      #with:
-      #name: Firefly_BIOS_x86_64.iso
-      #path: 
-      #Available Options:
-      #warn: Output a warning but do not fail the action
-      #error: Fail the action with an error message
-      #ignore: Do not output any warnings or errors, the action does not fail
+    - name: Upload a BIOS Build Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: Firefly_BIOS_x86_64.iso
+        path: .
+    - name: Upload a UEFI Build Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: Firefly_UEFI_x86_64.iso
+        path: .
+    - name: Download a BIOS Build Artifact
+      uses: actions/download-artifact@v2.0.10
+      with:
+          name: Firefly_BIOS_x86_64.iso
+          path: .
+    - name: Download a UEFI Build Artifact
+      uses: actions/download-artifact@v2.0.10
+      with:
+          name: Firefly_UEFI_x86_64.iso
+          path: .
