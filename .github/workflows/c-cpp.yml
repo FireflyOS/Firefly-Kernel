@@ -14,11 +14,13 @@ jobs:
     steps:
     - name: Setup Python
       uses: actions/setup-python@v2.2.2
-    - name: submodules-init
-      uses: snickerbockers/submodules-init@v4
     - uses: actions/checkout@v2
-    - name: ls
-      run: ls
+    - name: Install packages
+      run: sudo apt-get install nasm xorriso clang lld ovmf
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@2.1.1
+    - name: ls -rf
+      run: ls -rf
     - name: make BIOS
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
     - name: make UEFI
