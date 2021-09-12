@@ -1,0 +1,30 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2.2.2
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: sudo apt-get install nasm xorriso clang lld ovmf
+    - name: Make build dir
+      run: mkdir build
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@2.1.1
+    - name: make BIOS
+      run: make ARCH=x86_64 && mv Firefly_x86_64.iso build/Firefly_BIOS_x86_64.iso
+    - name: Upload a BIOS Build Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: Firefly_BIOS_x86_64.iso
+        path: ./build/
