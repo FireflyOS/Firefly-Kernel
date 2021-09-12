@@ -95,8 +95,8 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::kernel::main::write_ff_info();
 
     struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    firefly::kernel::tty::init();
     firefly::kernel::mm::buddy::bootstrap_buddy(tagmem);
+    firefly::kernel::tty::init();
 }
 
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {

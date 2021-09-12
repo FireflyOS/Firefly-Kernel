@@ -18,15 +18,14 @@ typedef struct generic_display_buffer {
 
 class DoubleBuffering {
 private:
-    void write_char(char c, int glyph_height, int glyph_width, int x, int y);
-    void fill_buffer(tty_render_buffer buffer, uint32_t color);
-    void buffer_pixel(size_t x, size_t y, uint32_t color);
     void render_buffer(tty_render_buffer& buffer);
-    void clear_buffer(uint32_t color);
-    tty_render_buffer get_active();
+    tty_render_buffer& get_active();
+
+private:
+    tty_render_buffer front, back;
 
 public:
-    void write(const char* str, int glyph_height, int glyph_width, int x, int y);
+    void buffer_pixel(size_t x, size_t y, uint32_t color);
     void swap_buffers();
     void init_buffers();
 };

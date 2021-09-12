@@ -6,6 +6,7 @@
 #include <cstdlib/cstdint.h>
 
 #include "buddy_heap.hpp"
+#include <stl/cstdlib/stdio.h>
 
 namespace firefly::kernel::mm::buddy {
 

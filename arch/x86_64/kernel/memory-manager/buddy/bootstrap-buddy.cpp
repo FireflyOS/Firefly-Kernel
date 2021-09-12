@@ -16,11 +16,15 @@ void bootstrap_buddy(struct stivale2_struct_tag_memmap *phys_mmap) {
     *   4. Initialize the buddy allocator
     *   5. Lastly the used entries are allocated
     */
+    
     auto total_mem = ram_diff(phys_mmap->memmap, phys_mmap->entries);
-    auto memory_used = Buddy.estimate_memory_used(total_mem);
-    Buddy = { reinterpret_cast<void *>(ram_highest - ram_lowest) };
+    auto memory_used = BuddyAllocator(nullptr).estimate_memory_used(total_mem);//Buddy.estimate_memory_used(total_mem);
+    printf("base_addr: %X\n", ram_highest - ram_lowest);
+    BuddyAllocator Buddy = { reinterpret_cast<void *>(ram_lowest) };
     [[maybe_unused]]void *mmap = reinterpret_cast<void*>(limine_mmap(phys_mmap->memmap, phys_mmap->entries, memory_used));
-    // Buddy.initialize(total_mem, (char*) mmap); //Causes GPF - investigate
+    printf("before init\n");
+    Buddy.initialize(total_mem, (char*) ram_lowest); //Causes GPF - investigate
+    printf("after init\n");
 }
 
 static inline uint64_t ram_diff(struct stivale2_mmap_entry *mmap_entries, int total_entries) {
@@ -35,11 +39,11 @@ static size_t limine_mmap(struct stivale2_mmap_entry *mmap_entries, int total_en
 
     for (int current_entry = 0; current_entry < total_entries; current_entry++)
     {
-        struct stivale2_mmap_entry *entry = &mmap_entries[current_entry];
-        if (entry->type != STIVALE2_MMAP_USABLE)
+        // struct stivale2_mmap_entry *entry = &mmap_entries[current_entry];
+        if (mmap_entries[current_entry].type != STIVALE2_MMAP_USABLE)
             continue;
         
-        if ((result = (entry->base + entry->length)) >= buddy_size) {
+        if ((result = (mmap_entries[current_entry].base + mmap_entries[current_entry].length)) >= buddy_size) {
             printf("buddy_size: %X | entry: %X\n", buddy_size, result);
             return result;
         }

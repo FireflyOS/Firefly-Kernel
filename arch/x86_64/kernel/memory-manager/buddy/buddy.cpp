@@ -1,4 +1,5 @@
 #include "x86_64/memory-manager/buddy/buddy.hpp"
+#include "x86_64/trace/strace.hpp"
 
 #include <algorithm.h>
 #include <utility.h>
@@ -305,7 +306,9 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  * cuz it means that in memory they'll be laid out like
  * 0 1 2 3 4 5 6
  */
+
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
+    printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
     
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;

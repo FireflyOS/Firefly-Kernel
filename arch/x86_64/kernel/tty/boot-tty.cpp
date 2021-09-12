@@ -20,22 +20,14 @@ void init() {
 
     // tty::DoubleBuffering db;
     // db.init_buffers();
-    // db.write("Hi!", glyph_height, glyph_width, console_x, console_y);
     
-    //Bitmap testing
-    using namespace libkern;
-    uint32_t *pool = 0;
-    bitmap_t bmp = {.pool = pool};
-    Bitmap b(&bmp, 10);
-    b.print(1);
-    b.set(1);
-    b.print(1);
+    // for (int i = 0; i < 1000; i++)
+    //     db.buffer_pixel(i, 0, 0xFFFFFF);
     
-    while (1)
-        ;
+    // db.swap_buffers();
 }
 
-//DOING: Double buffer to avoid reading from memory
+//Todo: Double buffer to avoid reading from memory
 void scroll() {
     // clear_splash_frame();
     libkern::Vec2 dim = drivers::vbe::fb_dimensions();
