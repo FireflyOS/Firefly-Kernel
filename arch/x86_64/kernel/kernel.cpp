@@ -38,8 +38,8 @@ void kernel_main() {
     bool isKeyboard = false;
     isKeyboard = firefly::drivers::ps2::init();
     printf("Returned a \"%s\" result\n", isKeyboard ? "true" : "false");
-    if(!isKeyboard) trace::panic(trace::P_DRIVERERROR);
-    trace::panic(trace::P_MANUALLYCRASHED);
+    if(!isKeyboard) trace::panic(trace::PM_DRIVERERROR_PK, trace::PC_DRIVERERROR_PK);
+    trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 
     for(;;){
         unsigned char scancode = firefly::drivers::ps2::get_scancode();

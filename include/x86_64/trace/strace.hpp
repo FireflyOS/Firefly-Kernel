@@ -16,5 +16,5 @@ constexpr const int   PC_MANUALLYCRASHED = 0xFFFFFF;
 //PM — Panic Message
 //PC — Panic Code
 void trace_stack();
-void panic(const char *msg);
+void panic(const char *P_REASON, const int P_ERRCODE);
 }  // namespace firefly::trace
