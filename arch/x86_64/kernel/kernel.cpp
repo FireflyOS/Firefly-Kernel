@@ -62,8 +62,8 @@ void kernel_main() {
 
     printf("Virtual Memory Address: 0x%X\n", virtual_mem0);
 
-    virtual_mem0[64] = 0xe0;
-    virtual_mem0[65] = 0x0e;
+    uint8_t temp_mem0[2] = {0xe0, 0x0e};
+    virtual_memory::multiple_set(virtual_mem0, temp_mem0, 64);
 
     printf("virtual_mem0[64] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 64), virtual_mem0[64]);
     printf("virtual_mem0[65] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 65), virtual_mem0[65]);
