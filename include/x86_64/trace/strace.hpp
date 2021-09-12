@@ -1,17 +1,20 @@
 #pragma once
 
 namespace firefly::trace {
-constexpr const char* PM_OUTOFMEMORY     = "OUT_OF_MEMORY_EXCEPTION";
-constexpr const char* PM_DRIVERERROR_PK  = "PS2_KEYBOARD_DRIVER_ERROR";
-constexpr const char* PM_DRIVERERROR_S   = "SERIAL_PORT_DRIVER_ERROR";
-constexpr const char* PM_DRIVERERROR_V   = "VBE_DRIVER_ERROR";
-constexpr const char* PM_MANUALLYCRASHED = "MANUALLY_CRASHED";
+#define PANIC_M constexpr const char*
+#define PANIC_C constexpr const int
 
-constexpr const int   PC_OUTOFMEMORY     = 0x0E000F;
-constexpr const int   PC_DRIVERERROR_PK  = 0x0F3C40;
-constexpr const int   PC_DRIVERERROR_S   = 0x0F1450;
-constexpr const int   PC_DRIVERERROR_V   = 0x0FFF00;
-constexpr const int   PC_MANUALLYCRASHED = 0xFFFFFF;
+PANIC_M PM_OUTOFMEMORY     = "OUT_OF_MEMORY_EXCEPTION";
+PANIC_M PM_DRIVERERROR_PK  = "PS2_KEYBOARD_DRIVER_ERROR";
+PANIC_M PM_DRIVERERROR_S   = "SERIAL_PORT_DRIVER_ERROR";
+PANIC_M PM_DRIVERERROR_V   = "VBE_DRIVER_ERROR";
+PANIC_M PM_MANUALLYCRASHED = "MANUALLY_CRASHED";
+
+PANIC_C PC_OUTOFMEMORY     = 0x0E000F;
+PANIC_C PC_DRIVERERROR_PK  = 0x0F3C40;
+PANIC_C PC_DRIVERERROR_S   = 0x0F1450;
+PANIC_C PC_DRIVERERROR_V   = 0x0FFF00;
+PANIC_C PC_MANUALLYCRASHED = 0xFFFFFF;
 
 //PM — Panic Message
 //PC — Panic Code
