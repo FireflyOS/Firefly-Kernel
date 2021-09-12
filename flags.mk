@@ -42,7 +42,8 @@ CXX_FLAGS =						\
 	-mno-sse                    \
     -mno-sse2	                \
 	-Wno-c99-extensions			\
-	-Wno-gnu
+	-Wno-gnu					\
+	-fno-threadsafe-statics
 
 ASM_FLAGS = -f elf64 -g -F dwarf
 
