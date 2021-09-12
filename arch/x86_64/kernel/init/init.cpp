@@ -87,15 +87,15 @@ void bootloader_services_init(struct stivale2_struct *handover) {
         for (;;)
             asm("hlt");
     }
-    icelyos::drivers::vbe::early_init(tagfb);
-    icelyos::drivers::vbe::boot_splash();
+    firefly::drivers::vbe::early_init(tagfb);
+    firefly::drivers::vbe::boot_splash();
 }
 
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {
     bootloader_services_init(stivale2_struct);
 
-    icelyos::kernel::core::gdt::init();
-    icelyos::kernel::core::interrupt::init();
-    icelyos::kernel::main::kernel_main();
+    firefly::kernel::core::gdt::init();
+    firefly::kernel::core::interrupt::init();
+    firefly::kernel::main::kernel_main();
     for (;;);
 }

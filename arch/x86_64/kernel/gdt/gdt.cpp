@@ -4,7 +4,7 @@
 
 extern "C" void load_gdt(uint64_t);
 
-namespace icelyos::kernel::core::gdt {
+namespace firefly::kernel::core::gdt {
 static gdtd_t gdtd[GDT_MAX_ENTRIES];
 void GDTconfig::set(int offset, uint8_t flags, uint8_t access) {
     gdtd[offset].base0 = 0;
@@ -27,4 +27,4 @@ void init() {
     gdtr.offset = reinterpret_cast<uint64_t>(gdtd);
     load_gdt((uint64_t)&gdtr);
 }
-}  // namespace icelyos::kernel::core::gdt
+}  // namespace firefly::kernel::core::gdt

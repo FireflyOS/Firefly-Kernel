@@ -3,7 +3,7 @@
 
 #include <cstdlib/cstdint.h>
 
-namespace icelyos::kernel::mm::buddy {
+namespace firefly::kernel::mm::buddy {
 /**
  * The heap is what's used to find a free node
  * Every order MAXIMUM_ORDER node has information in a `Chunk`
@@ -47,5 +47,5 @@ struct BuddyTreeHeap {
 
     BuddyInfoHeap& max();
 };
-}  // namespace icelyos::kernel::mm::buddy
+}  // namespace firefly::kernel::mm::buddy
 #endif

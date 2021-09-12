@@ -5,7 +5,7 @@
 #include "x86_64/memory-manager/buddy.hpp"
 
 
-namespace icelyos::kernel::mm::buddy {
+namespace firefly::kernel::mm::buddy {
 
 bool BuddyInfoHeap::operator<(BuddyInfoHeap const& rhs) const noexcept {
     return largest_order_free < rhs.largest_order_free;
@@ -45,7 +45,7 @@ size_t BuddyTreeHeap::heapify_down(size_t i) {
     }
 
     if (largest != i) {
-        icelyos::std::swap(base[i], base[largest]);
+        firefly::std::swap(base[i], base[largest]);
         base[i].buddy->heap_index = i;
         return heapify_down(largest);
     }
@@ -56,7 +56,7 @@ size_t BuddyTreeHeap::heapify_down(size_t i) {
 size_t BuddyTreeHeap::heapify_up(size_t i) {
     auto parent = this->parent(i);
     if (i && base[parent] < base[i]) {
-        icelyos::std::swap(base[i], base[parent]);
+        firefly::std::swap(base[i], base[parent]);
         base[i].buddy->heap_index = i;
         return heapify_up(parent);
     }
@@ -80,4 +80,4 @@ BuddyInfoHeap& BuddyTreeHeap::max() {
 }
 
 
-}  // namespace icelyos::kernel::mm::buddy
+}  // namespace firefly::kernel::mm::buddy

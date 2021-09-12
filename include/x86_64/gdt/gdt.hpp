@@ -10,7 +10,7 @@
 #define CS_USR 3
 #define DS_USR 4
 
-namespace icelyos::kernel::core::gdt {
+namespace firefly::kernel::core::gdt {
 class gdtd_t {
 public:
     uint16_t limit;
@@ -32,4 +32,4 @@ public:
     void set(int offset, uint8_t flags, uint8_t access);
 };
 void init();
-}  // namespace icelyos::kernel::core::gdt
+}  // namespace firefly::kernel::core::gdt

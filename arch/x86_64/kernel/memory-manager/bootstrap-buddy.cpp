@@ -1,6 +1,6 @@
 // #include <x86_64/memory-manager/bootstrap-buddy.hpp>
 
-// namespace icelyos::mm::buddy {
+// namespace firefly::mm::buddy {
 // //The address where the allocator resides, must be marked as used by the buddy on initialization
 // static uint64_t buddy_allocator_address;
 
@@ -13,4 +13,4 @@
 // 	mmap_base_entry += 0x1000;
 // 	length -= 0x1000;
 // }
-// }  // namespace icelyos::mm::buddy
+// }  // namespace firefly::mm::buddy

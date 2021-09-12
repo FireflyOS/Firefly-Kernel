@@ -11,13 +11,13 @@
  *     |_> Usage: `klog("Num: " << 123);`
  * 
  *  2. print(): Prints the arguments, seperated by commas ","
- *     |_> Usage: `icelyos::libkern::print("Num: ", 123);`
+ *     |_> Usage: `firefly::libkern::print("Num: ", 123);`
  * 
  *  (Don't use it, it's only listed for the sake of completeness)
- *  3. icelyos::libkern::cout = icelyos::libkern::get_cursor_handle(); (Only do this once for each file)
- *     icelyos::libkern::cout << "Num: " << 123 << icelyos::libkern::endl;
+ *  3. firefly::libkern::cout = firefly::libkern::get_cursor_handle(); (Only do this once for each file)
+ *     firefly::libkern::cout << "Num: " << 123 << firefly::libkern::endl;
  *   or
- *     icelyos::libkern::get_cursor_handle() << "Num: " << 123 << icelyos::libkern::endl;
+ *     firefly::libkern::get_cursor_handle() << "Num: " << 123 << firefly::libkern::endl;
 */
 
 #define klog(...) ({                           \

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace icelyos::kernel::core::interrupt {
+namespace firefly::kernel::core::interrupt {
     void init();
 
     // test interrupt handler
@@ -10,4 +10,4 @@ namespace icelyos::kernel::core::interrupt {
         void update(uint32_t handler, uint16_t cs, uint8_t type, uint8_t index);
     }
 
-}  // namespace icelyos::kernel::interrupt
+}  // namespace firefly::kernel::interrupt

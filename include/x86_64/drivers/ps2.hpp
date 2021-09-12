@@ -7,7 +7,7 @@
 /**
  *                          The PS/2 port driver
  */
-namespace icelyos::drivers::ps2 {
+namespace firefly::drivers::ps2 {
     /**
      *                      Initializes the driver
      * @return true :       Driver was successfully initialized
@@ -20,7 +20,7 @@ namespace icelyos::drivers::ps2 {
      * 
      * @return              scancode if input was readable
      */
-    icelyos::std::optional<unsigned char> get_scancode();
+    firefly::std::optional<unsigned char> get_scancode();
 
     /**
      *                      Handles input of a scancode and forwards it to the display buffer
@@ -29,4 +29,4 @@ namespace icelyos::drivers::ps2 {
      * @param crs           Where to print the input
      */
     void handle_input(unsigned char scancode);
-}  // namespace icelyos::drivers::ps2
+}  // namespace firefly::drivers::ps2

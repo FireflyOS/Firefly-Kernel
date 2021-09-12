@@ -14,11 +14,11 @@
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0 FORK";
 
-namespace icelyos::kernel::main {
+namespace firefly::kernel::main {
 void write_ff_info() {
-    printf("IcelyOS\nVersion: %s\nContributors:", VERSION_STRING);
+    printf("firefly\nVersion: %s\nContributors:", VERSION_STRING);
 
-    icelyos::std::array<const char *, 4> arr = {
+    firefly::std::array<const char *, 4> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL\t  ", "SergeyMC9730"
     };
 
@@ -36,14 +36,14 @@ void kernel_main() {
     write_ff_info();
     printf("Initialization a Keyboard...\n");
     bool isKeyboard = false;
-    isKeyboard = icelyos::drivers::ps2::init();
+    isKeyboard = firefly::drivers::ps2::init();
     printf("Returned a \"%s\" result\n", isKeyboard ? "true" : "false");
     if(!isKeyboard) trace::panic(trace::P_DRIVERERROR);
     trace::panic(trace::P_MANUALLYCRASHED);
 
     for(;;){
-        unsigned char scancode = icelyos::drivers::ps2::get_scancode();
-        if(scancode) icelyos::drivers::ps2::handle_input(scancode);
+        unsigned char scancode = firefly::drivers::ps2::get_scancode();
+        if(scancode) firefly::drivers::ps2::handle_input(scancode);
     }
 }
-}  // namespace icelyos::kernel::main
+}  // namespace firefly::kernel::main

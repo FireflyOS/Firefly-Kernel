@@ -1,14 +1,14 @@
 **Fork of FireflyOS**
 
-# IcelyOS-Kernel
-Kernel for IcelyOS
+# Firefly-Kernel
+Kernel for Firefly
 
 ## x64 demo:
-![IcelyOS](images/2021-09-11_214002.png)
+![Firefly](images/2021-09-11_214002.png)
 
 ### Clone the repo 
- * git clone https://github.com/SergeyMC9730/IcelyOS-Kernel --recursive
- * cd IcelyOS-Kernel
+ * git clone https://github.com/SergeyMC9730/Firefly-Kernel --recursive
+ * cd Firefly-Kernel
 
 ## Ubuntu 
 
@@ -23,7 +23,7 @@ sudo apt install nasm xorriso qemu-system-x86 clang lld ovmf #For UEFI emulation
 make ARCH=x86_64
 make uefi ARCH=x86_64
 ```
-Note: IcelyOS can be booted on both bios and UEFI, change `uefi` to `bios` to boot it in qemu with bios
+Note: Firefly can be booted on both bios and UEFI, change `uefi` to `bios` to boot it in qemu with bios
 
 
 ## Windows (WSL)
