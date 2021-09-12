@@ -1,0 +1,28 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: make BIOS
+      run: make --ARCH x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
+    - name: make UEFI
+      run: make uefi --ARCH x86_64 && mv Firefly_x86_64.iso Firefly_UEFI_x86_64.iso
+    #- name: Upload a Build Artifact
+      ##uses: actions/upload-artifact@v2.2.4
+      #with:
+      #name: Firefly_BIOS_x86_64.iso
+      #path: 
+      #Available Options:
+      #warn: Output a warning but do not fail the action
+      #error: Fail the action with an error message
+      #ignore: Do not output any warnings or errors, the action does not fail
