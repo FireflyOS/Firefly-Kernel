@@ -12,9 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2.2.2
     - name: submodules-init
       uses: snickerbockers/submodules-init@v4
     - uses: actions/checkout@v2
+    - name: ls
+      run: ls
     - name: make BIOS
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
     - name: make UEFI
