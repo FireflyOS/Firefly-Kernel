@@ -28,8 +28,3 @@ jobs:
       with:
         name: Firefly_BIOS_x86_64.iso
         path: ./build/
-    - name: Download a BIOS Build Artifact
-      uses: actions/download-artifact@v2.0.10
-      with:
-          name: Firefly_BIOS_x86_64.iso
-          path: ./build/
