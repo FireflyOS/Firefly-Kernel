@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: make BIOS
-      run: make --ARCH x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
+      run: make ARCH x86_64 && mv Firefly_x86_64.iso Firefly_BIOS_x86_64.iso
     - name: make UEFI
-      run: make uefi --ARCH x86_64 && mv Firefly_x86_64.iso Firefly_UEFI_x86_64.iso
+      run: make uefi ARCH x86_64 && mv Firefly_x86_64.iso Firefly_UEFI_x86_64.iso
     #- name: Upload a Build Artifact
       ##uses: actions/upload-artifact@v2.2.4
       #with:
