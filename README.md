@@ -4,7 +4,7 @@
 Kernel for Firefly
 
 ## x64 demo:
-![Firefly](images/2021-09-11_214002.png)
+![Firefly](docs/2021-09-12_101703.png)
 
 ### Clone the repo 
  * git clone https://github.com/SergeyMC9730/Firefly-Kernel --recursive

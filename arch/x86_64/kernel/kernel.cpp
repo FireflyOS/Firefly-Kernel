@@ -16,10 +16,10 @@ constexpr const char *VERSION_STRING = "0.0 FORK";
 
 namespace firefly::kernel::main {
 void write_ff_info() {
-    printf("firefly\nVersion: %s\nContributors:", VERSION_STRING);
+    printf("Firefly\nVersion: %s\nContributors:", VERSION_STRING);
 
-    firefly::std::array<const char *, 4> arr = {
-        "Lime\t  ", "JohnkaS", "V01D-NULL\t  ", "SergeyMC9730"
+    firefly::std::array<const char *, 3> arr = {
+        "Lime\t  ", "JohnkaS", "V01D-NULL\t  "
     };
 
     for (size_t i = 0; i < arr.max_size(); i++) {
