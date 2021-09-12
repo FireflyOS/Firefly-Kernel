@@ -28,5 +28,5 @@ namespace firefly::drivers::ps2 {
      * @param scancode      Scancode that was receieved from the keyboard
      * @param crs           Where to print the input
      */
-    void handle_input(unsigned char scancode);
+    void handle_input();
 }  // namespace firefly::drivers::ps2

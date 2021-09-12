@@ -44,7 +44,7 @@ namespace firefly::drivers::ps2 {
     /**
  *                          Array for ascii key values
  */
-    static firefly::std::array<char, 59> sc_ascii = { '?', '?', '1', '2', '3', '4', '5', '6',
+    static char sc_ascii[59] = { '?', '?', '1', '2', '3', '4', '5', '6',
                                                       '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
                                                       'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
                                                       'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
@@ -93,7 +93,10 @@ namespace firefly::drivers::ps2 {
         return nullptr;
     }
 
-    void handle_input(unsigned char scancode) {
+    
+
+    void handle_input() {
+        uint8_t scancode = inb(0x60);
         if (scancode == keys::caps_lock) {
             shift_pressed = !shift_pressed;
             return;
@@ -102,7 +105,8 @@ namespace firefly::drivers::ps2 {
         if (scancode & 0x80) {
             if ((scancode & ~(1UL << 7)) == keys::lshift)
                 shift_pressed = !shift_pressed;
-        } else
+        } else {
+            //if(scancode != 0) printf("0x%X (0x%X) ", scancode, sc_ascii[scancode]);
             switch (scancode) {
                 case keys::lshift:
                     shift_pressed = !shift_pressed;
@@ -116,17 +120,13 @@ namespace firefly::drivers::ps2 {
                     append_cin('\b');
                     break;
                 default: {
-                    //WIP
-                    printf("%d", scancode);
                     char ascii = sc_ascii[scancode];
-                    if (shift_pressed)
-                        ascii -= 32;
+                    if (shift_pressed) ascii -= 32;
                     append_cin(ascii);
                     char str[2] = { ascii, '\0' };
-                    printf(" %d\n", ascii);
-                    //printf("%s", str);
                     puts(str);
                 }
             }
+        }
     }
 }  // namespace firefly::drivers::ps2
