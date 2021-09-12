@@ -1,6 +1,5 @@
-#include <x86_64/libk++/ios.h>
-#include <x86_64/libk++/iostream.h>
-
+#include "x86_64/libk++/ios.h"
+#include "x86_64/libk++/iostream.h"
 
 namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
@@ -16,22 +15,42 @@ struct __attribute__((packed)) idt_gate {
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
 struct __attribute__((packed)) iframe {
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t rflags;
-    uint64_t rsp;
-    uint64_t ss;
-    uint64_t err;
-    uint64_t int_no;
+    int64_t r15;
+    int64_t r14;
+    int64_t r13;
+    int64_t r12;
+    int64_t r11;
+    int64_t r10;
+    int64_t r9;
+    int64_t r8;
+    int64_t rsi;
+    int64_t rdi;
+    int64_t rbp;
+    int64_t rdx;
+    int64_t rcx;
+    int64_t rbx;
+    int64_t rax;
+    int64_t int_no;
+    int64_t err;
+    int64_t rip;
+    int64_t cs;
+    int64_t rflags;
+    int64_t rsp;
+    int64_t ss;
 };
 
-__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
-__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe);
+extern "C" {
+void interrupt_handler(iframe iframe);
+void exception_handler([[maybe_unused]] iframe iframe);
+void interrupt_wrapper();
+void exception_wrapper();
+void assign_cpu_exceptions();
+}
 
 static idt_gate idt[256];
 
 namespace change {
-void update(void (*handler)(iframe *), uint16_t cs, uint8_t type, uint8_t index) {
+extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
     idt[index].selector = cs;
     idt[index].rsv_0 = 0;
@@ -40,13 +59,6 @@ void update(void (*handler)(iframe *), uint16_t cs, uint8_t type, uint8_t index)
     idt[index].offset_2 = reinterpret_cast<size_t>(handler) >> 32 & 0xffffffff;
     idt[index].rsv_1 = 0;
 }
-
-//Hardcoded values as this is only meant for initialisation work by interrupt.cpp
-//Use the non-static version of "update" to update the idt at a global level
-static void initial_update(void (*handler)(iframe *), uint8_t index) {
-    change::update(handler, 0x08, 0x8E, index);
-}
-
 }  // namespace change
 
 struct __attribute__((packed)) idt_reg {
@@ -65,36 +77,30 @@ struct __attribute__((packed)) idt_reg {
 
 
 void init() {
-    int i = 0;
-    for (; i <= 31; i++)
-        change::initial_update(interrupt_wrapper, i);
-    for (; i < 256; i++)
-        change::initial_update(exception_wrapper, i);
+    assign_cpu_exceptions();
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
 }
 
 void test_int() {
-    asm volatile("int $0");
+    asm volatile("int $4");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
-    printf("CS: 0x%x\n", iframe->cs);
-    printf("EIP: %X\n", iframe->rip);
-    printf("ESP: %X\n", iframe->rsp);
-
+void interrupt_handler(iframe iframe) {
+    printf("Int#: %d\nErr: %d\n", iframe.int_no, iframe.err);
 
     for (;;)
-        asm("cli;hlt");
+        asm("cli\nhlt");
 }
 
-__attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
-    printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
-    printf("EIP: %X\n", iframe->rip);
-    printf("ESP: %X\n", iframe->rsp);
+//Todo: Do we need this?
+void exception_handler([[maybe_unused]] iframe iframe) {
+    // printf("An external interrupt has occured\n CS: 0x%x\n", iframe.cs);
+    // printf("EIP: %X\n", iframe.rip);
+    // printf("ESP: %X\n", iframe.rsp);
 
     for (;;)
-        asm("cli;hlt");
+        asm("cli\nhlt");
 }
 }  // namespace firefly::kernel::core::interrupt

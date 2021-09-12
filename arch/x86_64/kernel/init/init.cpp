@@ -94,16 +94,18 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::drivers::vbe::boot_splash();
     firefly::kernel::main::write_ff_info();
 
-    struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    firefly::kernel::mm::buddy::bootstrap_buddy(tagmem);
+    // struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    // firefly::kernel::mm::buddy::bootstrap_buddy(tagmem);
     firefly::kernel::tty::init();
 }
 
-extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {
+extern "C" [[noreturn]] void kernel_init([[maybe_unused]]struct stivale2_struct *stivale2_struct) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
 
     bootloader_services_init(stivale2_struct);
+    
+    firefly::kernel::core::interrupt::test_int();
 
     firefly::kernel::main::kernel_main();
     __builtin_unreachable();
