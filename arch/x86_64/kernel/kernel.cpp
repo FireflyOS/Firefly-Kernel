@@ -62,12 +62,15 @@ void kernel_main() {
 
     printf("Virtual Memory Address: 0x%X\n", virtual_mem0);
 
-    uint8_t temp_mem0[2] = {0xe0, 0x0e};
+    uint8_t temp_mem0[8] = {0xe0, 0x0e, 0xff, 0xfd, 0x01, 0x02, 0x03, 0x04};
     virtual_memory::multiple_set(virtual_mem0, temp_mem0, 64);
 
-    printf("virtual_mem0[64] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 64), virtual_mem0[64]);
-    printf("virtual_mem0[65] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 65), virtual_mem0[65]);
+    printf("uint8_t  virtual_mem0[64] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 64), virtual_mem0[64]);
+    printf("uint8_t  virtual_mem0[65] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 65), virtual_mem0[65]);
 
-    //trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
+    printf("uint16_t virtual_mem0[64]        = 0x%X\n\n", virtual_memory::get_16bit_number(virtual_mem0, 64));
+    printf("uint32_t virtual_mem0[64]        = 0x%X\n\n", virtual_memory::get_32bit_number(virtual_mem0, 64));
+
+    trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 }
 }  // namespace firefly::kernel::main

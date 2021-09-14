@@ -18,4 +18,10 @@ namespace firefly::kernel::virtual_memory {
             i++;
         }
     }
+    uint16_t get_16bit_number(uint8_t *virtual_memory_instance, unsigned long start_point) {
+        return virtual_memory_instance[start_point + 0] | (virtual_memory_instance[start_point + 1] << 8);
+    }
+    uint32_t get_32bit_number(uint8_t *virtual_memory_instance, unsigned long start_point){
+        return virtual_memory_instance[start_point + 0] | (virtual_memory_instance[start_point + 1] << 8) | (virtual_memory_instance[start_point + 2] << 16) | (virtual_memory_instance[start_point + 3] < 24);
+    }
 }
