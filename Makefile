@@ -52,6 +52,8 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/test
 endif
 
 target_archs:

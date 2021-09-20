@@ -12,6 +12,8 @@
 
 #include <x86_64/memory-manager/virtual_memory.hpp>
 
+#include <x86_64/applications/application_pointers.hpp>
+
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0-x86_64-fork";
@@ -53,6 +55,8 @@ void init_serial(){
 }
 
 void kernel_main() {
+    applications::registerApplications();
+
     write_ff_info();
     
     init_serial();
@@ -66,10 +70,12 @@ void kernel_main() {
     virtual_memory::multiple_set(virtual_mem0, temp_mem0, 64);
 
     printf("uint8_t  virtual_mem0[64] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 64), virtual_mem0[64]);
-    printf("uint8_t  virtual_mem0[65] (0x%X) = 0x%X\n", virtual_memory::get_memory_location(virtual_mem0, 65), virtual_mem0[65]);
+    printf("uint8_t  virtual_mem0[65] (0x%X) = 0x%X\n\n", virtual_memory::get_memory_location(virtual_mem0, 65), virtual_mem0[65]);
 
-    printf("uint16_t virtual_mem0[64]        = 0x%X\n\n", virtual_memory::get_16bit_number(virtual_mem0, 64));
+    printf("uint16_t virtual_mem0[64]        = 0x%X\n", virtual_memory::get_16bit_number(virtual_mem0, 64));
     printf("uint32_t virtual_mem0[64]        = 0x%X\n\n", virtual_memory::get_32bit_number(virtual_mem0, 64));
+
+    applications::run("test");
 
     trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 }
