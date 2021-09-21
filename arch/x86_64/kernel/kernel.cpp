@@ -75,8 +75,13 @@ void kernel_main() {
     printf("uint16_t virtual_mem0[64]        = 0x%X\n", virtual_memory::get_16bit_number(virtual_mem0, 64));
     printf("uint32_t virtual_mem0[64]        = 0x%X\n\n", virtual_memory::get_32bit_number(virtual_mem0, 64));
 
+    printf("test command:\n");
     applications::run("test");
 
+    printf("help command:\n");
+    applications::run("help");
+
+    printf("\n");
     trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 }
 }  // namespace firefly::kernel::main

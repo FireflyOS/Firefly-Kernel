@@ -5,7 +5,7 @@
 namespace firefly::kernel::virtual_memory {
     uint8_t *create_virtual_memory(){
         static uint8_t virtual_mem[8192];
-        io::legacy::writeTextSerial("A new Virtual Memory Instance was made.\n");
+        io::legacy::writeTextSerial("A new Virtual Memory Instance was made at 0x%X.\n", &virtual_mem);
         return virtual_mem;
     }
     uint8_t *get_memory_location(uint8_t *virtual_memory_instance, unsigned long element_number){

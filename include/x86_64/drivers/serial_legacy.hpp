@@ -8,6 +8,6 @@ namespace firefly::kernel::io::legacy {
     char readSerial();
     int  isTransmitEmpty();
     void writeCharSerial(char a);
-    void writeSerial(const char* data, size_t size);
-    void writeTextSerial(const char* data);
+    void writeSerial(const char* data, size_t size, bool istoupper);
+    void writeTextSerial(const char* fmt, ...);
 }

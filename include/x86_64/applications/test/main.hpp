@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stl/cstdlib/cstdint.h>
 
 namespace firefly::applications::test {
