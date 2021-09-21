@@ -8,7 +8,10 @@
 
 namespace firefly::applications {
     const char *application_names[256] = {"test", "help"};
-    int *application_addresses[256];  
+    int *application_addresses[256];
+    uint16_t application_access_control[256] = {0x00, 0x00};
+
+    #define is_avaliable application_names[temp_pointer] == application && (application_access_control[temp_pointer] < access_rights || application_access_control == access_rights)  
 
     void registerApplications(){
         application_addresses[0] = (int *)applications::test::test_main;
@@ -16,10 +19,10 @@ namespace firefly::applications {
 
         return;
     }
-    int run(const char application[]){
+    int run(const char application[], uint16_t access_rights){
         uint8_t temp_pointer = 0;
         while(temp_pointer < 255){
-            if(application_names[temp_pointer] == application) {
+            if(is_avaliable) {
                 int result = ((int (*)(uint8_t *))application_addresses[temp_pointer])(kernel::virtual_memory::create_virtual_memory());
 
                 return result;
