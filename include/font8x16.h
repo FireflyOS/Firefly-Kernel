@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 
+/*
+    Font Data
+*/
 static uint8_t font[] = {
     0x00,
     0x00,
@@ -4100,7 +4103,22 @@ static uint8_t font[] = {
     0x3c,
 };
 
+/*
+    Character Width
+*/
 static int char_width = 8;
+
+/*
+    Character Height
+*/
 static int char_height = 16;
+
+/*
+    Special Newline Number
+*/
 static const int SPECIAL_NEWLINE = 1;
+
+/*
+    Special Tab Number
+*/
 static const int SPECIAL_TAB = 2;

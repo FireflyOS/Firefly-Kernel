@@ -14,12 +14,17 @@
 #include <x86_64/applications/application_pointers.hpp>
 
 #include <x86_64/memory-manager/greenleafy.hpp>
+
+#include <x86_64/settings.hpp>
+
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0-x86_64-fork";
 
 namespace firefly::kernel::main {
-
+/*
+    Prints Firefly's Contributors
+*/
 void write_ff_info() {
     printf("Firefly\nVersion: %s\nContributors:", VERSION_STRING);
 
@@ -36,20 +41,26 @@ void write_ff_info() {
     puts("\n");
 }
 
+/*
+    Initilizates a keyboard driver
+*/
 void init_keyboard(){
     printf("Initialization a Keyboard...\n");
 
     bool isKeyboard = firefly::drivers::ps2::init();
     io::legacy::writeTextSerial("Keyboard Driver returned %d\n\n", (isKeyboard) ? 1 : 0);
-    
-    if(!isKeyboard) trace::panic(trace::PM_DRIVERERROR_PK, trace::PC_DRIVERERROR_PK);
 }
 
+/*
+    Kernel
+*/
 void kernel_main() {
     applications::registerApplications();
 
     write_ff_info();
     init_keyboard();                      
+
+    printf("\n---- Memory Blocks Example ----\n\n");
 
     uint8_t *test_block = (uint8_t *)firefly::mm::greenleafy::alloc_block(0);
     printf("uint8_t *Test Block 1 Address: 0x%X", test_block);
@@ -71,11 +82,21 @@ void kernel_main() {
     printf("int *Test Block 4 Address: 0x%X", test_block4);
     printf("int *Test Block 4: %d\n", *test_block4);
 
-    const char *arguments[2] = {"test", "123"};
+    const char *arguments[2] = {"test", "123"}; 
 
-    applications::run("test", 0x0000, sizeof(arguments), (char **)arguments);
+    printf("\n---- Settings Command (new) ----\n\n");
+    applications::run("settings", 0x0000, (char **)arguments);
 
-    printf("Hello World!\nTest page: 0x%X\n\n", 88);
+    printf("\n---- Changelog ----\n\n");
+    printf("1. New NO_BLOCKS_AVALIABLE crash error\n");
+    printf("2. Max Block Count and Max Block Size are configureable now!\n");
+    printf("3. Firefly no more calls Panic error if keyboard is not accessable!\n");
+    printf("4. In ISO file you can configure kernel settings! (Search: \"Here you can\")\n");
+    printf("4.1. Documentation is included\n");
+    printf("5. Some of source files has some kind of description for each variable (struct, function, etc.) now\n");
+    printf("6. Added \"#pragma once\" to the Help Application header file\n");
+    printf("7. Applications uses arguments like {\"test\", \"123\"} now!\n");
+    printf("8. Block Access Rights are using uint32_t instead of uint64_t now\n");
 
     // trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 }

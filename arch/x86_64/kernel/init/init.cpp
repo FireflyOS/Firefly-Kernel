@@ -9,6 +9,7 @@
 #include <x86_64/int/interrupt.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/stivale2.hpp>
+#include <x86_64/settings.hpp>
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -83,6 +84,8 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 }
 
 void bootloader_services_init(struct stivale2_struct *handover) {
+    firefly::kernel::settings::init_settings();
+    
     bool is_serial_ready = firefly::kernel::io::legacy::serial_port_init();
     
     if(is_serial_ready) firefly::kernel::io::legacy::writeTextSerial("Starting up...\n\n");
@@ -98,7 +101,7 @@ void bootloader_services_init(struct stivale2_struct *handover) {
 }
 
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {  
-     bootloader_services_init(stivale2_struct);
+    bootloader_services_init(stivale2_struct);
 
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();

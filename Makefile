@@ -55,6 +55,7 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/test
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/help
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/settings
 endif
 
 target_archs:

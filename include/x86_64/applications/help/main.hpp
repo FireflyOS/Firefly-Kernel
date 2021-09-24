@@ -1,4 +1,4 @@
-#include <stl/cstdlib/cstdint.h>
+#pragma once
 
 namespace firefly::applications::help {
     int help_main(int argc, char **argv);

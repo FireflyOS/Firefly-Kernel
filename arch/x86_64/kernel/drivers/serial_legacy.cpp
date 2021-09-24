@@ -7,6 +7,8 @@
 #include <x86_64/drivers/ports.hpp>
 #include <x86_64/drivers/serial_legacy.hpp>
 
+#include <x86_64/settings.hpp>
+
 //I made a legacy serial port driver because original serial.cpp
 //requires a support of "new" operator and it requires a malloc function
 
@@ -14,6 +16,8 @@
 
 namespace firefly::kernel::io::legacy {
 bool serial_port_init() {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return false;
+
     outb(PORT + 1, 0x00);  // Disable all interrupts
     outb(PORT + 3, 0x80);  // Enable DLAB (set baud rate divisor)
     outb(PORT + 0, 0x03);  // Set divisor to 3 (lo byte) 38400 baud
@@ -30,27 +34,41 @@ bool serial_port_init() {
     return true;
 }
 int isGotSignal() {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
+
     return inb(PORT + 5) & 1;
 }
 char readSerial() {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return 0xff;
+
     while (isGotSignal() == 0)
         ;
     return inb(PORT);
 }
 int isTransmitEmpty() {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
+
     return inb(PORT + 5) & 0x20;
 }
 void writeCharSerial(char a) {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+
     while (isTransmitEmpty() == 0)
         ;
     outb(PORT, a);
+
+    return;
 }
 void writeSerial(const char* data, size_t size, bool istoupper) {
-    for (size_t i = 0; i < size; i++)
-        writeCharSerial((!istoupper) ? data[i] : toupper(data[i]));
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+
+    for (size_t i = 0; i < size; i++) writeCharSerial((!istoupper) ? data[i] : toupper(data[i]));
+
+    return;
 }
 void writeTextSerial(const char* fmt, ...) {
-    //writeSerial(data, strlen(data));
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+
     va_list ap;
     va_start(ap, fmt);
     int i = 0;
@@ -127,6 +145,5 @@ void writeTextSerial(const char* fmt, ...) {
         }
     }
     return;
-    //return res
 }
 }  // namespace firefly::kernel::io::legacy
