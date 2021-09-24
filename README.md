@@ -5,7 +5,7 @@ Kernel for Firefly
 [![C/C++ CI](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml)
 
 ## x64 demo:
-![Firefly](docs/2021-09-21_125022.png)
+![Firefly](docs/2021-09-24_152945.png)
 
 ### Clone the repo 
  * `git clone https://github.com/SergeyMC9730/Firefly-Kernel --recursive`

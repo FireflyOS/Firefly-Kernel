@@ -35,6 +35,7 @@ CXX_FLAGS =						\
 	-ffreestanding 				\
 	-fno-exceptions 			\
 	-fno-rtti 					\
+	-fms-extensions				\
 	-Wno-zero-length-array 		\
 	-mno-80387		            \
     -mno-mmx					\

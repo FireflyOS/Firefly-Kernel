@@ -3,8 +3,8 @@
 #include <x86_64/applications/test/main.hpp>
 
 namespace firefly::applications::test {
-    int test_main(uint8_t *virtual_memory_instance){
-        printf("Hello World!\n0: %d\n\n", virtual_memory_instance[0]);
+    int test_main([[maybe_unused]] int argc, char **argv){
+        printf("Hello World!\nargv[0] - %s\nargv[1] - %s\n", argv[0], argv[1]);
         return 0;
     }
 }

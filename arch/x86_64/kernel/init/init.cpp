@@ -3,6 +3,7 @@
 #include <x86_64/libk++/iostream.h>
 
 #include <x86_64/drivers/vbe.hpp>
+#include <x86_64/drivers/serial_legacy.hpp>
 #include <x86_64/gdt/gdt.hpp>
 #include <x86_64/init/init.hpp>
 #include <x86_64/int/interrupt.hpp>
@@ -82,17 +83,22 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 }
 
 void bootloader_services_init(struct stivale2_struct *handover) {
+    bool is_serial_ready = firefly::kernel::io::legacy::serial_port_init();
+    
+    if(is_serial_ready) firefly::kernel::io::legacy::writeTextSerial("Starting up...\n\n");
+
     struct stivale2_struct_tag_framebuffer *tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
-        for (;;)
-            asm("hlt");
+        if(is_serial_ready) firefly::kernel::io::legacy::writeTextSerial("Framebuffer is NULL!!!! HALT!!\n\n");
+    
+        for (;;) asm("hlt");
     }
     firefly::drivers::vbe::early_init(tagfb);
     firefly::drivers::vbe::boot_splash();
 }
 
-extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {
-    bootloader_services_init(stivale2_struct);
+extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {  
+     bootloader_services_init(stivale2_struct);
 
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
