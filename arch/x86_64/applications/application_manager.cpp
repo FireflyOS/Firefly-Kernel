@@ -50,6 +50,6 @@ namespace firefly::applications {
             }
             temp_pointer++;
         }
-        return -1;
+        return 0x44f9ad;
     }
 }

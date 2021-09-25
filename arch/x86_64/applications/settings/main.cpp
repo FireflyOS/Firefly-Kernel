@@ -31,5 +31,5 @@ namespace firefly::applications::settings {
         return 0;
     };
 
-    int getc(){ return 497; }
+    int getc(){ return 1737728; }
 }

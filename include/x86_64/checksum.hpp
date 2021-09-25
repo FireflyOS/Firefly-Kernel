@@ -6,7 +6,7 @@ namespace firefly::kernel::checksum {
      * 
      * @param string char *string
      * 
-     * @return Checksum of a string (int) 
+     * @return Checksum of a string (unsigned int) 
      */
-    int checksum(const char *string);
+    unsigned int checksum(const char *string);
 }

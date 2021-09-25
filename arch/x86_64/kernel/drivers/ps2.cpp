@@ -123,7 +123,7 @@ namespace firefly::drivers::ps2 {
 
                     const char *arguments[2] = {"test", "123"}; 
 
-                    int result = firefly::applications::run(stdin, 0x00, (char **)arguments);
+                    int result = firefly::applications::run(stdin, 0, (char **)arguments);
 
                     stdin_index = 0;
 
@@ -132,7 +132,7 @@ namespace firefly::drivers::ps2 {
         
                     while(i < size) stdin[++i] = '\0'; 
 
-                    if(result == -1) printf("[ERROR] Command not found!\n");
+                    if(result == 0x44f9ad) printf("[ERROR] Command not found!\n");
                     
                     printf("\n> ");
 
