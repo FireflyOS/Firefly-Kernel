@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-python@v2.2.2
     - uses: actions/checkout@v2
     - name: Install packages
-      run: sudo apt-get install nasm xorriso clang lld ovmf
+      run: sudo apt-get update && sudo apt-get install nasm xorriso clang lld ovmf
     - name: Make build dir
       run: mkdir build
     - name: Checkout submodules
