@@ -8,4 +8,6 @@ namespace firefly::applications::help {
         
         return 0;
     }
+
+    int getc(){ return 233; }
 }

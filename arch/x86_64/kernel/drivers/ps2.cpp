@@ -1,5 +1,6 @@
 #include <x86_64/drivers/ps2.hpp>
 #include <stl/cstdlib/stdio.h>
+#include <x86_64/applications/application_manager.hpp>
 
 namespace firefly::drivers::ps2 {
     using namespace firefly::kernel::io;
@@ -19,7 +20,7 @@ namespace firefly::drivers::ps2 {
     /**
  *                          Buffer for CIN characters, limited at 255
  */
-    static firefly::std::array<char, keys::max_stdin_length> stdin = {};
+    char stdin[keys::max_stdin_length + 1] = {};
 
     /**
  *                          Current stdin write index
@@ -34,7 +35,7 @@ namespace firefly::drivers::ps2 {
     /**
  *                          Array for key names
  */
-    static firefly::std::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
+    const char *sc_name[] = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
                                                             "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
                                                             "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
                                                             "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
@@ -96,7 +97,10 @@ namespace firefly::drivers::ps2 {
     
 
     void handle_input() {
+        if (!(inb(status_register) & status::out_buffer_status)) return;
+
         uint8_t scancode = inb(0x60);
+
         if (scancode == keys::caps_lock) {
             shift_pressed = !shift_pressed;
             return;
@@ -108,25 +112,49 @@ namespace firefly::drivers::ps2 {
         } else {
             //if(scancode != 0) printf("0x%X (0x%X) ", scancode, sc_ascii[scancode]);
             switch (scancode) {
-                case keys::lshift:
+                case keys::lshift: {
                     shift_pressed = !shift_pressed;
                     break;
-                case keys::enter:
+                }
+                case keys::enter: {
                     puts("\n");
-                    append_cin('\n');
+
+                    stdin[stdin_index + 1] = '\0';
+
+                    const char *arguments[2] = {"test", "123"}; 
+
+                    int result = firefly::applications::run(stdin, 0x00, (char **)arguments);
+
+                    stdin_index = 0;
+
+                    int size = sizeof(stdin);
+                    int i = 0;
+        
+                    while(i < size) stdin[++i] = '\0'; 
+
+                    if(result == -1) printf("[ERROR] Command not found!\n");
+                    
+                    printf("\n> ");
+
                     break;
-                case keys::backspace:
+                }
+                case keys::backspace: {
                     puts("\b");
                     append_cin('\b');
                     break;
+                }
                 default: {
                     char ascii = sc_ascii[scancode];
                     if (shift_pressed) ascii -= 32;
                     append_cin(ascii);
                     char str[2] = { ascii, '\0' };
                     puts(str);
+                    
+                    break;
                 }
             }
         }
     }
+
+    char *get_buffer(){ return stdin; }
 }  // namespace firefly::drivers::ps2

@@ -11,7 +11,7 @@
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
 
-#include <x86_64/applications/application_pointers.hpp>
+#include <x86_64/applications/application_manager.hpp>
 
 #include <x86_64/memory-manager/greenleafy.hpp>
 
@@ -65,38 +65,12 @@ void kernel_main() {
     uint8_t *test_block = (uint8_t *)firefly::mm::greenleafy::alloc_block(0);
     printf("uint8_t *Test Block 1 Address: 0x%X", test_block);
     test_block[22] = 11;
-    printf("uint8_t *Test Block 1[22]: 0x%X\n", test_block[22]);
+    printf("uint8_t *Test Block 1[22]: 0x%X\n\n> ", test_block[22]);
 
-    uint8_t *test_block2 = (uint8_t *)firefly::mm::greenleafy::alloc_block(0);
-    printf("uint8_t *Test Block 2 Address: 0x%X", test_block2);
-    test_block2[11] = 22;
-    printf("uint8_t *Test Block 2[11]: 0x%X\n", test_block2[11]);
 
-    const char *test_block3 = (char *)firefly::mm::greenleafy::alloc_block(0);
-    test_block3 = "gg ggss11121212";
-    printf("const char *Test Block 3 Address: 0x%X", test_block3);
-    printf("const char *Test Block 3: %s\n", test_block3);
-
-    int *test_block4 = (int *)firefly::mm::greenleafy::alloc_block(0);
-    *test_block4 = 81118;
-    printf("int *Test Block 4 Address: 0x%X", test_block4);
-    printf("int *Test Block 4: %d\n", *test_block4);
-
-    const char *arguments[2] = {"test", "123"}; 
-
-    printf("\n---- Settings Command (new) ----\n\n");
-    applications::run("settings", 0x0000, (char **)arguments);
-
-    printf("\n---- Changelog ----\n\n");
-    printf("1. New NO_BLOCKS_AVALIABLE crash error\n");
-    printf("2. Max Block Count and Max Block Size are configureable now!\n");
-    printf("3. Firefly no more calls Panic error if keyboard is not accessable!\n");
-    printf("4. In ISO file you can configure kernel settings! (Search: \"Here you can\")\n");
-    printf("4.1. Documentation is included\n");
-    printf("5. Some of source files has some kind of description for each variable (struct, function, etc.) now\n");
-    printf("6. Added \"#pragma once\" to the Help Application header file\n");
-    printf("7. Applications uses arguments like {\"test\", \"123\"} now!\n");
-    printf("8. Block Access Rights are using uint32_t instead of uint64_t now\n");
+    for(;;){
+        firefly::drivers::ps2::handle_input();
+    }
 
     // trace::panic(trace::PM_MANUALLYCRASHED, trace::PC_MANUALLYCRASHED);
 }

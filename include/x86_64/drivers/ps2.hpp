@@ -24,9 +24,13 @@ namespace firefly::drivers::ps2 {
 
     /**
      *                      Handles input of a scancode and forwards it to the display buffer
-     * 
-     * @param scancode      Scancode that was receieved from the keyboard
-     * @param crs           Where to print the input
      */
     void handle_input();
+
+    /**
+     * Returns keyboard buffer
+     * 
+     * @return Keyboard buffer (char *)
+     */
+    char *get_buffer();
 }  // namespace firefly::drivers::ps2
