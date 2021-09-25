@@ -21,10 +21,10 @@ jobs:
       run: mkdir build
     - name: Checkout submodules
       uses: textbook/git-checkout-submodule-action@2.1.1
-    - name: make BIOS
+    - name: make
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso build/Firefly_x86_64.iso
-    - name: Upload a BIOS Build Artifact
+    - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: Firefly_BIOS_x86_64.iso
+        name: Firefly_x86_64.iso
         path: ./build/
