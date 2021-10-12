@@ -4,7 +4,7 @@ This is indev branch, where I commiting some uncompleted changes. **There is no 
 
 # Firefly-Kernel
 Kernel for Firefly
-[![C/C++ CI](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml)
+[![C/C++ CI](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml/badge.svg?branch=indev)](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml)
 
 ## x64 demo:
 ![Firefly](docs/2021-09-25_144520.png)
