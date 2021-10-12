@@ -54,6 +54,32 @@ namespace firefly::kernel::io {
     }
 
     /**
+     *                      Writes a word to 16-bit port address
+     * @param port          The port to write to
+     * @param val           The byte to write
+     */
+    inline void outl(uint8_t port, uint16_t val) {
+        asm volatile(
+            "outl %%ax, %%dx"
+            :
+            : "d"(port), "a"(val));
+    }
+
+    /**
+     *                      Read a byte from 16-bit port address
+     * @param port          The port to read from
+     * @return              The byte read from port
+     */
+    [[nodiscard]] inline uint8_t inl(uint16_t port) {
+        uint8_t val;
+        asm volatile(
+            "inl %%dx, %%al"
+            : "=a"(val)
+            : "d"(port));
+        return val;
+    }
+
+    /**
      *                      Delays a small amount of time
      *                      to give devices time to process
      */

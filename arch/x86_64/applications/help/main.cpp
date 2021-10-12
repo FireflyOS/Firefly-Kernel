@@ -4,7 +4,7 @@
 
 namespace firefly::applications::help {
     int help_main([[maybe_unused]] int argc, [[maybe_unused]] char **argv){
-        printf("Commands: \n\nhelp - Help command\ntest - Hello World command\nsettings - get kernel settings\n");
+        printf("--- Commands: \n\nhelp - Help command\ntest - Hello World command\nsettings - get kernel settings\nfunc-pointers - get function pointers\n");
         
         return 0;
     }

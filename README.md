@@ -1,5 +1,7 @@
 **Fork of FireflyOS**
 
+This is indev branch, where I commiting some uncompleted changes. **There is no guarantee that OS can be builded!**
+
 # Firefly-Kernel
 Kernel for Firefly
 [![C/C++ CI](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml)
