@@ -40,3 +40,7 @@ binaries/
 
 # "commit.sh" script
 commit.sh
+
+#Patch file
+patch.js
+toindev
