@@ -15,6 +15,9 @@
 #include <x86_64/api/api.hpp>
 
 namespace FAPI {
+    void init(){
+        return;
+    }
     namespace stdio {
         int printf(const char *text, ...){
             int result = ((int (*)(const char *, ...))FAPI_PRINTF)(text);
