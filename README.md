@@ -1,6 +1,6 @@
 **Fork of FireflyOS**
 
-This is indev branch, where I commiting some uncompleted changes. **There is no guarantee that OS can be builded!**
+This is indev branch, where I commiting some uncompleted things. **There is no guarantee that OS can be builded!**
 
 # Firefly-Kernel
 Kernel for Firefly

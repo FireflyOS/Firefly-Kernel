@@ -11,6 +11,10 @@
 #include <x86_64/stivale2.hpp>
 #include <x86_64/settings.hpp>
 
+#include <stl/cstdlib/stdio.h>
+#include <x86_64/memory-manager/greenleafy.hpp>
+
+
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[4096 * 4] __attribute__((aligned(0x1000)));
@@ -25,6 +29,7 @@ static uint8_t stack[4096 * 4] __attribute__((aligned(0x1000)));
 // This tag tells the bootloader that we want a graphical framebuffer instead
 // of a CGA-compatible text mode. Omitting this tag will make the bootloader
 // default to text mode, if available.
+
 static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     // Same as above.
     .tag = {
@@ -92,7 +97,7 @@ void bootloader_services_init(struct stivale2_struct *handover) {
 
     struct stivale2_struct_tag_framebuffer *tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
-        if(is_serial_ready) firefly::kernel::io::legacy::writeTextSerial("Framebuffer is NULL!!!! HALT!!\n\n");
+        if(is_serial_ready) firefly::kernel::io::legacy::writeTextSerial("[Error] Framebuffer is null!\n");
     
         for (;;) asm("hlt");
     }
@@ -100,11 +105,23 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::drivers::vbe::boot_splash();
 }
 
+void *func_pointers[6] = {
+    &printf, 
+    &firefly::kernel::io::legacy::writeTextSerial, 
+    &firefly::mm::greenleafy::use_block, 
+    &firefly::mm::greenleafy::get_block, 
+    &firefly::mm::greenleafy::get_block_limit, 
+    &firefly::mm::greenleafy::get_block_size_limit
+};
+
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {  
     bootloader_services_init(stivale2_struct);
 
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
+
+    firefly::kernel::io::legacy::writeTextSerial("*func_pointer: 0x%X", &func_pointers);
+
     firefly::kernel::main::kernel_main();
     for (;;);
 }

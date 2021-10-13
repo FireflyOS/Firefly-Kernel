@@ -15,23 +15,23 @@
 
 namespace firefly::applications {
     int application_checksums[256];
-    int *application_addresses[256];
+    unsigned long *application_addresses[256];
     uint16_t *application_access_control[256] = {0x0000, 0x0000, 0x0000};
 
     void registerApplications(){
-        application_addresses[0] = (int *)applications::test::test_main;
+        application_addresses[0] = (unsigned long *)applications::test::test_main;
         application_checksums[0] = applications::test::getc();
         firefly::kernel::io::legacy::writeTextSerial("Registered Test Command on address 0x%X with checksum %d\n\n", &applications::test::test_main, applications::test::getc());
 
-        application_addresses[1] = (int *)applications::help::help_main;
+        application_addresses[1] = (unsigned long *)applications::help::help_main;
         application_checksums[1] = applications::help::getc();
         firefly::kernel::io::legacy::writeTextSerial("Registered Help Command on address 0x%X with checksum %d\n\n", &applications::help::help_main, applications::help::getc());
 
-        application_addresses[2] = (int *)applications::settings::settings_main;
+        application_addresses[2] = (unsigned long *)applications::settings::settings_main;
         application_checksums[2] = applications::settings::getc();
         firefly::kernel::io::legacy::writeTextSerial("Registered Settings Command on address 0x%X with checksum %d\n\n", &applications::settings::settings_main, applications::settings::getc());
 
-        application_addresses[3] = (int *)applications::func_pointers::func_pointers_main;
+        application_addresses[3] = (unsigned long *)applications::func_pointers::func_pointers_main;
         application_checksums[3] = applications::func_pointers::getc();
         firefly::kernel::io::legacy::writeTextSerial("Registered Function Pointers Command on address 0x%X with checksum %d\n\n", &applications::func_pointers::func_pointers_main, applications::func_pointers::getc());
         

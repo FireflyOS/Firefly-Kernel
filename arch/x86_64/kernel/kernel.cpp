@@ -62,10 +62,10 @@ void kernel_main() {
 
     printf("\n---- Memory Blocks Example ----\n\n");
 
-    uint8_t *test_block = (uint8_t *)firefly::mm::greenleafy::alloc_block(0);
+    auto *test_block = (firefly::mm::greenleafy::memory_block *)firefly::mm::greenleafy::use_block(0);
     printf("uint8_t *Test Block 1 Address: 0x%X", test_block);
-    test_block[22] = 11;
-    printf("uint8_t *Test Block 1[22]: 0x%X\n\n> ", test_block[22]);
+    test_block->block[22] = 11;
+    printf("uint8_t *Test Block 1[22]: 0x%X\n\n> ", test_block->block[22]);
 
 
     for(;;){
