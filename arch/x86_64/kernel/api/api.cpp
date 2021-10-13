@@ -15,41 +15,48 @@
 #include <x86_64/api/api.hpp>
 
 namespace FAPI {
-    void init(){
-        return;
+    fp *get_fp(void){
+        return ((fp *(*)(void))(fp *)FAPI_ENDP)();
     }
     namespace stdio {
         int printf(const char *text, ...){
-            int result = ((int (*)(const char *, ...))FAPI_PRINTF)(text);
+            auto *sys_struct = (fp *)get_fp();
+            int result = ((int (*)(const char *, ...))sys_struct->a[0])(text);
             return result;
         } 
     }
     namespace kernel {
         namespace io {
             namespace legacy {
-                void fapi_writeTextSerial (const char *text, ...) {
-                    ((void (*)(const char *, ...))FAPI_WRITETEXTSERIAL)(text);
+                int writeTextSerial (const char *text, ...) {
+                    auto *sys_struct = (fp *)get_fp();
+                    int result = ((int (*)(const char *, ...))sys_struct->a[1])(text);
+                    return result;
                 }
             }
         }
     }
     namespace mm {
         namespace greanleafy {
-            memory_block fapi_get_block (unsigned long block_number, unsigned int access) {
-                return ((memory_block (*)(unsigned long, unsigned int))FAPI_GET_BLOCK)(block_number, access);
+            memory_block *get_block (uint64_tt block_number, uint32_tt access) {
+                auto *sys_struct = (fp *)get_fp();
+                return ((memory_block *(*)(uint64_tt, uint32_tt))sys_struct->c[0])(block_number, access);
             }
 
-            memory_block use_block(unsigned int access) {
-                return ((memory_block (*)(unsigned int))FAPI_USE_BLOCK)(access);
+            memory_block *use_block(uint32_tt access) {
+                auto *sys_struct = (fp *)get_fp();
+                return ((memory_block *(*)(uint32_tt))sys_struct->b[0])(access);
             }
 
-            unsigned int fapi_get_block_limit (void) {
-                int result = ((unsigned int (*)(void))FAPI_GET_BLOCK_LIMIT)();
+            uint32_tt get_block_limit (void) {
+                auto *sys_struct = (fp *)get_fp();
+                int result = ((uint32_tt (*)(void))sys_struct->d[0])();
                 return result;
             }
 
-            unsigned int fapi_get_block_size_limit (void) {
-                int result = ((unsigned int (*)(void))FAPI_GET_BLOCK_SIZE_LIMIT)();
+            uint32_tt get_block_size_limit (void) {
+                auto *sys_struct = (fp *)get_fp();
+                int result = ((uint32_tt (*)(void))sys_struct->d[1])();
                 return result;
             }
         }

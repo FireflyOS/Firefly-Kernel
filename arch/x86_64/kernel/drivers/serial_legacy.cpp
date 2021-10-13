@@ -66,8 +66,8 @@ void writeSerial(const char* data, size_t size, bool istoupper) {
 
     return;
 }
-void writeTextSerial(const char* fmt, ...) {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+int writeTextSerial(const char* fmt, ...) {
+    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
 
     va_list ap;
     va_start(ap, fmt);
@@ -144,6 +144,6 @@ void writeTextSerial(const char* fmt, ...) {
                 break;
         }
     }
-    return;
+    return 0;
 }
 }  // namespace firefly::kernel::io::legacy

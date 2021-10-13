@@ -9,7 +9,7 @@ namespace firefly::mm::greenleafy {
 
     uint64_t current_block = 0;
 
-    void *use_block(uint32_t access) {
+    memory_block *use_block(uint32_t access) {
         if(current_block == 512 && firefly::kernel::settings::get::block_count() == 0x51) return NULL;
         if(current_block == 256 && firefly::kernel::settings::get::block_count() == 0x25) return NULL;
         if(current_block == BLOCK_LIMIT && firefly::kernel::settings::get::block_count() == 0x12) {
@@ -26,7 +26,7 @@ namespace firefly::mm::greenleafy {
 
     }
     
-    void *get_block(uint64_t block_number, uint32_t access){
+    memory_block *get_block(uint64_t block_number, uint32_t access){
         if((memory_blocks[block_number].block_access < access || memory_blocks[block_number].block_access == access) && block_number < 1024){
             return &memory_blocks[block_number];
         } else {
@@ -34,7 +34,7 @@ namespace firefly::mm::greenleafy {
         }
     }
 
-    uint32_t get_block_limit() { return BLOCK_LIMIT; };
-    uint32_t get_block_size_limit() { return BLOCK_SIZE_LIMIT; };
+    uint32_t get_block_limit(void) { return BLOCK_LIMIT; };
+    uint32_t get_block_size_limit(void) { return BLOCK_SIZE_LIMIT; };
     
 }

@@ -9,5 +9,5 @@ namespace firefly::kernel::io::legacy {
     int  isTransmitEmpty();
     void writeCharSerial(char a);
     void writeSerial(const char* data, size_t size, bool istoupper);
-    void writeTextSerial(const char* fmt, ...);
+    int writeTextSerial(const char* fmt, ...);
 }

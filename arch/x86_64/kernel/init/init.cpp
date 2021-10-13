@@ -105,22 +105,37 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::drivers::vbe::boot_splash();
 }
 
-void *func_pointers[6] = {
-    &printf, 
-    &firefly::kernel::io::legacy::writeTextSerial, 
-    &firefly::mm::greenleafy::use_block, 
-    &firefly::mm::greenleafy::get_block, 
-    &firefly::mm::greenleafy::get_block_limit, 
-    &firefly::mm::greenleafy::get_block_size_limit
-};
+struct fp {
+    int (*a[2])(const char *, ...) = {};
+
+    firefly::mm::greenleafy::memory_block *(*b[2])(uint32_t access) = {};
+    firefly::mm::greenleafy::memory_block *(*c[2])(uint64_t block_number, uint32_t access) = {};
+
+    uint32_t (*d[2])(void) = {};
+} function_pointers;
+
+void init_fp(){
+    function_pointers.a[0] = &printf;
+    function_pointers.a[1] = &firefly::kernel::io::legacy::writeTextSerial;
+
+    function_pointers.b[0] = &firefly::mm::greenleafy::use_block;
+    function_pointers.c[0] = &firefly::mm::greenleafy::get_block;
+
+    function_pointers.d[0] = &firefly::mm::greenleafy::get_block_limit;
+    function_pointers.d[1] = &firefly::mm::greenleafy::get_block_size_limit;
+}
+
+fp *get_fp(void){
+    return &function_pointers;
+}
 
 extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct) {  
     bootloader_services_init(stivale2_struct);
-
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
 
-    firefly::kernel::io::legacy::writeTextSerial("*func_pointer: 0x%X", &func_pointers);
+    init_fp();
+    firefly::kernel::io::legacy::writeTextSerial("fp *get_fp(void): 0x%X\n\n", &get_fp);
 
     firefly::kernel::main::kernel_main();
     for (;;);

@@ -4,12 +4,12 @@
 namespace firefly::kernel::settings {
     /*
         Kernel Settings:
-        1. Kernel Mode ('d'ebug, 'p'roduction)
-        2. Enable Serial Port ('y'es, 'n'o)
-        3. Disable Application Access Rights ('y'es, 'n'o)
-        4. Disable Memory Block Access Rights ('y'es, 'n'o)
-        5. Limit Block Count to ('h')512 or ('l')256 or ('f')1024
-        6-8. Reserved
+            1.   - Kernel Mode ('d'ebug, 'p'roduction)
+            2.   - Enable Serial Port ('y'es, 'n'o)
+            3.   - Disable Application Access Rights ('y'es, 'n'o)
+            4.   - Disable Memory Block Access Rights ('y'es, 'n'o)
+            5.   - Limit Block Count to ('h')512 or ('l')256 or ('f')1024
+            6-8. - Reserved
     */
     uint8_t kernel_settings[9] = {0xd5, 0x00, 0xff, 0xff, 0x14, 0x00, 0x00, 0x00,   0x00};
     
@@ -19,7 +19,7 @@ namespace firefly::kernel::settings {
     void init_settings(){
         if(kernel_settings[8] == 0xff) return;
 
-        const char *instruction = "              Here you can change settings of Firefly Kernel! ->    <dynnf   >\nKernel Settings:\n 1. Kernel Mode ('d'ebug, 'p'roduction)\n 2. Enable Serial Port ('y'es, 'n'o)\n 3. Disable Application Access Rights ('y'es, 'n'o)\n 4. Disable Memory Block Access Rights ('y'es, 'n'o)\n 5. Limit Block Count to ('h')512 or ('l')256 or ('f')1024\n 6-8. Reserved";
+        const char *instruction = "              Here you can change settings of Firefly Kernel! ->    <pynnf   >\nKernel Settings:\n 1. Kernel Mode ('d'ebug, 'p'roduction)\n 2. Enable Serial Port ('y'es, 'n'o)\n 3. Disable Application Access Rights ('y'es, 'n'o)\n 4. Disable Memory Block Access Rights ('y'es, 'n'o)\n 5. Limit Block Count to ('h')512 or ('l')256 or ('f')1024\n 6-8. Reserved";
         int start_point = 0x45;
 
         if(instruction[start_point + 0] == 'd') kernel_settings[0] = 0x9a;
