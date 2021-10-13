@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-python@v2.2.2
     - uses: actions/checkout@v2
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get install nasm xorriso clang lld ovmf zip
+      run: sudo apt-get update && sudo apt-get install nasm xorriso clang lld ovmf zip llvm-ar
     - name: Make build dir
       run: mkdir build
     - name: Checkout submodules
@@ -26,7 +26,7 @@ jobs:
     - name: make
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso build/Firefly_x86_64.iso
     - name: Install the Firefly API
-      run: cd ../../ && sh sh Scripts/install_API.sh
+      run: cd ../../ && sh Scripts/install_API.sh
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v2.2.4
       with:
