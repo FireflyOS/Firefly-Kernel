@@ -22,7 +22,7 @@ jobs:
     - name: Checkout submodules
       uses: textbook/git-checkout-submodule-action@2.1.1
     - name: Patch compiler error
-      run: sudo rm -rfv ./include/stl && git clone https://github.com/FireflyOS/Firefly-STL ./include/ && mv include/Firefly-STL ./include/stl && cd ./include/stl && git reset --hard edc3b8ba2a
+      run: sudo rm -rfv ./include/stl && git clone https://github.com/FireflyOS/Firefly-STL ./include/stl/ && cd ./include/stl && git reset --hard edc3b8ba2a
     - name: make
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso build/Firefly_x86_64.iso
     - name: Copy API
