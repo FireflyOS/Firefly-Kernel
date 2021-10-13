@@ -12,6 +12,7 @@
 #include <x86_64/settings.hpp>
 
 #include <stl/cstdlib/stdio.h>
+#include <x86_64/drivers/vbe.hpp>
 #include <x86_64/memory-manager/greenleafy.hpp>
 
 
@@ -112,6 +113,8 @@ struct fp {
     firefly::mm::greenleafy::memory_block *(*c[2])(uint64_t block_number, uint32_t access) = {};
 
     uint32_t (*d[2])(void) = {};
+
+    void (*e[2])(char) = {};
 } function_pointers;
 
 void init_fp(){
@@ -123,6 +126,9 @@ void init_fp(){
 
     function_pointers.d[0] = &firefly::mm::greenleafy::get_block_limit;
     function_pointers.d[1] = &firefly::mm::greenleafy::get_block_size_limit;
+
+    function_pointers.e[0] = &firefly::drivers::vbe::putc;
+    function_pointers.e[1] = &firefly::kernel::io::legacy::writeCharSerial;
 }
 
 fp *get_fp(void){

@@ -15,6 +15,9 @@
 #include <x86_64/api/api.hpp>
 
 namespace FAPI {
+    namespace formatter {
+        
+    }
     fp *get_fp(void){
         return ((fp *(*)(void))(fp *)FAPI_ENDP)();
     }
@@ -26,12 +29,26 @@ namespace FAPI {
         } 
     }
     namespace kernel {
+        namespace drivers {
+            namespace vbe {
+                void putc (char c){
+                    auto *sys_struct = (fp *)get_fp();
+                    ((void (*)(char))sys_struct->e[0])(c);
+                    return;
+                }
+            }
+        }
         namespace io {
             namespace legacy {
                 int writeTextSerial (const char *text, ...) {
                     auto *sys_struct = (fp *)get_fp();
                     int result = ((int (*)(const char *, ...))sys_struct->a[1])(text);
                     return result;
+                }
+                void writeCharSerial (char c) {
+                    auto *sys_struct = (fp *)get_fp();
+                    ((void (*)(char))sys_struct->e[1])(c);
+                    return;
                 }
             }
         }
@@ -43,7 +60,7 @@ namespace FAPI {
                 return ((memory_block *(*)(uint64_tt, uint32_tt))sys_struct->c[0])(block_number, access);
             }
 
-            memory_block *use_block(uint32_tt access) {
+            memory_block *use_block (uint32_tt access) {
                 auto *sys_struct = (fp *)get_fp();
                 return ((memory_block *(*)(uint32_tt))sys_struct->b[0])(access);
             }

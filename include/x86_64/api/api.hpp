@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <x86_64/api/api_config.hpp>
+
 #define BLOCK_LIMIT 1024
 #define BLOCK_SIZE_LIMIT 8192
 
@@ -44,9 +46,14 @@ struct fp {
     memory_block *(*c[2])(uint64_tt block_number, uint32_tt access) = {};
 
     uint32_tt (*d[2])(void) = {};
+
+    void (*e[2])(char) = {};
 };
 
 namespace FAPI {
+    namespace formatter {
+
+    }
     namespace stdio {
         /** 
          * @param string (const char *, ...)
@@ -55,6 +62,11 @@ namespace FAPI {
         int printf(const char *text, ...);
     }
     namespace kernel {
+        namespace drivers {
+            namespace vbe {
+                void putc (char c);
+            }
+        }
         namespace io {
             namespace legacy {
                 /**
@@ -62,6 +74,12 @@ namespace FAPI {
                  * @return void
                  **/
                 int writeTextSerial (const char *, ...);
+
+                /** 
+                * @param char
+                * @return void
+                 **/
+                void writeCharSerial (char c);
             }
         }
     }
