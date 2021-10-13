@@ -26,7 +26,7 @@ jobs:
     - name: make
       run: make ARCH=x86_64 && mv Firefly_x86_64.iso build/Firefly_x86_64.iso
     - name: Install the Firefly API
-      run: cd ../../ && sh Scripts/install_API.sh
+      run: sh Scripts/install_API.sh
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v2.2.4
       with:
