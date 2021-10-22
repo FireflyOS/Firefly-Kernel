@@ -311,7 +311,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
     
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
-    size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
+    size_t zero_nodes_needed = 1;//memory_available / LARGEST_CHUNK;
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
         node->root = alloc<BuddyNode>();

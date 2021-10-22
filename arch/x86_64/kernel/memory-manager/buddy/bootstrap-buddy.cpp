@@ -19,11 +19,11 @@ void bootstrap_buddy(struct stivale2_struct_tag_memmap *phys_mmap) {
     
     auto total_mem = ram_diff(phys_mmap->memmap, phys_mmap->entries);
     auto memory_used = BuddyAllocator(nullptr).estimate_memory_used(total_mem);//Buddy.estimate_memory_used(total_mem);
-    printf("base_addr: %X\n", ram_highest - ram_lowest);
-    BuddyAllocator Buddy = { reinterpret_cast<void *>(ram_lowest) };
-    [[maybe_unused]]void *mmap = reinterpret_cast<void*>(limine_mmap(phys_mmap->memmap, phys_mmap->entries, memory_used));
+    void *mmap = reinterpret_cast<void*>(limine_mmap(phys_mmap->memmap, phys_mmap->entries, memory_used));
+    BuddyAllocator Buddy = { reinterpret_cast<void *>(mmap) };
+    printf("The buddy allocators internal pointer is located at %X\n", mmap);
     printf("before init\n");
-    Buddy.initialize(total_mem, (char*) ram_lowest); //Causes GPF - investigate
+    Buddy.initialize(total_mem, (char*) ram_lowest);
     printf("after init\n");
 }
 
