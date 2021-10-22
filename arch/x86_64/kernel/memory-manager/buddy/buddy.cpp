@@ -1,8 +1,9 @@
 #include "x86_64/memory-manager/buddy/buddy.hpp"
-#include "x86_64/trace/strace.hpp"
 
 #include <algorithm.h>
 #include <utility.h>
+
+#include "x86_64/trace/strace.hpp"
 
 #define assert(x) (void)(x)
 
@@ -309,9 +310,11 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
 
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
-    
+
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
-    size_t zero_nodes_needed = 1;//memory_available / LARGEST_CHUNK;
+    size_t zero_nodes_needed = 30;//memory_available / LARGEST_CHUNK;
+    printf("root nodes needed: %d\n", zero_nodes_needed);
+
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
         node->root = alloc<BuddyNode>();
@@ -482,6 +485,7 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
     int8_t max_value = -1;
     for (int8_t i = 0; static_cast<size_t>(i) < free_values.max_size(); i++) {
         if (free_values[i] >= max_value) {
+            printf("max_order: %d\n", i);
             max_order = i;
             max_value = free_values[i];
         }

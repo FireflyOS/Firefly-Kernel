@@ -104,6 +104,8 @@ private:
         return curr;
     }
 
+    size_t get_index() noexcept {return (size_t)base_address + index;}
+
     Chunk* chunk_for(void* address);
     BuddyInfoHeap* heap_index(size_t idx);
 };

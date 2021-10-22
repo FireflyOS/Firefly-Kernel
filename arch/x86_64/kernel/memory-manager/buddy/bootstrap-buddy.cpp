@@ -20,7 +20,7 @@ void bootstrap_buddy(struct stivale2_struct_tag_memmap *phys_mmap) {
     auto total_mem = ram_diff(phys_mmap->memmap, phys_mmap->entries);
     auto memory_used = BuddyAllocator(nullptr).estimate_memory_used(total_mem);//Buddy.estimate_memory_used(total_mem);
     void *mmap = reinterpret_cast<void*>(limine_mmap(phys_mmap->memmap, phys_mmap->entries, memory_used));
-    BuddyAllocator Buddy = { reinterpret_cast<void *>(mmap) };
+    BuddyAllocator Buddy = { mmap };
     printf("The buddy allocators internal pointer is located at %X\n", mmap);
     printf("before init\n");
     Buddy.initialize(total_mem, (char*) ram_lowest);
@@ -44,7 +44,7 @@ static size_t limine_mmap(struct stivale2_mmap_entry *mmap_entries, int total_en
             continue;
         
         if ((result = (mmap_entries[current_entry].base + mmap_entries[current_entry].length)) >= buddy_size) {
-            printf("buddy_size: %X | entry: %X\n", buddy_size, result);
+            printf("buddy_size: %X | entry: %X | entry length: %X\n", buddy_size, result, mmap_entries[current_entry].length-1);
             return result;
         }
     }
