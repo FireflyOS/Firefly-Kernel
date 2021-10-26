@@ -309,11 +309,12 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  */
 
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
-    printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
+    // printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
 
+    (void)memory_available;
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
-    size_t zero_nodes_needed = 30;//memory_available / LARGEST_CHUNK;
-    printf("root nodes needed: %d\n", zero_nodes_needed);
+    size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
+    // printf("root nodes needed: %d\n", zero_nodes_needed);
 
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
@@ -355,7 +356,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 }
 
 void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
-    size_t start_base = start - static_cast<char*>(chunk_for(start)->root->physical_addr);
+    size_t start_base = (size_t)chunk_for(start)->root->physical_addr;
     size_t count = (start - end) / LARGEST_CHUNK;
     for (size_t i = start_base; i < count; i++) {
         auto chunk = chunk_at_index(i);
@@ -485,7 +486,6 @@ void Chunk::fix_heap(BuddyAllocator* buddy) {
     int8_t max_value = -1;
     for (int8_t i = 0; static_cast<size_t>(i) < free_values.max_size(); i++) {
         if (free_values[i] >= max_value) {
-            printf("max_order: %d\n", i);
             max_order = i;
             max_value = free_values[i];
         }

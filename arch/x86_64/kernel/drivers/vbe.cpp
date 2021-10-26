@@ -1,13 +1,13 @@
-#include <font8x16.h>
-#include <splash.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
 
-#include <x86_64/drivers/serial.hpp>
-#include <x86_64/drivers/vbe.hpp>
-
+#include "font8x16.h"
+#include "splash.h"
+#include "x86_64/drivers/serial.hpp"
+#include "x86_64/drivers/vbe.hpp"
+#include "x86_64/memory-manager/relocation.hpp"
 
 namespace firefly::drivers::vbe {
 static uint32_t* framebuffer_addr;
@@ -30,7 +30,11 @@ void put_pixel(int x, int y, int color) {
 }
 
 void early_init(stivale2_struct_tag_framebuffer* tagfb) {
-    framebuffer_addr = reinterpret_cast<uint32_t*>(tagfb->framebuffer_addr);
+    framebuffer_addr = reinterpret_cast<uint32_t*>(
+        mm::relocation::conversion::from_higher_half(
+            tagfb->framebuffer_addr, mm::relocation::conversion::DATA
+        )
+    );
     framebuffer_pitch = tagfb->framebuffer_pitch;
     framebuffer_height = tagfb->framebuffer_height;
     framebuffer_width = tagfb->framebuffer_width;
