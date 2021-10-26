@@ -42,33 +42,34 @@ void early_init(stivale2_struct_tag_framebuffer* tagfb) {
 }
 
 void clear_splash_frame() {
-    int x = framebuffer_width / 3 + (splash_width / 3);
-    int y = framebuffer_height / 3;
+    // int x = framebuffer_width / 3 + (splash_width / 3);
+    // int y = framebuffer_height / 3;
 
-    for (int height = 0; height < splash_height; height++) {
-        for (int width = 0; width < splash_width; width++) {
-            uint32_t pixel = 0x0;
-            put_pixel(
-                x + width,
-                y + height,
-                pixel);
-        }
-    }
+    // for (int height = 0; height < splash_height; height++) {
+    //     for (int width = 0; width < splash_width; width++) {
+    //         uint32_t pixel = 0x0;
+    //         put_pixel(
+    //             x + width,
+    //             y + height,
+    //             pixel);
+    //     }
+    // }
 }
 
 void boot_splash() {
-    int x = framebuffer_width / 3 + (splash_width / 3);
+    int x = framebuffer_width / 3 + (FIREFLY_WIDTH / 3);
     int y = framebuffer_height / 3;
 
     int j = 0;
-    for (int height = 0; height < splash_height; height++) {
-        for (int width = 0; width < splash_width; width++) {
-            j++;
-            uint32_t pixel = (splash_screen_pixel_data[j] << 24 & 0xFF000000) | (splash_screen_pixel_data[j] << 16 & 0x00FF0000) | (splash_screen_pixel_data[j] << 8 & 0x0000FF00) | (splash_screen_pixel_data[j] & 0x000000FF);
+    for (uint32_t height = 0; height < FIREFLY_HEIGHT; height++) {
+        for (uint32_t width = 0; width < FIREFLY_WIDTH; width++) {
+            uint32_t pixel = (FIREFLY_DATA[j] << 16) | (FIREFLY_DATA[j + 1] << 8) | (FIREFLY_DATA[j + 2]);
             put_pixel(
                 x + width,
                 y + height,
-                pixel);
+                pixel
+            );
+            j+=3;
         }
     }
 }
