@@ -356,7 +356,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 }
 
 void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
-    size_t start_base = (size_t)chunk_for(start)->root->physical_addr;
+    size_t start_base = reinterpret_cast<size_t>(chunk_for(start)->root->physical_addr);
     size_t count = (start - end) / LARGEST_CHUNK;
     for (size_t i = start_base; i < count; i++) {
         auto chunk = chunk_at_index(i);

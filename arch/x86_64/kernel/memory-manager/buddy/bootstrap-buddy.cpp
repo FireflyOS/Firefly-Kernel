@@ -31,9 +31,9 @@ void bootstrap_buddy(struct stivale2_struct_tag_memmap *phys_mmap) {
     struct limine_mem mmap = limine_mmap(phys_mmap->memmap, phys_mmap->entries, memory_used);
     BuddyAllocator Buddy = { (void*)mmap.base };
     printf("mmap.base: 0x%X\nmmap.end: 0x%X\n", mmap.base, mmap.end);
-    Buddy.set_unusable_memory((char*)mmap.base, (char*)mmap.end); // Causes GPF
     printf("before init\n");
     Buddy.initialize(total_mem, (char*) ram_lowest);
+    // Buddy.set_unusable_memory((char*)mmap.base, (char*)mmap.end);
     printf("after init\n");
 }
 

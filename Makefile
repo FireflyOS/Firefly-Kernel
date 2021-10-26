@@ -79,7 +79,7 @@ uefi:
 	qemu-system-$(ARCH) -enable-kvm -M smm=off -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISO) $(QEMU_FLAGS) -d int
 
 debug: $(ISO) $(TARGET)
-	qemu-system-$(ARCH) -enable-kvm -M smm=off -cpu host -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio --no-reboot --no-shutdown
+	qemu-system-$(ARCH) -M smm=off -cpu qemu64 -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio --no-reboot --no-shutdown
 	
 
 %.cxx.o: %.cpp
