@@ -309,12 +309,9 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  */
 
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
-    // printf("mem-avail: %X | mem-base: %X\n\n", memory_available, memory_base);
-
-    (void)memory_available;
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
-    // printf("root nodes needed: %d\n", zero_nodes_needed);
+    printf("root nodes needed: %d\n", zero_nodes_needed);
 
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
