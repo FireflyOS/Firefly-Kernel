@@ -1,9 +1,10 @@
 #include "x86_64/libk++/bitmap.h"
 #include <stl/cstdlib/stdio.h>
+#include <stl/cstdlib/cstring.h>
 
 namespace firefly::libkern
 {
-    Bitmap::Bitmap(bitmap_t *bitmap, size_t size)
+    void Bitmap::init(bitmap_t *bitmap, size_t size)
     {
         this->bitmap_instance = *bitmap;
         this->limit = size;
@@ -37,6 +38,11 @@ namespace firefly::libkern
         {
             this->clear(i);
         }
+    }
+
+    void Bitmap::setall()
+    {
+        memset(this->bitmap_instance.pool, 0xFF, this->limit);
     }
 
 } // namespace firefly::libkern

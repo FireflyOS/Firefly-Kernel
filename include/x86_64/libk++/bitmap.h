@@ -13,12 +13,13 @@ typedef struct
 
 class Bitmap {
 public:
-    Bitmap(bitmap_t*, size_t size);
+    void init(bitmap_t*, size_t size);
     void set(size_t bit);
     bool get(size_t bit);
     void clear(size_t bit);
     void print(size_t bit);
     void purge();
+    void setall();
 private:
     bitmap_t bitmap_instance;
     size_t limit;

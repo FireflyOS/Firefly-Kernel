@@ -1,11 +1,11 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
-#include "x86_64/libk++/bitmap.h"
+#include <stl/cstdlib/stdio.h>
 
 namespace firefly::kernel::mm::primary {
     // p = primary, I'm just hacking this together while avoiding naming collisions
     static struct free_list *pfree;
-    // static struct used_list *pused;
-
+    static struct used_list *pused;
+    
     static void *early_alloc(struct stivale2_mmap_entry entry, int size)
     {
         entry.base += size;
@@ -15,20 +15,39 @@ namespace firefly::kernel::mm::primary {
 
     void init(struct stivale2_struct_tag_memmap *mmap)
     {
-        (void)mmap;
-        // TODO: Iterate through mmap and find largest block to host the bitmaps (both used and free are bitmaps)
-
-        pfree->bitmap = (uint32_t*)early_alloc(mmap->memmap[0], 10); //TEMP: Don't actually trust this entry to be usable and large enough
-        libkern::Bitmap bitmap_freelist(reinterpret_cast<libkern::bitmap_t*>(pfree), 10);
-        bitmap_freelist.set(0);
-        bitmap_freelist.set(1);
-        bitmap_freelist.set(2);
-        bitmap_freelist.set(3);
-        bitmap_freelist.clear(3);
-
-        for (int i = 0; i < 4; i++)
+        // The highest possible *free* entry in the mmap
+        size_t highest_page = 0;
+        for (size_t i = 0; i < mmap->entries; i++)
         {
-            bitmap_freelist.print(i);
+            if (mmap->memmap[i].type != STIVALE2_MMAP_USABLE)
+                continue;
+            
+            highest_page = mmap->memmap[i].base + mmap->memmap[i].length - 1;
+        }
+
+        size_t bitmap_size = (highest_page / PAGE_SIZE / 8) * 2; // We multiply by two because we have 2 bitmaps (free, used)
+
+        // Iterate through mmap and find largest block to store the bitmaps (both used and free are bitmaps)
+        for (size_t i = 0; i < mmap->entries; i++)
+        {
+            if (mmap->memmap[i].type != STIVALE2_MMAP_USABLE)
+                continue;
+
+            if (mmap->memmap[i].base + mmap->memmap[i].length - 1 >= bitmap_size)
+            {
+                printf("Found entry to store the bitmaps (%d bytes) at %X-%X\n", bitmap_size, mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1);
+                
+                // Note: The entire memory contents are marked as used now, we free available memory after this
+                pfree = reinterpret_cast<struct free_list*>(early_alloc(mmap->memmap[i], bitmap_size / 2)); // Divide by two to get the size of *one* bitmap
+                pfree->bitmap_freelist.init(reinterpret_cast<libkern::bitmap_t*>(pfree), bitmap_size / 2);
+                pfree->bitmap_freelist.purge();
+
+                pused = reinterpret_cast<struct used_list*>(early_alloc(mmap->memmap[i], bitmap_size / 2));
+                pused->bitmap_usedlist.init(reinterpret_cast<libkern::bitmap_t*>(pused), bitmap_size / 2);
+                pused->bitmap_usedlist.setall();
+
+                break;
+            }
         }
     }
 
