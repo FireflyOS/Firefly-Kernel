@@ -92,10 +92,6 @@ static bool check_special(char c) {
 void puts(const char* str) {
     int i = 0;
     while (str[i] != '\0') {
-        // if (check_special(str[i])) {
-        //     i++;
-        //     continue;
-        // }
         putc(str[i++], console_x, console_y, console_color);
     }
 }
