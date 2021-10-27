@@ -1,8 +1,8 @@
-#include "x86_64/memory-manager/buddy/buddy_heap.hpp"
+#include "x86_64/memory-manager/secondary/buddy/buddy_heap.hpp"
 
 #include <utility.h>
 
-#include "x86_64/memory-manager/buddy/buddy.hpp"
+#include "x86_64/memory-manager/secondary/buddy/buddy.hpp"
 
 
 namespace firefly::kernel::mm::buddy {

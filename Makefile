@@ -45,8 +45,9 @@ endif
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/buddy
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/slob
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/primary/
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/secondary/buddy
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/secondary/slob
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init

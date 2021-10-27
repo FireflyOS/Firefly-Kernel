@@ -5,11 +5,13 @@
 #include <x86_64/libk++/iostream.h>
 
 #include "x86_64/drivers/vbe.hpp"
+#include "x86_64/fb/framebuffer.hpp"
 #include "x86_64/gdt/gdt.hpp"
 #include "x86_64/int/interrupt.hpp"
 #include "x86_64/kernel.hpp"
+#include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/stivale2.hpp"
-#include "x86_64/fb/framebuffer.hpp"
+#include "x86_64/trace/strace.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -83,7 +85,7 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 }
 
 void bootloader_services_init(struct stivale2_struct *handover) {
-    struct stivale2_struct_tag_framebuffer *tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
+    auto tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
         for (;;)
             asm("hlt");
@@ -93,17 +95,18 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::kernel::device::fb::boot_splash();
     firefly::kernel::main::write_ff_info();
 
-    // struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    
+    auto tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    if (tagmem == NULL) {
+        firefly::trace::panic("Cannot obtain memory map");
+    }
+    firefly::kernel::mm::primary::init(tagmem);
 }
 
-extern "C" [[noreturn]] void kernel_init([[maybe_unused]]struct stivale2_struct *stivale2_struct) {
+extern "C" [[noreturn]] void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
     firefly::kernel::core::gdt::init();
-//    firefly::kernel::core::interrupt::init();
+    firefly::kernel::core::interrupt::init();
 
     bootloader_services_init(stivale2_struct);
-    
-    // firefly::kernel::core::interrupt::test_int();
 
     firefly::kernel::main::kernel_main();
     __builtin_unreachable();

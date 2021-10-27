@@ -1,4 +1,4 @@
-#include "x86_64/memory-manager/buddy/buddy.hpp"
+#include "x86_64/memory-manager/secondary/buddy/buddy.hpp"
 
 #include <algorithm.h>
 #include <utility.h>

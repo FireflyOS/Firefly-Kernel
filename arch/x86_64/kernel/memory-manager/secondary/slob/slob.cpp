@@ -1,10 +1,7 @@
-#include "x86_64/memory-manager/slob/slob.hpp"
-
-#include "x86_64/memory-manager/buddy/buddy.hpp"
+#include "x86_64/memory-manager/secondary/slob/slob.hpp"
 
 namespace firefly::kernel::mm::slob {
-using namespace buddy;
-
+    
 void Slob::initialize() {
 
 }

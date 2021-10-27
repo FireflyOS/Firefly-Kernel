@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define BMP_BLOCK_SIZE sizeof(uint32_t) * 8
+#define BMP_BLOCK_SIZE 32
 
 namespace firefly::libkern {
 typedef struct
