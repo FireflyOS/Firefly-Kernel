@@ -1,16 +1,18 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
+#include "x86_64/trace/strace.hpp"
 #include <stl/cstdlib/stdio.h>
 
 namespace firefly::kernel::mm::primary {
     // p = primary, I'm just hacking this together while avoiding naming collisions
-    static struct free_list *pfree;
-    static struct used_list *pused;
+    static struct free_list *pfree = nullptr;
+    static struct used_list *pused = nullptr;
     
-    static void *early_alloc(struct stivale2_mmap_entry entry, int size)
+    static void *early_alloc(struct stivale2_mmap_entry &entry, int size)
     {
+        size_t ret = entry.base;
         entry.base += size;
         entry.length -= size;
-        return reinterpret_cast<void*>(entry.base);
+        return reinterpret_cast<void*>(ret);
     }
 
     void init(struct stivale2_struct_tag_memmap *mmap)
@@ -46,8 +48,14 @@ namespace firefly::kernel::mm::primary {
                 pused->bitmap_usedlist.init(reinterpret_cast<libkern::bitmap_t*>(pused), bitmap_size / 2);
                 pused->bitmap_usedlist.setall();
 
+                // Note: There is no need to resize this entry since `early_alloc` already did.
+                printf("Resized mmap entry -> %X-%X\n", mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1);
                 break;
             }
+        }
+        if (pfree == nullptr || pused == nullptr)
+        {
+            trace::panic("Failed to initialize one or both of the primary allocation structures");
         }
     }
 
