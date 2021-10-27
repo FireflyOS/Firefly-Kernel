@@ -1,14 +1,15 @@
-#include "x86_64/tty/boot-tty.hpp"
+#include "x86_64/fb/framebuffer.hpp"
 
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
 
 #include "font8x16.h"
 #include "x86_64/drivers/vbe.hpp"
+#include "x86_64/fb/double-buffering.hpp"
 #include "x86_64/libk++/bitmap.h"
-#include "x86_64/tty/double-buffering.hpp"
+#include <splash.h>
 
-namespace firefly::kernel::tty {
+namespace firefly::kernel::device::fb {
 static int console_x, console_y = 0;
 static int glyph_width, glyph_height;
 static uint8_t VBE_FONT[4096];
@@ -17,23 +18,6 @@ static bool check_special(char c);
 
 void init() {
     set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height, 0xFFFFFFF);
-
-    // tty::DoubleBuffering db;
-    // db.init_buffers();
-    
-    // for (int i = 0; i < 1000; i++)
-    //     db.buffer_pixel(i, 0, 0xFFFFFF);
-    
-    // db.swap_buffers();
-}
-
-//Todo: Double buffer to avoid reading from memory
-void scroll() {
-    // clear_splash_frame();
-    libkern::Vec2 dim = drivers::vbe::fb_dimensions();
-    uint32_t* framebuffer_addr = drivers::vbe::fb_addr();
-    memcpy((void*)framebuffer_addr, (void*)((size_t)framebuffer_addr + dim.x * glyph_height * (4)), dim.x * (dim.y - glyph_height) * 6);
-    // boot_splash();
 }
 
 void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h, int color) {
@@ -60,9 +44,6 @@ void putc(char c, int x, int y) {
         }
     }
     console_x += glyph_width;
-    // check_special(c);
-
-    // console_x += glyph_width;
 }
 
 void putc(char c, int x, int y, int color) {
@@ -86,12 +67,12 @@ static bool check_special(char c) {
     //Todo: Check if c will go out of bounds
     if (c == '\n') {
         if (static_cast<size_t>(console_y) >= dim.y - glyph_height) {
-            scroll();  //TODO: Use double buffering impl
+            //scroll();
             console_y = dim.y - (glyph_height * 2);
-            console_x = glyph_width;
+            console_x = -glyph_width;
         }
         console_y += glyph_height;
-        console_x = 0;
+        console_x = -glyph_width;
         return true;
     } else if (c == '\t') {
         console_x += 4;
@@ -102,7 +83,7 @@ static bool check_special(char c) {
     }
     //Not a special char but it needs to be handled anyway so might as well put it in this function..
     else if (static_cast<size_t>(console_x) > dim.x - glyph_width) {
-        console_x = 0;
+        console_x = -char_width;
         console_y++;
     }
     return false;
@@ -111,11 +92,33 @@ static bool check_special(char c) {
 void puts(const char* str) {
     int i = 0;
     while (str[i] != '\0') {
-        if (check_special(str[i])) {
-            i++;
-            continue;
-        }
+        // if (check_special(str[i])) {
+        //     i++;
+        //     continue;
+        // }
         putc(str[i++], console_x, console_y, console_color);
     }
 }
-}  // namespace firefly::kernel::tty
+
+void boot_splash() {
+    // Center image
+    int framebuffer_width = drivers::vbe::fb_dimensions().x;
+    int framebuffer_height = drivers::vbe::fb_dimensions().y;
+    int x = (framebuffer_width  / 2) - (FIREFLY_WIDTH  / 2);
+    int y = (framebuffer_height / 2) - (FIREFLY_HEIGHT / 2);
+
+    int j = 0;
+    for (uint32_t height = 0; height < FIREFLY_HEIGHT; height++) {
+        for (uint32_t width = 0; width < FIREFLY_WIDTH; width++) {
+            uint32_t pixel = (FIREFLY_DATA[j] << 16) | (FIREFLY_DATA[j + 1] << 8) | (FIREFLY_DATA[j + 2]);
+            drivers::vbe::put_pixel(
+                x + width,
+                y + height,
+                pixel
+            );
+            j+=3;
+        }
+    }
+}
+
+}  // namespace firefly::kernel::device::fb

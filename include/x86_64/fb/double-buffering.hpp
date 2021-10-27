@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "x86_64/drivers/vbe.hpp"
-#include "x86_64/tty/boot-tty.hpp"
+#include "x86_64/fb/framebuffer.hpp"
 
 namespace firefly::kernel::tty {
 typedef struct generic_display_buffer {

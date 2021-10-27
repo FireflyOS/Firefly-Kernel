@@ -8,8 +8,6 @@
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
 
-
-
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0";

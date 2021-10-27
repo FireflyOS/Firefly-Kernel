@@ -56,22 +56,4 @@ void clear_splash_frame() {
     // }
 }
 
-void boot_splash() {
-    int x = framebuffer_width / 3 + (FIREFLY_WIDTH / 3);
-    int y = framebuffer_height / 3;
-
-    int j = 0;
-    for (uint32_t height = 0; height < FIREFLY_HEIGHT; height++) {
-        for (uint32_t width = 0; width < FIREFLY_WIDTH; width++) {
-            uint32_t pixel = (FIREFLY_DATA[j] << 16) | (FIREFLY_DATA[j + 1] << 8) | (FIREFLY_DATA[j + 2]);
-            put_pixel(
-                x + width,
-                y + height,
-                pixel
-            );
-            j+=3;
-        }
-    }
-}
-
 }  // namespace firefly::drivers::vbe

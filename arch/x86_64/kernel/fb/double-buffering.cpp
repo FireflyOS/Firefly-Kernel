@@ -1,4 +1,4 @@
-#include "x86_64/tty/double-buffering.hpp"
+#include "x86_64/fb/double-buffering.hpp"
 
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>

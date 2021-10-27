@@ -8,14 +8,12 @@
 #include "x86_64/gdt/gdt.hpp"
 #include "x86_64/int/interrupt.hpp"
 #include "x86_64/kernel.hpp"
-#include "x86_64/memory-manager/buddy/bootstrap-buddy.hpp"
 #include "x86_64/stivale2.hpp"
-#include "x86_64/tty/boot-tty.hpp"
+#include "x86_64/fb/framebuffer.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000)));
-
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -91,13 +89,12 @@ void bootloader_services_init(struct stivale2_struct *handover) {
             asm("hlt");
     }
     firefly::drivers::vbe::early_init(tagfb);
-    firefly::kernel::tty::init();
-    firefly::drivers::vbe::boot_splash();
+    firefly::kernel::device::fb::init();
+    firefly::kernel::device::fb::boot_splash();
     firefly::kernel::main::write_ff_info();
-    printf("Framebuffer address: 0x%X\n", tagfb->framebuffer_addr);
 
-   struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    firefly::kernel::mm::buddy::bootstrap_buddy(tagmem);
+    // struct stivale2_struct_tag_memmap *tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    
 }
 
 extern "C" [[noreturn]] void kernel_init([[maybe_unused]]struct stivale2_struct *stivale2_struct) {
