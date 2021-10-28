@@ -17,6 +17,8 @@
 
 #include <x86_64/settings.hpp>
 
+#include <x86_64/brainfuck/bf.hpp>
+
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0-x86_64-fork";
@@ -66,6 +68,10 @@ void kernel_main() {
     printf("uint8_t *Test Block 1 Address: 0x%X", test_block);
     test_block->block[22] = 11;
     printf("uint8_t *Test Block 1[22]: 0x%X\n\n> ", test_block->block[22]);
+
+    printf("Brainfuck test: ");
+    brainfuck::load(">+++.", 5);
+    printf("\n");
 
 
     for(;;){

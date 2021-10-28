@@ -1,5 +1,5 @@
 #include <x86_64/drivers/ps2.hpp>
-#include <include/stl/cstdlib/stdio.h>
+#include <stl/cstdlib/stdio.h>
 #include <x86_64/applications/application_manager.hpp>
 
 namespace firefly::drivers::ps2 {
