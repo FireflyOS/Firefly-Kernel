@@ -79,4 +79,14 @@ namespace firefly::libkern
         this->limit = size;
     }
 
+    int64_t Bitmap::allocator_conversion(bool bit_to_address, size_t bit_or_address)
+    {
+        // Bit to page aligned address
+        if (bit_to_address)
+            return bit_or_address * 0x1000;
+        
+        // Page aligned address to bit
+        return bit_or_address / 0x1000;
+    }
+
 } // namespace firefly::libkern

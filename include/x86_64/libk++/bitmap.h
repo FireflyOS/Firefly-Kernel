@@ -43,6 +43,7 @@ public:
     void setall();
     int64_t find_first(int type);
     void resize(size_t size);
+    int64_t allocator_conversion(bool bit_to_address, size_t bit_or_address);
 private:
     bitmap_t bitmap_instance;
     size_t limit;
