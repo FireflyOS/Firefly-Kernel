@@ -11,14 +11,16 @@ namespace firefly::libkern
         this->purge();
     }
 
-    void Bitmap::set(size_t bit)
+    bitmap_res_t Bitmap::set(size_t bit)
     {
-        this->bitmap_instance.pool[bit / BMP_BLOCK_SIZE] |= (1 << (bit % BMP_BLOCK_SIZE));
+        if (bit > this->limit || bit < this->limit) return bitmap_fail();
+        return bitmap_ok(this->bitmap_instance.pool[bit / BMP_BLOCK_SIZE] |= (1 << (bit % BMP_BLOCK_SIZE)));
     }
 
-    bool Bitmap::get(size_t bit)
+    bitmap_res_t Bitmap::get(size_t bit)
     {
-        return this->bitmap_instance.pool[bit/BMP_BLOCK_SIZE];
+        if (bit > this->limit || bit < this->limit) return bitmap_fail();
+        return bitmap_ok(this->bitmap_instance.pool[bit/BMP_BLOCK_SIZE]);
     }
 
     void Bitmap::print(size_t bit)
@@ -43,6 +45,38 @@ namespace firefly::libkern
     void Bitmap::setall()
     {
         memset(this->bitmap_instance.pool, 0xFF, this->limit);
+    }
+
+    int64_t Bitmap::find_first(int type)
+    {
+        int bitmap_type = (type == BIT_SET) ? BIT_SET : BIT_CLEAR;
+        for (int64_t i = 0; i < (int64_t)this->limit; i++)
+        {
+            // No need to check for errors from unpack() as errors are caused
+            // if we go out of bounds regarding the bitmap which clearly isn't possible here
+            if (this->get(i).unpack() == bitmap_type)
+            {
+                printf("this->get(%d): %d\n", i, this->get(i).unpack());
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    void Bitmap::resize(size_t size)
+    {
+        if (this->limit == size) return;
+
+        // Zero out the unused bytes so that they can be free of garbage
+        // if the memory is released or the bitmap instance resized (to something larger)
+        if (size < this->limit) {
+            for (size_t i = size; i < this->limit; i++) {
+                this->clear(i);
+            }
+        }
+
+        this->limit = size;
     }
 
 } // namespace firefly::libkern
