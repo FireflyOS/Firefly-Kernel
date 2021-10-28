@@ -7,6 +7,7 @@
 #include <x86_64/applications/test/main.hpp>
 #include <x86_64/applications/help/main.hpp>
 #include <x86_64/applications/settings/main.hpp>
+#include <x86_64/applications/regs/main.hpp>
 
 #include <x86_64/settings.hpp>
 
@@ -18,19 +19,21 @@ namespace firefly::applications {
         int      checksum;
         uint16_t access;
     } apps_s[256];
+    int appp = 0;
 
+    void register_application(int *address, int checksum, const char *command_name){
+        apps_s[appp].address = (int *)address;
+        apps_s[appp].checksum = checksum;
+        firefly::kernel::io::legacy::writeTextSerial("Registered %s Command on address 0x%X with checksum %d\n\n", command_name, address, checksum);
+        appp++;
+
+        return;
+    }
     void registerApplications(){
-        apps_s[0].address = (int *)applications::test::test_main;
-        apps_s[0].checksum = applications::test::getc();
-        firefly::kernel::io::legacy::writeTextSerial("Registered Test Command on address 0x%X with checksum %d\n\n", &applications::test::test_main, applications::test::getc());
-
-        apps_s[1].address = (int *)applications::help::help_main;
-        apps_s[1].checksum = applications::help::getc();
-        firefly::kernel::io::legacy::writeTextSerial("Registered Help Command on address 0x%X with checksum %d\n\n", &applications::help::help_main, applications::help::getc());
-
-        apps_s[2].address = (int *)applications::settings::settings_main;
-        apps_s[2].checksum = applications::settings::getc();
-        firefly::kernel::io::legacy::writeTextSerial("Registered Settings Command on address 0x%X with checksum %d\n\n", &applications::settings::settings_main, applications::settings::getc());
+        register_application((int *)applications::test::test_main, applications::test::getc(), "Test");
+        register_application((int *)applications::help::help_main, applications::help::getc(), "Help");
+        register_application((int *)applications::settings::settings_main, applications::settings::getc(), "Settings");
+        register_application((int *)applications::regs::regs_main, applications::regs::getc(), "Registers");
 
         return;
     }
@@ -63,5 +66,20 @@ namespace firefly::applications {
             temp_pointer++;
         }
         return 0x44f9ad;
+    }
+    
+    namespace external {
+        struct app {
+            int     *size;
+            int      checksum;
+            uint16_t access;
+        } app_data;
+        uint8_t *app[8388608];
+
+        int run([[maybe_unused]] char **argv){
+            printf("\n");
+            return 0;
+            //return ((int (*)(int, char **))&app(sizeof(argv), argv));
+        }
     }
 }

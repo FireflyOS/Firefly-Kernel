@@ -20,7 +20,7 @@ namespace firefly::mm::greenleafy {
         memory_blocks[current_block].is_used = 1;
         memory_blocks[current_block].block_number = current_block;
         
-        kernel::io::legacy::writeTextSerial("New block was used! Address: 0x%X\n\n", &memory_blocks[current_block]);
+        kernel::io::legacy::writeTextSerial("New block was used (%d)! Address: 0x%X\n\n", current_block, &memory_blocks[current_block]);
 
         return &memory_blocks[current_block++];
 

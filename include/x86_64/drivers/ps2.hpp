@@ -33,4 +33,22 @@ namespace firefly::drivers::ps2 {
      * @return Keyboard buffer (char *)
      */
     char *get_buffer();
+
+    /**
+     * Enables keyboard redirecting
+     * 
+     * @param keyboard_handle function pointer to keyboard_handle trigger
+     * @param current_key pointer to current_key variable
+     * 
+     * @return void
+     */
+    void redirect_to_app(void(*keyboard_handle)(void), uint8_t *currentkey);
+
+    /**
+     * Get keyboard input with redirecting
+     * 
+     * @return void
+     */
+    void app_input();
+
 }  // namespace firefly::drivers::ps2

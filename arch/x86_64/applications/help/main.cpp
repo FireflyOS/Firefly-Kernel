@@ -11,3 +11,22 @@ namespace firefly::applications::help {
 
     int getc(){ return 869425; }
 }
+// // uint64_t res;
+//             asm ("mov %0, rax\n\t"
+//                  "ret"
+//                     : "=r"(res)   
+//                 );
+//             printf("rax: 0x%X\n", res);
+
+//             asm ("mov %0, rbx\n\t"
+//                  "ret"
+//                     : "=r"(res)   
+//                 );
+//             printf("rbx: 0x%X\n", res);
+
+//             asm ("mov %0, rbx\n\t"
+//                  "ret"
+//                     : "=r"(res)   
+//                 );
+//             printf("rbx: 0x%X\n", res);
+//             return false;

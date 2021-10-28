@@ -1,3 +1,3 @@
 namespace firefly::kernel::sleep {
-    void sleep(long mss);
+    void sleep(unsigned long long mss);
 }
