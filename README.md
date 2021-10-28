@@ -5,10 +5,10 @@ This is indev branch, where I commiting some uncompleted things. **There is no g
 # Firefly-Kernel
 Kernel for Firefly
 [![C/C++ CI](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml/badge.svg?branch=indev)](https://github.com/SergeyMC9730/Firefly-Kernel/actions/workflows/c-cpp.yml)
-Firefly OS requires 128 MB RAM
+**Firefly OS requires 128 MB RAM**
 
 ## x64 demo:
-![Firefly](docs/2021-09-25_144520.png)
+![Firefly](docs/elbrainfuck.png)
 
 ### Clone the repo 
  * `git clone https://github.com/SergeyMC9730/Firefly-Kernel --recursive`
