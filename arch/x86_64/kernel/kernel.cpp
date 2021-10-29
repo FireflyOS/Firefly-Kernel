@@ -8,8 +8,6 @@
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
 
-
-
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0";
@@ -33,12 +31,6 @@ void write_ff_info() {
 
 
 void kernel_main() {
-    write_ff_info();
-    for (int i = 0; i < 47; i++)
-        printf("test %d\n", i);
-
-
-    printf("Scrolling demo complete\n");
-    trace::panic("Test");
+    trace::panic("Reached the end of kernel");
 }
 }  // namespace firefly::kernel::main
