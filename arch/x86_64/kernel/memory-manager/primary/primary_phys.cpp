@@ -129,7 +129,7 @@ void append(struct primary_allocation_result *head_ref, void *addr) {
     - Panics on failure
     
     Returns a linked list for possible
-    non contigious memory.
+    non contiguous memory.
     
     Call unpack() to skip the page reserved for the linked list.
     
