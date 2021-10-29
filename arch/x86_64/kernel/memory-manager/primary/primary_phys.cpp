@@ -8,6 +8,8 @@
 namespace firefly::kernel::mm::primary {
 static libkern::Bitmap bitmap;
 static uint32_t *arena;
+static int64_t linked_list_allocation_base;  //Base address for the linked list structure (Should never be freed, may be reused)
+static size_t linked_list_allocation_index = 0;
 using libkern::align4k;
 
 
@@ -18,7 +20,13 @@ static void *early_alloc(struct stivale2_mmap_entry &entry, int size) {
     return reinterpret_cast<void *>(ret);
 }
 
-void allocate();
+template <typename T>
+T *small_alloc() {
+    T *curr = reinterpret_cast<T *>(linked_list_allocation_base + linked_list_allocation_index);
+    linked_list_allocation_index += sizeof(T);
+    *curr = T{};
+    return curr;
+}
 
 void init(struct stivale2_struct_tag_memmap *mmap) {
     bool init_ok = false;
@@ -31,15 +39,14 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             continue;
 
         top = mmap->memmap[i].base + mmap->memmap[i].length - 1;
-        printf("%X\n", top);
         if (top > highest_page)
             highest_page = top;
     }
 
-    // DEBUG: Print mmap contents
-    for (size_t i = 0; i < mmap->entries; i++) {
-        printf("(%d) %X-%X [ %X (%s) ]\n", i, mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1, mmap->memmap[i].type, mmap->memmap[i].type == 1 ? "free" : "?");
-    }
+    // // DEBUG: Print mmap contents
+    // for (size_t i = 0; i < mmap->entries; i++) {
+    //     printf("(%d) %X-%X [ %X (%s) ]\n", i, mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1, mmap->memmap[i].type, mmap->memmap[i].type == 1 ? "free" : "?");
+    // }
 
     size_t bitmap_size = (highest_page / PAGE_SIZE / 8);
     align4k<size_t>(bitmap_size);
@@ -72,26 +79,85 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             continue;
 
         size_t base = bitmap.allocator_conversion(false, mmap->memmap[i].base);
-        size_t end  = bitmap.allocator_conversion(false, mmap->memmap[i].length);
+        size_t end = bitmap.allocator_conversion(false, mmap->memmap[i].length);
         printf("Freeing %d pages at %X\n", end, bitmap.allocator_conversion(true, base));
 
         for (size_t i = base; i < base + end; i++) {
             auto success = bitmap.clear(
-                i
-            ).success;
-            if (!success) { trace::panic("Failed to free page during primary allocator setup"); }
+                                     i)
+                               .success;
+            if (!success) {
+                trace::panic("Failed to free page during primary allocator setup");
+            }
         }
     }
+
+    // Setup the base address for the linked list.
+    linked_list_allocation_base = bitmap.find_first(libkern::BIT_SET);
+    if (linked_list_allocation_base == -1)
+        trace::panic("No free memory");
+
+    if (!bitmap.set(linked_list_allocation_base).success)
+        trace::panic("Failed to mark the primary allocators linked list as used!");
+    
+    linked_list_allocation_base = bitmap.allocator_conversion(true, linked_list_allocation_base);
+
     //NOTE: Never free bit 0 - It's a nullptr
 }
 
-void allocate()
-{
-    auto bit = bitmap.find_first(libkern::BIT_SET);
-    if (bit == -1)
-        trace::panic("no free memory!");
-    else
-        printf("Found free page at bit %d (%X)\n", bit, bit * PAGE_SIZE);
+/*
+    Append a node at the end of the linked list
+*/
+__attribute__((always_inline)) inline 
+void append(struct primary_allocation_result *head_ref, void *addr) {
+    auto new_node = small_alloc<struct primary_allocation_result>();
+    auto last = head_ref;
+    new_node->addr = addr;
+    new_node->next = nullptr;
+    
+    while (last->next != nullptr)
+        last = last->next;
+
+    last->next = new_node;
+}
+
+/*
+    Primary physical allocator.
+    - Allocates up to 4095 pages of physical memory
+    - All addresses returned are page aligned
+    - All pages are initialized to zero
+    - Panics on failure
+    
+    Returns a linked list for possible
+    non contigious memory.
+    
+    Call unpack() to skip the page reserved for the linked list.
+    
+*/
+struct primary_allocation_result *allocate(size_t pages) {
+    // NOTE: There is no need to check for a single page to try and optimize
+    // the allocation since this type of allocation would violate the core
+    // prinicple of the kernel. (Each process has it's own allocator)
+    
+    // PAGE_SIZE - 1 because 1 page is dedicated to the linked list at all times
+    if (pages > PAGE_SIZE-1)
+        return nullptr;
+
+    auto linked_list = small_alloc<struct primary_allocation_result>();
+    linked_list->addr = reinterpret_cast<void*>(MAGIC);  // Linked list header signature, this must be skipped
+
+    for (; pages > 0; pages--) {
+        auto bit = bitmap.find_first(libkern::BIT_SET);
+        if (bit == -1)
+            trace::panic("No free memory!");
+
+        bitmap.set(bit);
+        
+        append(linked_list, reinterpret_cast<void*>(bitmap.allocator_conversion(true, bit)));
+    }
+
+    linked_list_allocation_index = 0;  //Reset linear allocator for next phys allocation
+    return linked_list;
 }
 
 }  // namespace firefly::kernel::mm::primary

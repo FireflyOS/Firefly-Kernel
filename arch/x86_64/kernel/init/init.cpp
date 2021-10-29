@@ -100,6 +100,12 @@ void bootloader_services_init(struct stivale2_struct *handover) {
         firefly::trace::panic("Cannot obtain memory map");
     }
     firefly::kernel::mm::primary::init(tagmem);
+    auto ptr = firefly::kernel::mm::primary::allocate(2)->unpack();
+    while (ptr != nullptr)
+    {
+        printf("%X\n", ptr->addr);
+        ptr = ptr->next;
+    }
 }
 
 extern "C" [[noreturn]] void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {

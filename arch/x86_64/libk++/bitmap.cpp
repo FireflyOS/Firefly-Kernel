@@ -58,7 +58,6 @@ namespace firefly::libkern
             // if we go out of bounds regarding the bitmap which clearly isn't possible here
             if (this->get(i).unpack() != bitmap_type)
             {
-                printf("this->get(%d): %d\n", i, this->get(i).unpack());
                 return i;
             }
         }

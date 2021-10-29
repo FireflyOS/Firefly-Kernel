@@ -6,20 +6,23 @@
 
 namespace firefly::kernel::mm::primary {
 constexpr uint32_t PAGE_SIZE = 4096;
+constexpr intptr_t MAGIC = 0xC0FFEE; // Linked list header signature, this must be skipped (done for you by unpack())
 
-struct contigious_allocation_result
+struct primary_allocation_result
 {
-    void *addr;
-    struct contigious_allocation_result *next;
+    const void *addr;
+    struct primary_allocation_result *next;
+    struct primary_allocation_result *unpack()
+    {
+        // Check fo invalid magic (i.e. `this` points somewhere that is *not* the head)
+        if (this->addr != reinterpret_cast<void*>(MAGIC))
+            return NULL;
+
+        return this->next;
+    }
 };
 
 void init(struct stivale2_struct_tag_memmap *mmap);
-
-template <typename T>
-T *small_alloc(size_t base)
-{
-    auto index = (T*)(base + sizeof(T));
-    return index;
-}
+struct primary_allocation_result *allocate(size_t pages);
 
 }  // namespace firefly::kernel::mm::primary
