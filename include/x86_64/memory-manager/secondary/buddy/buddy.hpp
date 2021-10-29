@@ -9,6 +9,25 @@
 #include <stl/cstdlib/stdio.h>
 
 namespace firefly::kernel::mm::buddy {
+/**
+ * The buddy allocator operates on the premise of being able to split up memory into multiple smaller chunks
+ * Our data is laid out in an array of BuddyNode, which contains information about a certain piece of memory.
+ * This can be a buddy, or the entire chunk.
+ *
+ * ----------------------------------------------
+ * | order = 2, taken = false, is_split = false |
+ * -----------------------------------------------
+ * | o = 1 t = 0 s = 0   | o = 1 t = 0 s = 0    |
+ * -----------------------------------------------
+ * | o=0 t=0 s=0 |  ...  |    ...   |    ...    |
+ * -----------------------------------------------
+ *
+ * A node can have a few states
+ * taken = true, split = false -> Taken, the current node is allocated 
+ * taken = false, split = true -> Taken, it's split into its children
+ * taken = false, split = false -> Node is completely free and can be allocated
+ * 
+ */
 
 constexpr static inline size_t SMALLEST_CHUNK = 4096UL;                // 1 page
 constexpr static inline size_t LARGEST_CHUNK = SMALLEST_CHUNK * 16UL;  // 16 pages
@@ -30,12 +49,19 @@ struct BuddyNode {
     uint8_t _is_split : 1;
     uint8_t _is_right : 1;
 
+    /**
+     * Returns the amount of memory this BuddyNode points to
+     * Relies on `order`
+     */
     size_t pointed_size() const noexcept;
 
     bool is_split() const noexcept;
     bool is_taken() const noexcept;
     bool is_right() const noexcept;
 
+    /**
+     * Gets the respective children / parent / sibling, self-explanatory.
+     */
     BuddyNode* get_left_child();
     BuddyNode* get_right_child();
     BuddyNode* get_parent();
@@ -47,6 +73,9 @@ struct BuddyNode {
 
     Chunk* to_chunk(BuddyAllocator* buddy) const noexcept;
 
+    /*
+     * Splits/merges the current node into/from its two children and updates the chunk's values
+     */
     void split(BuddyAllocator* buddy) noexcept;
     void merge_children(BuddyAllocator* buddy, Chunk* matching_chunk = nullptr) noexcept;
 };

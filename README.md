@@ -5,8 +5,8 @@ Kernel for FireflyOS
 ![Firefly OS](docs/x64-progress.png)
 
 ### Clone the repo 
- * git clone https://github.com/FireflyOS/Firefly-Kernel --recursive
- * cd Firefly-Kernel
+ * `git clone https://github.com/FireflyOS/Firefly-Kernel --recursive`
+ * `cd Firefly-Kernel`
 
 ## Ubuntu 
 
