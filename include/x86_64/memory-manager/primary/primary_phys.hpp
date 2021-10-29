@@ -7,21 +7,19 @@
 namespace firefly::kernel::mm::primary {
 constexpr uint32_t PAGE_SIZE = 4096;
 
-struct free_list {
-    libkern::Bitmap bitmap_freelist;
-    uint32_t *bitmap;
-};
-
-struct used_list {
-    libkern::Bitmap bitmap_usedlist;
-    uint32_t *bitmap;
-};
-
-struct primary {
-    struct free_list *free;
-    struct used_list *used;
+struct contigious_allocation_result
+{
+    void *addr;
+    struct contigious_allocation_result *next;
 };
 
 void init(struct stivale2_struct_tag_memmap *mmap);
+
+template <typename T>
+T *small_alloc(size_t base)
+{
+    auto index = (T*)(base + sizeof(T));
+    return index;
+}
 
 }  // namespace firefly::kernel::mm::primary

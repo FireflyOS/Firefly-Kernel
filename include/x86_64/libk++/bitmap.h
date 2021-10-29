@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define BMP_BLOCK_SIZE 32
+#define BMP_BLOCK_SIZE 8
 
 namespace firefly::libkern {
 typedef struct
@@ -34,18 +34,18 @@ __attribute__((always_inline)) inline bitmap_res_t bitmap_fail() {
 
 class Bitmap {    
 public:
-    void init(bitmap_t*, size_t size);
-    bitmap_res_t set(size_t bit);
-    bitmap_res_t get(size_t bit);
-    void clear(size_t bit);
-    void print(size_t bit);
+    void init(uint32_t *bitmap, size_t size);
+    bitmap_res_t set(uint32_t bit);
+    bitmap_res_t get(uint32_t bit);
+    bitmap_res_t clear(uint32_t bit);
+    void print(uint32_t bit);
     void purge();
     void setall();
     int64_t find_first(int type);
     void resize(size_t size);
     int64_t allocator_conversion(bool bit_to_address, size_t bit_or_address);
 private:
-    bitmap_t bitmap_instance;
+    uint32_t *bitmap_instance;
     size_t limit;
 };
 }  // namespace firefly::libkern
