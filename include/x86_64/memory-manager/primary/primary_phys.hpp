@@ -16,7 +16,7 @@ struct primary_allocation_result
     {
         // Check fo invalid magic (i.e. `this` points somewhere that is *not* the head)
         if (this->addr != reinterpret_cast<void*>(MAGIC))
-            return NULL;
+            return nullptr;
 
         return this->next;
     }
@@ -24,5 +24,6 @@ struct primary_allocation_result
 
 void init(struct stivale2_struct_tag_memmap *mmap);
 struct primary_allocation_result *allocate(size_t pages);
+void deallocate(struct primary_allocation_result *list);
 
 }  // namespace firefly::kernel::mm::primary

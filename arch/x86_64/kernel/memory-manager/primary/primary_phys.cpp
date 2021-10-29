@@ -133,6 +133,13 @@ void append(struct primary_allocation_result *head_ref, void *addr) {
     
     Call unpack() to skip the page reserved for the linked list.
     
+    IMPORTANT: You must NOT use the list returned as it is required for deallocation!
+    Create a copy instead:
+        auto ptr = allocate(2)->unpack();
+        auto ptr2 = ptr; //Work with ptr2!
+        ptr2 = ptr2->next; //etc..
+        deallocate(ptr);
+
 */
 struct primary_allocation_result *allocate(size_t pages) {
     // NOTE: There is no need to check for a single page to try and optimize
@@ -158,6 +165,31 @@ struct primary_allocation_result *allocate(size_t pages) {
 
     linked_list_allocation_index = 0;  //Reset linear allocator for next phys allocation
     return linked_list;
+}
+
+void deallocate(struct primary_allocation_result *list)
+{
+    // List has been unpacked in the function argument (Allocation must not have called unpack() for this to work)
+    // When in doubt, check the return value of unpack() or simply check the MAGIC header of addr
+    // If it's 0xC0FFEE, this node may NOT be used, advance to the next one. ()
+    if (list->unpack() == nullptr)
+    {
+        while (list != nullptr)
+        {
+            bitmap.clear(bitmap.allocator_conversion(false, reinterpret_cast<size_t>(list->addr)));
+            list = list->next;
+        }
+    }
+
+    else
+    {
+        list = list->unpack();
+        while (list != nullptr)
+        {
+            bitmap.clear(bitmap.allocator_conversion(false, reinterpret_cast<size_t>(list->addr)));
+            list = list->next;
+        }
+    }
 }
 
 }  // namespace firefly::kernel::mm::primary
