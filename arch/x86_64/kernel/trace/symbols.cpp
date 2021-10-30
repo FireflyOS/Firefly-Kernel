@@ -9,7 +9,7 @@ sym_table_t SymbolTable::operator[](uint64_t addr) const noexcept {
     return lookup(addr);
 }
 
-//Parse the symbol table and find the correct address of EIP
+//Parse the symbol table and find the correct address of RIP
 sym_table_t SymbolTable::lookup(uint64_t addr) const noexcept {
     //We need the largest address that is smaller than `addr` because of the jsr instruction, otherwise the addresses are off
     uint64_t corrected_address = 0;

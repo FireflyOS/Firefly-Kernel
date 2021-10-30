@@ -1,7 +1,9 @@
-#include "x86_64/memory-manager/buddy.hpp"
+#include "x86_64/memory-manager/secondary/buddy/buddy.hpp"
 
 #include <algorithm.h>
 #include <utility.h>
+
+#include "x86_64/trace/strace.hpp"
 
 #define assert(x) (void)(x)
 
@@ -305,9 +307,12 @@ Chunk* BuddyAllocator::chunk_for(void* address) {
  * cuz it means that in memory they'll be laid out like
  * 0 1 2 3 4 5 6
  */
+
 void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
     // NOTE: any memory that's exceeds a multiple of LARGEST_CHUNK will be LOST and not used.
     size_t zero_nodes_needed = memory_available / LARGEST_CHUNK;
+    printf("root nodes needed: %d\n", zero_nodes_needed);
+
     for (size_t i = 0; i < zero_nodes_needed; i++) {
         auto node = alloc<Chunk>();
         node->root = alloc<BuddyNode>();
@@ -348,7 +353,7 @@ void BuddyAllocator::initialize(size_t memory_available, char* memory_base) {
 }
 
 void BuddyAllocator::set_unusable_memory(char* start, char* end) noexcept {
-    size_t start_base = start - static_cast<char*>(chunk_for(start)->root->physical_addr); 
+    size_t start_base = reinterpret_cast<size_t>(chunk_for(start)->root->physical_addr);
     size_t count = (start - end) / LARGEST_CHUNK;
     for (size_t i = start_base; i < count; i++) {
         auto chunk = chunk_at_index(i);

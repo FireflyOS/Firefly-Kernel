@@ -6,6 +6,7 @@
 #include <cstdlib/cstdint.h>
 
 #include "buddy_heap.hpp"
+#include <stl/cstdlib/stdio.h>
 
 namespace firefly::kernel::mm::buddy {
 /**
@@ -131,6 +132,8 @@ private:
         *curr = T{};
         return curr;
     }
+
+    size_t get_index() noexcept {return (size_t)base_address + index;}
 
     Chunk* chunk_for(void* address);
     BuddyInfoHeap* heap_index(size_t idx);

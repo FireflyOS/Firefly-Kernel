@@ -45,12 +45,15 @@ endif
 # TODO: Find a better way to copy the folder structure of arch/{arch}/ into binaries/boot
 create_dirs:
 ifeq ($(ARCH), x86_64)
-	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/primary/
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/secondary/buddy
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/secondary/slob
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/fb
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 endif
 
@@ -61,22 +64,23 @@ target_archs:
 
 clean:
 	rm -rf binaries/boot/arch
-	rm binaries/boot/kernel_i386.elf || echo ""
 	rm binaries/boot/kernel_x86_64.elf || echo ""
 	rm include/stl/stdio.o include/stl/cstd.o
 
 windows:
-	cp linkage/multi_arch_grub/grub.$(ARCH) binaries/boot/grub/grub.cfg
 	qemu-system-$(ARCH).exe -d int -M smm=off -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) 
 
+debug_info:
+	qemu-system-$(ARCH) -M smm=off -M q35 -m 256M -boot d -no-shutdown  -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+
 bios:
-	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+	qemu-system-$(ARCH) -enable-kvm -M smm=off -cpu host -m 256M -boot d -no-shutdown  -no-reboot -cdrom $(ISO) $(QEMU_FLAGS)
 
 uefi:
-	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISO) $(QEMU_FLAGS) -d int
+	qemu-system-$(ARCH) -enable-kvm -M smm=off -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISO) $(QEMU_FLAGS) -d int
 
 debug: $(ISO) $(TARGET)
-	qemu-system-$(ARCH) -enable-kvm -cpu host -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio
+	qemu-system-$(ARCH) -M smm=off -cpu qemu64 -m 256M -boot d -cdrom $(ISO) $(QEMU_FLAGS) -S -s -monitor stdio --no-reboot --no-shutdown
 	
 
 %.cxx.o: %.cpp
