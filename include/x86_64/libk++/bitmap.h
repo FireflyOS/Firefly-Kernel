@@ -6,7 +6,7 @@
 #define BMP_BLOCK_SIZE 8
 
 namespace firefly::libkern {
-typedef struct
+typedef struct _bitmap_t
 {
     uint32_t* pool;
 } bitmap_t;
@@ -14,7 +14,7 @@ typedef struct
 constexpr int BIT_SET = 1;
 constexpr int BIT_CLEAR = 0;
 
-typedef struct
+typedef struct _bitmap_res_t
 {
     bool success;
     int64_t bit_offset; // Only used by get() & find_first()
