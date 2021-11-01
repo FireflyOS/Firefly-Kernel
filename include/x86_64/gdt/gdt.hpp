@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include "x86_64/compiler/clang++.hpp"
 
-#define PACKED __attribute__((packed))
 #define GDT_MAX_ENTRIES 5
 #define NULENT 0 /* null descriptor entry */
 #define CS_KRN 1
