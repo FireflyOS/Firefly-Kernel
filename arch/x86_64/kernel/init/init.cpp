@@ -14,8 +14,8 @@
 #include "x86_64/trace/strace.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
-// We are going to allocate our stack as an uninitialised array in .bss.
-static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000)));
+// We are going to allocate our stack as an uninitialized array in .bss.
+static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000))); // 8MiB of stack space
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -102,14 +102,29 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::kernel::mm::primary::init(tagmem);
     
     // Allocation test
-    auto ptr = firefly::kernel::mm::primary::allocate(2)->unpack();
-    auto ptr2 = ptr;
-    while (ptr2 != nullptr)
+    printf("Performing allocation test... (Expecting: allocate 2 pages)\n");
+    auto ptr = firefly::kernel::mm::primary::allocate(2);
+    if (ptr == nullptr)
+        firefly::trace::panic("Max page count per allocation was exceeded (Limit: 4096 pages)\n");
+
+    printf("count = %d\n", ptr->count);
+    for (size_t i = 0; i < ptr->count; i++)
     {
-        printf("%X\n", ptr2->addr);
-        ptr2 = ptr2->next;
+        printf("ptr[%d]: %X\n", i, (size_t)ptr->data[i]);
     }
     firefly::kernel::mm::primary::deallocate(ptr);
+
+    // printf("Performing allocation test... (Expecting: kernel panic)\n");
+    // ptr = firefly::kernel::mm::primary::allocate(firefly::kernel::mm::primary::PAGE_SIZE + 1);
+    // if (ptr == nullptr)
+    //     firefly::trace::panic("Max page count per allocation was exceeded (Limit: 4096 pages)\n");
+
+    // printf("count = %d\n", ptr->count);
+    // for (size_t i = 0; i < ptr->count; i++)
+    // {
+    //     printf("ptr[%d]: %X\n", i, (size_t)ptr->data[i]);
+    // }
+    // firefly::kernel::mm::primary::deallocate(ptr);
 }
 
 extern "C" [[noreturn]] void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {

@@ -1,6 +1,7 @@
 #include "x86_64/libk++/bitmap.h"
 #include <stl/cstdlib/stdio.h>
 #include <stl/cstdlib/cstring.h>
+#include <stl/algorithm.h>
 
 namespace firefly::libkern
 {

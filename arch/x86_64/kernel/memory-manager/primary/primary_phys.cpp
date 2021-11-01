@@ -4,12 +4,13 @@
 
 #include "x86_64/libk++/align.h"
 #include "x86_64/trace/strace.hpp"
+#include "x86_64/scheduler/spinlock.hpp"
 
 namespace firefly::kernel::mm::primary {
 static libkern::Bitmap bitmap;
 static uint32_t *arena;
 static int64_t linked_list_allocation_base;  //Base address for the linked list structure (Should never be freed, may be reused)
-static size_t linked_list_allocation_index = 0;
+static size_t allocation_base = 0;
 using libkern::align4k;
 
 
@@ -22,8 +23,8 @@ static void *early_alloc(struct stivale2_mmap_entry &entry, int size) {
 
 template <typename T>
 T *small_alloc() {
-    T *curr = reinterpret_cast<T *>(linked_list_allocation_base + linked_list_allocation_index);
-    linked_list_allocation_index += sizeof(T);
+    T *curr = reinterpret_cast<T *>(linked_list_allocation_base + allocation_base);
+    allocation_base += sizeof(T);
     *curr = T{};
     return curr;
 }
@@ -50,7 +51,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
 
     size_t bitmap_size = (highest_page / PAGE_SIZE / 8);
     align4k<size_t>(bitmap_size);
-    printf("bitmap sz: %X - %d\n", bitmap_size, bitmap_size);
 
     // Iterate through mmap and find largest block to store the bitmap
     for (size_t i = 0; i < mmap->entries; i++) {
@@ -83,9 +83,7 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
         printf("Freeing %d pages at %X\n", end, bitmap.allocator_conversion(true, base));
 
         for (size_t i = base; i < base + end; i++) {
-            auto success = bitmap.clear(
-                                     i)
-                               .success;
+            auto success = bitmap.clear(i).success;
             if (!success) {
                 trace::panic("Failed to free page during primary allocator setup");
             }
@@ -105,21 +103,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
     //NOTE: Never free bit 0 - It's a nullptr
 }
 
-/*
-    Append a node at the end of the linked list
-*/
-__attribute__((always_inline)) inline 
-void append(struct primary_allocation_result *head_ref, void *addr) {
-    auto new_node = small_alloc<struct primary_allocation_result>();
-    auto last = head_ref;
-    new_node->addr = addr;
-    new_node->next = nullptr;
-    
-    while (last->next != nullptr)
-        last = last->next;
-
-    last->next = new_node;
-}
 
 /*
     Primary physical allocator.
@@ -128,67 +111,59 @@ void append(struct primary_allocation_result *head_ref, void *addr) {
     - All pages are initialized to zero
     - Panics on failure
     
-    Returns a linked list for possible
-    non contiguous memory.
-    
-    Call unpack() to skip the page reserved for the linked list.
-    
-    IMPORTANT: You must NOT use the list returned as it is required for deallocation!
-    Create a copy instead:
-        auto ptr = allocate(2)->unpack();
-        auto ptr2 = ptr; //Work with ptr2!
-        ptr2 = ptr2->next; //etc..
-        deallocate(ptr);
-
+    Returns a struct with an array of void pointers
+    to account for non contiguous memory.
 */
-struct primary_allocation_result *allocate(size_t pages) {
+primary_res_t *allocate(size_t pages) {
     // NOTE: There is no need to check for a single page to try and optimize
     // the allocation since this type of allocation would violate the core
     // prinicple of the kernel. (Each process has it's own allocator)
     
-    // PAGE_SIZE - 1 because 1 page is dedicated to the linked list at all times
-    if (pages > PAGE_SIZE-1)
+    primary_res_t *res = small_alloc<primary_res_t>();
+
+    if (pages > PAGE_SIZE)
         return nullptr;
 
-    auto linked_list = small_alloc<struct primary_allocation_result>();
-    linked_list->addr = reinterpret_cast<void*>(MAGIC);  // Linked list header signature, this must be skipped
-
-    for (; pages > 0; pages--) {
+    for (size_t i = 0; i < pages; i++, res->count++) {
         auto bit = bitmap.find_first(libkern::BIT_SET);
         if (bit == -1)
             trace::panic("No free memory!");
 
         bitmap.set(bit);
-        
-        append(linked_list, reinterpret_cast<void*>(bitmap.allocator_conversion(true, bit)));
+        res->data[i] = reinterpret_cast<void*>(bitmap.allocator_conversion(true, bit));
     }
 
-    linked_list_allocation_index = 0;  //Reset linear allocator for next phys allocation
-    return linked_list;
+    allocation_base = 0;  //Reset linear allocator for next phys allocation
+
+    // This isn't thread safe AT ALL btw, keep that in mind for future needs of a primary realloc()
+    // We might need a special, thread safe realloc function if kernel service allocators need more
+    // memory all of a sudden.
+    return res;
 }
 
-void deallocate(struct primary_allocation_result *list)
+static lock_t daemon_alloc_lock;
+// A (Somewhat) MP safe version of allocate() for after-init allocations made by daemons
+primary_res_t *daemon_late_alloc(size_t pages)
 {
-    // List has been unpacked in the function argument (Allocation must not have called unpack() for this to work)
-    // When in doubt, check the return value of unpack() or simply check the MAGIC header of addr
-    // If it's 0xC0FFEE, this node may NOT be used, advance to the next one. ()
-    if (list->unpack() == nullptr)
-    {
-        while (list != nullptr)
-        {
-            bitmap.clear(bitmap.allocator_conversion(false, reinterpret_cast<size_t>(list->addr)));
-            list = list->next;
-        }
-    }
+    acquire_lock(&daemon_alloc_lock);
+    auto res = allocate(pages);
+    release_lock(&daemon_alloc_lock);
+    return res;
+}
 
-    else
+void deallocate(primary_res_t *allocation_structure)
+{
+    for (size_t i = 0; i < allocation_structure->count; i++)
     {
-        list = list->unpack();
-        while (list != nullptr)
-        {
-            bitmap.clear(bitmap.allocator_conversion(false, reinterpret_cast<size_t>(list->addr)));
-            list = list->next;
-        }
+        auto status = bitmap.clear(
+            static_cast<uint32_t>(
+              bitmap.allocator_conversion(false, reinterpret_cast<size_t>(allocation_structure->data[i]))
+            )
+        );
+        
+        // TODO TODO TODO: panic needs to have variadic arguments
+        if (!status.success)
+            trace::panic("Could not free physical page at %X\n(This address is likely invalid)\n");
     }
 }
 
