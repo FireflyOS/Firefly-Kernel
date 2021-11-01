@@ -32,8 +32,9 @@ void write_ff_info() {
 
 void kernel_main() {
     char buffer[100];
-    sprintf(buffer, "Hello, this is a string: %s", "foo");
+    sprintf(buffer, "sprintf test: %X - %d - %c - %s - %x - %o", 0xBEEF, 1234, 'c', "hi!", 0xBEEF, 30);
     printf("%s", buffer);
     trace::panic("Reached the end of kernel");
 }
+
 }  // namespace firefly::kernel::main
