@@ -12,6 +12,7 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/stivale2.hpp"
 #include "x86_64/trace/strace.hpp"
+#include "x86_64/gdt/tss.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialized array in .bss.
@@ -83,7 +84,7 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
         current_tag = (stivale2_tag *)current_tag->next;
     }
 }
-
+    
 void bootloader_services_init(struct stivale2_struct *handover) {
     auto tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
@@ -101,37 +102,16 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     }
     firefly::kernel::mm::primary::init(tagmem);
     
-    // Allocation test
-    printf("Performing allocation test... (Expecting: allocate 2 pages)\n");
-    auto ptr = firefly::kernel::mm::primary::allocate(2);
-    if (ptr == nullptr)
-        firefly::trace::panic("Max page count per allocation was exceeded (Limit: 4096 pages)\n");
-
-    printf("count = %d\n", ptr->count);
-    for (size_t i = 0; i < ptr->count; i++)
-    {
-        printf("ptr[%d]: %X\n", i, (size_t)ptr->data[i]);
-    }
-    firefly::kernel::mm::primary::deallocate(ptr);
-
-    // printf("Performing allocation test... (Expecting: kernel panic)\n");
-    // ptr = firefly::kernel::mm::primary::allocate(firefly::kernel::mm::primary::PAGE_SIZE + 1);
-    // if (ptr == nullptr)
-    //     firefly::trace::panic("Max page count per allocation was exceeded (Limit: 4096 pages)\n");
-
-    // printf("count = %d\n", ptr->count);
-    // for (size_t i = 0; i < ptr->count; i++)
-    // {
-    //     printf("ptr[%d]: %X\n", i, (size_t)ptr->data[i]);
-    // }
-    // firefly::kernel::mm::primary::deallocate(ptr);
+    auto rsp0 = firefly::kernel::mm::primary::allocate(1);
+    if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
+    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0->data[0]));
 }
 
-extern "C" [[noreturn]] void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
+extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *handover) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
 
-    bootloader_services_init(stivale2_struct);
+    bootloader_services_init(handover);
 
     firefly::kernel::main::kernel_main();
     __builtin_unreachable();
