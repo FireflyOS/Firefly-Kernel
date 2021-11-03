@@ -7,6 +7,7 @@
 #include <x86_64/drivers/vbe.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
+#include "x86_64/memory-manager/primary/primary_phys.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -30,11 +31,10 @@ void write_ff_info() {
 }
 
 
-void kernel_main() {
-    char buffer[100];
-    sprintf(buffer, "sprintf test: %X - %d - %c - %s - %x - %o", 0xBEEF, 1234, 'c', "hi!", 0xBEEF, 30);
-    printf("%s", buffer);
+[[noreturn]] void kernel_main() {
+
     trace::panic("Reached the end of kernel");
+    __builtin_unreachable();
 }
 
 }  // namespace firefly::kernel::main
