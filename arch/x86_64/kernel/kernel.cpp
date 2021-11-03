@@ -8,6 +8,7 @@
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
+#include "x86_64/gdt/tss.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -32,9 +33,12 @@ void write_ff_info() {
 
 
 [[noreturn]] void kernel_main() {
+    // Never free rsp0
+    auto rsp0 = firefly::kernel::mm::primary::allocate(1);
+    if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
+    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0->data[0]));
 
     trace::panic("Reached the end of kernel");
     __builtin_unreachable();
 }
-
 }  // namespace firefly::kernel::main

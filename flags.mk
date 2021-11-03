@@ -44,10 +44,6 @@ CXX_FLAGS =						\
 	-Wno-c99-extensions			\
 	-Wno-gnu
 
-ifeq ($(DEBUG), yes)
-CXX_FLAGS += -DDEBUG
-endif
-
 ASM_FLAGS = -f elf64 -g -F dwarf
 
 #### KERNEL BUILD FLAGS ####
@@ -56,7 +52,7 @@ LIB_OBJS = ./include/stl/cstd.o ./include/stl/stdio.o ./include/stl/cmath.o
 CXX_FILES   = $(shell find $(SRC_DIR)/ -type f -name '*.cpp')
 ASM_FILES   = $(shell find $(SRC_DIR)/ -type f -name '*.asm')
 CONV_FILES := $(CXX_FILES:.cpp=.cxx.o) $(ASM_FILES:.asm=.asm.o) # Convert file ext for a makefile var
-OBJ_FILES   = $(addprefix $(BUILD_DIR)/,$(CONV_FILES))
+OBJ_FILES   = $(CONV_FILES)
 
 ### STL BUILD FLAGS ####
 STL_CXX_FLAGS = -I ../ -Wno-c99-extensions -Dx86_64 -m64 -std=gnu++17 -Wall -Wextra -pedantic \
