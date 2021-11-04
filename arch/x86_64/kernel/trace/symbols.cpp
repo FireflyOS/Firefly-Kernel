@@ -16,7 +16,7 @@ sym_table_t SymbolTable::lookup(uint64_t addr) const noexcept {
     uint64_t index_new = 0;
 
     for (int i = 0;; i++) {
-        uint64_t sym_addr = symbol_table[i].addr;
+        uint64_t sym_addr = 0;//symbol_table[i].addr;
         if (corrected_address >= addr)
             continue;
 
@@ -28,7 +28,7 @@ sym_table_t SymbolTable::lookup(uint64_t addr) const noexcept {
         }
 
         if (sym_addr == 0xFFFFFFFFFFFFFFFF) {
-            return { corrected_address, symbol_table[index_new].name };
+            return { corrected_address, 0/*symbol_table[index_new].name*/ };
         }
     }
 }
