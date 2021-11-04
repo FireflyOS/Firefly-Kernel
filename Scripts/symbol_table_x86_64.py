@@ -53,7 +53,7 @@ def parse_symbol_tables(unparsed_sym_table):
         
 
 def compile_sym_table():
-    system(f"clang++ -ffreestanding -x c++ -c {PARSED} -m64 -I include/x86_64/trace -o binaries/boot/arch/x86_64/symtable.o")
+    system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/x86_64/trace -o kernel_x86_64.elf.p/symtable.o")
     print("[*] Compiled symbol table")
 
 if __name__ == '__main__':
@@ -63,3 +63,5 @@ if __name__ == '__main__':
     print("[*] Wrote symbol table")
 
     compile_sym_table()
+    system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f)') # Relink kernel with symbol tables
+    print('[*] Relinked kernel')

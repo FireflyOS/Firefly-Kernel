@@ -14,4 +14,3 @@ xorriso -as mkisofs -b boot/limine-cd.bin \
 
 limine/limine-install kernel.iso
 rm -rf iso_root
-rm Scripts/parsed_x86_64.sym
