@@ -43,7 +43,7 @@ def function_symbol_extract(objdump_line):
 
 def parse_symbol_tables(unparsed_sym_table):
     unparsed_sym_table = unparsed_sym_table.splitlines()
-
+    
     for x in range(len(unparsed_sym_table)-1):
         if not is_function_symbol(unparsed_sym_table[x]):
             continue
@@ -54,14 +54,22 @@ def parse_symbol_tables(unparsed_sym_table):
 
 def compile_sym_table():
     system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/x86_64/trace -o kernel_x86_64.elf.p/symtable.o")
-    print("[*] Compiled symbol table")
 
 if __name__ == '__main__':
-    init_writer()
-    parse_symbol_tables(popen(f"objdump -C -t {KERNEL}").read())
-    destroy_writer()
-    print("[*] Wrote symbol table")
+    # This might seem really stupid, and that's because it is
+    # But for some reason the script just won't write the symbol
+    # table correctly the first time (These issues started occuring after switching from make to meson)
+    # I have no idea what the issue is, and I don't care enough to find an actual solution
+    # If you figure it out, please make a PR
+    for x in range(2):
+        init_writer()
+        parse_symbol_tables(popen(f"objdump -C -t {KERNEL}").read())
+        destroy_writer()
+        
+        compile_sym_table()
+        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f)') # Relink kernel with symbol tables
+        writer = open(PARSED, "w+")
 
-    compile_sym_table()
-    system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f)') # Relink kernel with symbol tables
+    print("[*] Wrote symbol table")
+    print("[*] Compiled symbol table")
     print('[*] Relinked kernel')

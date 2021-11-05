@@ -5,7 +5,7 @@ if not meson.is_cross_build()
 endif
 
 if meson.get_compiler('cpp').get_id() != 'clang'
-    error('Attempted to build with a compiler other than clang')
+    error('Attempted to build with a compiler that is not clang')
 endif
 
 # Set by subdirs
@@ -30,7 +30,6 @@ executable_kwargs = {
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel
 run_command('Scripts/gensym.sh', check: true)
-message('Generated symbol table')
 
 exe = executable(
     'kernel_x86_64.elf',
@@ -38,7 +37,6 @@ exe = executable(
     kwargs: executable_kwargs
 )
 
-# Ran after executable()
 custom_target(
     'Relink',
     depends: exe,
