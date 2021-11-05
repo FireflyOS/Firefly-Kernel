@@ -18,7 +18,6 @@ Firefly OS uses the meson build system:
 ```bash
 meson build --cross-file meson_config.txt # You *must* use build, other scripts depend on this directory name
 cd build
-ninja # or meson compile if it's supported on your meson version
-qemu-system-x86_64 
+meson compile && ../Scripts/geniso.sh && ../Scripts/qemu-bios.sh # If meson compile is not supported you can either upgrade meson or use ninja
 ```
 Note: FireflyOS can be booted on both BIOS and UEFI

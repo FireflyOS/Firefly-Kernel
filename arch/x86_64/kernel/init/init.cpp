@@ -109,8 +109,6 @@ extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *handover) {
 
     bootloader_services_init(handover);
 
-
-    printf("yea\n");
     firefly::kernel::main::kernel_main();
     __builtin_unreachable();
 }
