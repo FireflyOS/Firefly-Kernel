@@ -7,8 +7,11 @@
 #include <x86_64/drivers/vbe.hpp>
 #include <x86_64/kernel.hpp>
 #include <x86_64/trace/strace.hpp>
+<<<<<<< HEAD
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/gdt/tss.hpp"
+=======
+>>>>>>> 956a1778f4af0c133c58be862eb4cee1354f9b13
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
