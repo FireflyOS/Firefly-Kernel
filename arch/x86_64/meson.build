@@ -11,7 +11,7 @@ kernel_build_flags = [
 cxx_files += files('libk++/bitmap.cpp', 'libk++/iostream.cpp')
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/utils.cpp', 'kernel/drivers/ps2.cpp',
-    'kernel/drivers/serial.cpp', 'kernel/drivers/vbe.cpp', 'kernel/fb/double-buffering.cpp',
+    'kernel/drivers/serial.cpp', 'kernel/drivers/vbe.cpp',
     'kernel/fb/framebuffer.cpp', 'kernel/gdt/gdt.cpp', 'kernel/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/memory-manager/secondary/buddy/buddy_heap.cpp', 'kernel/memory-manager/secondary/buddy/buddy.cpp',
