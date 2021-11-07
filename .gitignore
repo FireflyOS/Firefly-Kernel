@@ -29,9 +29,7 @@
 *.iso
 
 # Buildsystem
-binaries/
 /build/
-!binaries/boot/grub.cfg
 .idea
 
 # Makefile plugin

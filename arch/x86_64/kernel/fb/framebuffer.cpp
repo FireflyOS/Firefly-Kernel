@@ -5,7 +5,6 @@
 
 #include "font8x16.h"
 #include "x86_64/drivers/vbe.hpp"
-#include "x86_64/fb/double-buffering.hpp"
 #include "x86_64/libk++/bitmap.h"
 #include <splash.h>
 

@@ -1,12 +1,13 @@
 #pragma once
 
 #include <stddef.h>
+#include "x86_64/memory-manager/primary/primary_phys.hpp"
 
 namespace firefly::kernel::mm::slob {
-constexpr const int SLOB_MAX_ALLOC = 0x1000; /* Don't support < 4KiB for now */
+constexpr size_t SLOB_MAX_ALLOC = mm::primary::PAGE_SIZE; /* Don't support < 4KiB for now */
 
 class Slob {
     void initialize();
-    void allocate(size_t size /* Todo: Acces flags? */);
+    void allocate(size_t size /* Todo: Access flags? */);
 };
 }  // namespace firefly::kernel::mm::slob

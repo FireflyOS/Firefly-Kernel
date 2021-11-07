@@ -1,0 +1,10 @@
+[target_machine]
+cpu_family = 'x86'
+system = 'None (Freestanding)'
+cpu = 'x86_64'
+endian = 'little'
+
+[binaries]
+c = 'clang'
+cpp = 'clang++'
+cpp_ld = 'lld'

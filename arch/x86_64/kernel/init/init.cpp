@@ -12,10 +12,11 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/stivale2.hpp"
 #include "x86_64/trace/strace.hpp"
+#include "x86_64/gdt/tss.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
-// We are going to allocate our stack as an uninitialised array in .bss.
-static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000)));
+// We are going to allocate our stack as an uninitialized array in .bss.
+static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000))); // 8MiB of stack space
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -83,7 +84,7 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
         current_tag = (stivale2_tag *)current_tag->next;
     }
 }
-
+    
 void bootloader_services_init(struct stivale2_struct *handover) {
     auto tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
@@ -100,23 +101,13 @@ void bootloader_services_init(struct stivale2_struct *handover) {
         firefly::trace::panic("Cannot obtain memory map");
     }
     firefly::kernel::mm::primary::init(tagmem);
-    
-    // Allocation test
-    auto ptr = firefly::kernel::mm::primary::allocate(2)->unpack();
-    auto ptr2 = ptr;
-    while (ptr2 != nullptr)
-    {
-        printf("%X\n", ptr2->addr);
-        ptr2 = ptr2->next;
-    }
-    firefly::kernel::mm::primary::deallocate(ptr);
 }
 
-extern "C" [[noreturn]] void kernel_init([[maybe_unused]] struct stivale2_struct *stivale2_struct) {
+extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *handover) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
 
-    bootloader_services_init(stivale2_struct);
+    bootloader_services_init(handover);
 
     firefly::kernel::main::kernel_main();
     __builtin_unreachable();
