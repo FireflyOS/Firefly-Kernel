@@ -1,6 +1,7 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 
 #include <stl/cstdlib/stdio.h>
+#include <stl/cstdlib/cstring.h>
 
 #include "x86_64/libk++/align.h"
 #include "x86_64/trace/strace.hpp"
@@ -9,7 +10,7 @@
 namespace firefly::kernel::mm::primary {
 static libkern::Bitmap bitmap;
 static uint32_t *arena;
-static int64_t allocation_base;  //Base address for the linked list structure (Should never be freed, may be reused)
+static int64_t allocation_base;  //Base address for the internal linear allocator (Should never be freed, may be reused)
 static size_t allocation_index = 0;
 using libkern::align4k;
 
@@ -90,13 +91,13 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
         }
     }
 
-    // Setup the base address for the linked list.
+    // Reserve some memory for the internal allocator
     allocation_base = bitmap.find_first(libkern::BIT_SET);
     if (allocation_base == -1)
         trace::panic("No free memory");
 
     if (!bitmap.set(allocation_base).success)
-        trace::panic("Failed to mark the primary allocators linked list as used!");
+        trace::panic("Failed to mark the primary allocators 'allocation_base' as used!");
     
     allocation_base = bitmap.allocator_conversion(true, allocation_base);
 
@@ -131,6 +132,7 @@ primary_res_t *allocate(size_t pages) {
 
         bitmap.set(bit);
         res->data[i] = reinterpret_cast<void*>(bitmap.allocator_conversion(true, bit));
+        memset(res->data[i], 0x00, PAGE_SIZE);
     }
 
     allocation_index = 0;  //Reset linear allocator for next phys allocation

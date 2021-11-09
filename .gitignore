@@ -30,6 +30,7 @@
 
 # Buildsystem
 /build/
+/builddir/
 .idea
 
 # Makefile plugin
