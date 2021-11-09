@@ -17,7 +17,7 @@ sudo apt install meson ninja-build nasm xorriso qemu-system-x86 clang lld ovmf #
 Firefly OS uses the meson build system:
 ```bash
 make -C limine/ # Make sure you build the limine-install binary
-meson build --cross-file meson_config.txt # You *must* use build, other scripts depend on this directory name
+meson build --cross-file meson_config.toml # You *must* use build, other scripts depend on this directory name
 cd build
 meson compile && ../Scripts/geniso.sh && ../Scripts/qemu-bios.sh # If meson compile is not supported you can either upgrade meson or use ninja
 ```

@@ -1,6 +1,6 @@
 kernel_build_flags = [
     '-target', 'x86_64-unknown-elf', '-m64', '-mcmodel=kernel',
-    '-std=c++20', '-Werror', '-Wall', '-Wextra', '-pedantic',
+    '-std=c++2a', '-Werror', '-Wall', '-Wextra', '-pedantic',
     '-g', '-nostdlib', '-fno-builtin', '-fno-PIC',
     '-mno-red-zone', '-fno-stack-check', '-fno-stack-protector',
     '-fno-omit-frame-pointer', '-ffreestanding', '-fno-exceptions',
