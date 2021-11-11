@@ -27,7 +27,7 @@ static uint8_t stack[1000000 * 8] __attribute__((aligned(0x1000))); // 8MiB of s
 // This tag tells the bootloader that we want a graphical framebuffer instead
 // of a CGA-compatible text mode. Omitting this tag will make the bootloader
 // default to text mode, if available.
-static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
+static  stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     // Same as above.
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
@@ -43,7 +43,7 @@ static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
 // This structure needs to reside in the .stivale2hdr ELF section in order
 // for the bootloader to find it. We use this __attribute__ directive to
 // tell the compiler to put the following structure in said section.
-__attribute__((section(".stivale2hdr"), used)) static struct stivale2_header stivale_hdr = {
+__attribute__((section(".stivale2hdr"), used)) static  stivale2_header stivale_hdr = {
     // The entry_point member is used to specify an alternative entry
     // point that the bootloader should jump to instead of the executable's
     // ELF entry point. We do not care about that so we leave it zeroed.
@@ -64,9 +64,9 @@ __attribute__((section(".stivale2hdr"), used)) static struct stivale2_header sti
 };
 
 // We will now write a helper function which will allow us to scan for tags
-// that we want FROM the bootloader (structure tags).
-void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
-    struct stivale2_tag *current_tag = (stivale2_tag *)stivale2_struct->tags;
+// that we want FROM the bootloader (structure tags).#include <cstdlib/cstdint.h>
+void *stivale2_get_tag( stivale2_struct *stivale2_struct, uint64_t id) {
+     stivale2_tag *current_tag = (stivale2_tag *)stivale2_struct->tags;
     for (;;) {
         // If the tag pointer is NULL (end of linked list), we did not find
         // the tag. Return NULL to signal this.
@@ -85,8 +85,8 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     }
 }
     
-void bootloader_services_init(struct stivale2_struct *handover) {
-    auto tagfb = static_cast<struct stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
+void bootloader_services_init(stivale2_struct *handover) {
+    auto tagfb = static_cast<stivale2_struct_tag_framebuffer *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
     if (tagfb == NULL) {
         for (;;)
             asm("hlt");
@@ -96,19 +96,19 @@ void bootloader_services_init(struct stivale2_struct *handover) {
     firefly::kernel::device::fb::boot_splash();
     firefly::kernel::main::write_ff_info();
 
-    auto tagmem = static_cast<struct stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    auto tagmem = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     if (tagmem == NULL) {
         firefly::trace::panic("Cannot obtain memory map");
     }
     firefly::kernel::mm::primary::init(tagmem);
 }
 
-extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *handover) {
+extern "C" [[noreturn]] void kernel_init(stivale2_struct *handover) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::interrupt::init();
 
     bootloader_services_init(handover);
 
-    firefly::kernel::main::kernel_main();
+    firefly::kernel::main::kernel_main(handover);
     __builtin_unreachable();
 }

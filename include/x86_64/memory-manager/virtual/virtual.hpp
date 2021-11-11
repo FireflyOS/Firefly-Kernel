@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "x86_64/stivale2.hpp"
 
 namespace firefly::kernel::mm
 {
@@ -14,14 +15,16 @@ namespace firefly::kernel::mm
     class VirtualMemoryManager
     {
         public:
-            VirtualMemoryManager();
+            VirtualMemoryManager(bool initial_mapping = false, stivale2_struct_tag_memmap *memory_map = nullptr);
 
         public:
-            void map(phys_t physical_addr, virt_t virtual_addr, int access_flags);
+            void map(phys_t physical_addr, virt_t virtual_addr, int access_flags, pte_t *pml_ptr = nullptr);
             inline pte_t* get_kernel_pml4() { return this->kernel_pml4; }
+            inline pte_t* get_user_pml4() { return this->user_pml4; }
 
         private:
             pte_t *kernel_pml4;
+            pte_t *user_pml4;
         
         private:
             int64_t get_index(virt_t virtual_addr, const int idx) { 
@@ -29,8 +32,7 @@ namespace firefly::kernel::mm
                 return (virtual_addr >> (page_offset + (9 * (idx-1)))) & 0x1FF; // We subtract 1 from idx so that we don't have to input idx 0-3, but rather 1-4
             }
 
-            pte_t* next_table(pte_t* (*fn)()) {
-                return fn();
-            }
+        private:
+            void configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap);
     };
 } // namespace firefly::kernel::mm
