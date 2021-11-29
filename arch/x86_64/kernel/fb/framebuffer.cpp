@@ -16,7 +16,7 @@ static int console_color = 0xFFFFFFFF;
 static bool check_special(char c);
 
 void init() {
-    set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height, 0xFFFFFFF);
+    set_font(font, sizeof(font) / sizeof(font[0]), char_width, char_height, console_color);
 }
 
 void set_font(uint8_t* fnt, int size, int fnt_w, int fnt_h, int color) {

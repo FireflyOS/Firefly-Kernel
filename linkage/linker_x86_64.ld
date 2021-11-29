@@ -15,12 +15,15 @@ PHDRS
     dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2)) ; /* Dynamic segment needed for PIE */
 }
 
+HIGHER_HALF_CODE_MAPPING = 0xffffffff80000000;
+
 SECTIONS
 {
     /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
     /* Since we are going to use PIE, this is just the base load address, but the */
     /* bootloader will be able to relocate us as it sees fit. */
-    . = 0xffffffff80200000;
+    . = HIGHER_HALF_CODE_MAPPING + 0x200000;
+    KERNEL_IMAGE_BASE = . - HIGHER_HALF_CODE_MAPPING;
 
     .text : {
         *(.text*)
@@ -57,4 +60,7 @@ SECTIONS
         *(COMMON)
         *(.bss*)
     } :data
+
+    . = ALIGN(4096);
+    KERNEL_IMAGE_TOP = . - HIGHER_HALF_CODE_MAPPING;
 }

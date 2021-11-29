@@ -16,6 +16,7 @@ cxx_files += files(
     'kernel/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/memory-manager/secondary/buddy/buddy_heap.cpp', 'kernel/memory-manager/secondary/buddy/buddy.cpp',
     'kernel/memory-manager/secondary/slob/slob.cpp', 'kernel/scheduler/spinlock.cpp', 'kernel/trace/strace.cpp',
-    'kernel/trace/symbols.cpp', 'kernel/uspace/userspace.cpp', 'kernel/memory-manager/virtual/virtual.cpp'
+    'kernel/trace/symbols.cpp', 'kernel/uspace/userspace.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
+    'kernel/fb/stivale2-term.cpp'
 )
 asm_files += files('kernel/gdt/gdt.asm', 'kernel/int/interrupt.asm')

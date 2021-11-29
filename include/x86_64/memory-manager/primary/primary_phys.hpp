@@ -11,7 +11,7 @@ constexpr uint32_t PAGE_SIZE = 4096;
 
 typedef struct
 {
-    void **data;  // The array of pointers allocated - NOTE: These are NOT guaranteed to be contigious physical pages
+    void **data;  // The array of pointers allocated
     size_t count; // Number of pages allocated
 } primary_res_t;
 

@@ -42,13 +42,14 @@ void test_userspace()
 }
 
 [[noreturn]] void kernel_main(stivale2_struct *handover) {
+    (void)handover;
     // Never free rsp0
     auto rsp0 = firefly::kernel::mm::primary::allocate(1);
     if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
     firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0->data[0]));
     
-    auto tagfb = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    mm::VirtualMemoryManager vmm{true, tagfb};
+    auto tagmem = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    mm::VirtualMemoryManager vmm{true, tagmem};
 
     // firefly::kernel::UserSpace user;
     // user.jump(test_userspace);

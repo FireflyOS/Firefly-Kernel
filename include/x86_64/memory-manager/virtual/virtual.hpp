@@ -18,13 +18,11 @@ namespace firefly::kernel::mm
             VirtualMemoryManager(bool initial_mapping = false, stivale2_struct_tag_memmap *memory_map = nullptr);
 
         public:
-            void map(phys_t physical_addr, virt_t virtual_addr, int access_flags, pte_t *pml_ptr = nullptr);
+            void map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr = nullptr);
             inline pte_t* get_kernel_pml4() { return this->kernel_pml4; }
-            inline pte_t* get_user_pml4() { return this->user_pml4; }
 
         private:
             pte_t *kernel_pml4;
-            pte_t *user_pml4;
         
         private:
             int64_t get_index(virt_t virtual_addr, const int idx) { 

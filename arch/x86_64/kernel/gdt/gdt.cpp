@@ -6,11 +6,11 @@
 namespace firefly::kernel::core::gdt {
 static GDT gdt_config;
 
-void GDTconfig::set(int base, uint8_t flags, uint8_t access) {
+void GDTconfig::set(int base, uint8_t flags, uint8_t access, uint16_t limit) {
     gdt_config.gdtd[base].base0 = 0;
     gdt_config.gdtd[base].base1 = 0;
     gdt_config.gdtd[base].base2 = 0;
-    gdt_config.gdtd[base].limit = 0;
+    gdt_config.gdtd[base].limit = limit;
     gdt_config.gdtd[base].flags = flags;
     gdt_config.gdtd[base].access = access;
 
@@ -42,10 +42,14 @@ uint16_t gdt_entry_offset(enum SELECTOR selector) noexcept
 
 void init() {
     GDTconfig().set(NULENT, 0, 0);
-    GDTconfig().set(CS_KRN, 0x20, 0x9A);
-    GDTconfig().set(DS_KRN, 0x20, 0x92);
-    GDTconfig().set(CS_USR, 0x20, 0xFA);
-    GDTconfig().set(DS_USR, 0x20, 0xF2);
+    GDTconfig().set(CS_KRN16, 0x80, 0x9A, 0xFFFF);
+    GDTconfig().set(DS_KRN16, 0x80, 0x9A, 0xFFFF);
+    GDTconfig().set(CS_KRN32, 0xCF, 0x9A, 0xFFFF);
+    GDTconfig().set(DS_KRN32, 0xCF, 0x92, 0xFFFF);
+    GDTconfig().set(CS_KRN64, 0xA2, 0x9A);
+    GDTconfig().set(DS_KRN64, 0xA0, 0x92);
+    GDTconfig().set(DS_USR64, 0x00, 0xF2);
+    GDTconfig().set(CS_USR64, 0x20, 0xFA);
 
     // Dummy TSS
     // Note that the tss is empty and should not be used until RSP0 is set

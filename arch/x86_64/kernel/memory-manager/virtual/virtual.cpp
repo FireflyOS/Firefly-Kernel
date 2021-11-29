@@ -2,15 +2,17 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/trace/strace.hpp"
 #include "x86_64/memory-manager/relocation.hpp"
-
+#include "x86_64/fb/stivale2-term.hpp"
 #include <stl/cstdlib/stdio.h>
+
+// Kernel mapping is based on these values (Defined in the linker script)
+extern size_t KERNEL_IMAGE_BASE[];
+extern size_t KERNEL_IMAGE_TOP [];
 
 namespace firefly::kernel::mm
 {
     using namespace firefly::mm::relocation::conversion;
     using namespace mm::primary;
-
-    [[maybe_unused]] constexpr size_t GB = 0x40000000;
 
     VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping, stivale2_struct_tag_memmap *memory_map)
     {
@@ -18,8 +20,6 @@ namespace firefly::kernel::mm
         {
             this->configure_initial_kernel_mapping(memory_map);
         }
-        
-        // for(;;);
     }
 
     void VirtualMemoryManager::configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap)
@@ -30,29 +30,18 @@ namespace firefly::kernel::mm
         if (pml4 == nullptr) trace::panic("Failed to allocate memory for the kernel pml4");
         this->kernel_pml4 = static_cast<pte_t*>(pml4->data[0]);
 
-        auto usr_pml4 = allocate(1);
-        if (user_pml4 == nullptr) trace::panic("Failed to allocate memory for the user pml4");
-        this->user_pml4 = static_cast<pte_t*>(usr_pml4->data[0]);
-
-        // for (size_t n = 0; n < GB; n += PAGE_SIZE)
-        // {
-        //     this->map(n, n, 0x3);
-        //     this->map(n, to_higher_half(n, DATA), 0x3);
-        // }
-
         for (size_t i = 0; i < mmap->entries; i++)
         {
             if (mmap->memmap[i].type == STIVALE2_MMAP_BAD_MEMORY) {continue;}
 
-            // Note: These addresses are guaranteed to page aligned by limine
+            // Note: These addresses are guaranteed to page aligned
             auto addr_base = mmap->memmap[i].base;
             auto addr_len = mmap->memmap[i].length;
 
+            // Generic memory entries
             if (mmap->memmap[i].type == STIVALE2_MMAP_USABLE || 
                 mmap->memmap[i].type == STIVALE2_MMAP_ACPI_RECLAIMABLE ||
-                mmap->memmap[i].type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE ||
-                mmap->memmap[i].type == STIVALE2_MMAP_ACPI_NVS ||
-                mmap->memmap[i].type == STIVALE2_MMAP_FRAMEBUFFER
+                mmap->memmap[i].type == STIVALE2_MMAP_ACPI_NVS
             )
             {
                 for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
@@ -60,27 +49,35 @@ namespace firefly::kernel::mm
                     this->map(i, to_higher_half(i, DATA), 0x3); //Read write
                 }
             }
+            // Unusable entries
             else if (mmap->memmap[i].type == STIVALE2_MMAP_RESERVED)
             {
                 for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
                 {
-                    this->map(i, to_higher_half(i, DATA), 0x2); //Read only
+                    this->map(i, to_higher_half(i, DATA), 0x1); //Read only
+                }
+            }
+            // Framebuffer and bootloader reclaimable memory
+            else
+            {
+                for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
+                {
+                    this->map(i, i, 0x3); //Read write
                 }
             }
         }
 
-        // Map PMRs
-        for (size_t n = 0; n < 0x80000000; n += PAGE_SIZE)
+        auto base = reinterpret_cast<size_t>(KERNEL_IMAGE_BASE);
+        auto top  = reinterpret_cast<size_t>(KERNEL_IMAGE_TOP);
+        for (; base < top; base += PAGE_SIZE)
         {
-            this->map(n, to_higher_half(n, CODE), 0x3);
+            this->map(base, to_higher_half(base, CODE), 0x3);
         }
 
         asm volatile("mov %0, %%cr3\n" :: "r"(this->kernel_pml4));
-
-        //Todo: Map userspace pages
     }
 
-    void VirtualMemoryManager::map(phys_t physical_addr, virt_t virtual_addr, int access_flags, pte_t *pml_ptr)
+    void VirtualMemoryManager::map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr)
     {
         if (pml_ptr == nullptr) { pml_ptr = this->kernel_pml4; }
 
