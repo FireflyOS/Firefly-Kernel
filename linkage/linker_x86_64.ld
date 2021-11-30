@@ -1,11 +1,5 @@
-/* Tell the linker that we want an x86_64 ELF64 output file */
-OUTPUT_FORMAT(elf64-x86-64)
-
-/* We want the symbol _start to be our entry point */
 ENTRY(kernel_init)
 
-/* Define the program headers we want so the bootloader gives us the right */
-/* MMU permissions */
 PHDRS
 {
     null    PT_NULL    FLAGS(0) ;                   /* Null segment */
@@ -15,26 +9,20 @@ PHDRS
     dynamic PT_DYNAMIC FLAGS((1 << 1) | (1 << 2)) ; /* Dynamic segment needed for PIE */
 }
 
-HIGHER_HALF_CODE_MAPPING = 0xffffffff80000000;
-
 SECTIONS
 {
     /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
-    /* Since we are going to use PIE, this is just the base load address, but the */
-    /* bootloader will be able to relocate us as it sees fit. */
-    . = HIGHER_HALF_CODE_MAPPING + 0x200000;
-    KERNEL_IMAGE_BASE = . - HIGHER_HALF_CODE_MAPPING;
-
-    .text : {
+    . = 0xffffffff80200000;
+    kernel_start = .;
+    
+    /* Then let's place all the other traditional executable sections afterwards. */
+    .text : ALIGN(0x1000) {
         *(.text*)
     } :text
 
-    /* Move to the next memory page for .rodata */
-    . += 0x1000;
-
-    /* We place the .stivale2hdr section containing the header in its own section, */
+    /* We place the .stivalehdr section containing the header in its own section, */
     /* and we use the KEEP directive on it to make sure it doesn't get discarded. */
-    .stivale2hdr : {
+    .stivale2hdr : ALIGN(0x1000) {
         KEEP(*(.stivale2hdr))
     } :rodata
 
@@ -44,23 +32,13 @@ SECTIONS
         KEEP(*(.ctors))
     } :rodata
 
-    /* Move to the next memory page for .data */
-    . += 0x1000;
-
-    .data : {
+    .data : ALIGN(0x1000) {
         *(.data*)
     } :data
 
-    /* Dynamic section needed for PIE */
-    .dynamic : {
-        *(.dynamic)
-    } :data :dynamic
-
-    .bss : {
+    .bss : ALIGN(0x1000) {
         *(COMMON)
         *(.bss*)
     } :data
-
-    . = ALIGN(4096);
-    KERNEL_IMAGE_TOP = . - HIGHER_HALF_CODE_MAPPING;
+    kernel_end = .;
 }
