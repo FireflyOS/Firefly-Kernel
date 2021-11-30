@@ -11,7 +11,13 @@ namespace firefly::kernel::mm
     typedef uint64_t phys_t;
 
     constexpr size_t page_offset = 12; //Lower 12 bits of a virtual address denote the offset in the page frame - We don't need that
-    
+
+    struct walk_t
+    {
+        int64_t idx;
+        pte_t *pml1;
+    };
+
     class VirtualMemoryManager
     {
         public:
@@ -19,6 +25,7 @@ namespace firefly::kernel::mm
 
         public:
             void map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr = nullptr);
+            void remap(virt_t virtual_addr_old, virt_t virtual_addr_new, uint64_t access_flags, pte_t *pml_ptr = nullptr);
             inline pte_t* get_kernel_pml4() { return this->kernel_pml4; }
 
         private:
@@ -32,5 +39,6 @@ namespace firefly::kernel::mm
 
         private:
             void configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap);
+            walk_t walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t access_flags);
     };
 } // namespace firefly::kernel::mm

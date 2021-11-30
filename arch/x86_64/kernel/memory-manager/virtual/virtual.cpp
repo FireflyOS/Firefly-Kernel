@@ -5,14 +5,12 @@
 #include "x86_64/fb/stivale2-term.hpp"
 #include <stl/cstdlib/stdio.h>
 
-// Kernel mapping is based on these values (Defined in the linker script)
-extern size_t kernel_start[];
-extern size_t kernel_end[];
-
 namespace firefly::kernel::mm
 {
     using namespace firefly::mm::relocation::conversion;
     using namespace mm::primary;
+
+    constexpr size_t GB = 0x40000000UL;
 
     VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping, stivale2_struct_tag_memmap *memory_map)
     {
@@ -30,6 +28,11 @@ namespace firefly::kernel::mm
         if (pml4 == nullptr) trace::panic("Failed to allocate memory for the kernel pml4");
         this->kernel_pml4 = static_cast<pte_t*>(pml4->data[0]);
 
+        for (size_t n = 0; n < GB; n += PAGE_SIZE)
+        {
+            this->map(n, n, 0x3);
+        }
+
         for (size_t i = 0; i < mmap->entries; i++)
         {
             if (mmap->memmap[i].type == STIVALE2_MMAP_BAD_MEMORY) {continue;}
@@ -38,27 +41,13 @@ namespace firefly::kernel::mm
             auto addr_base = mmap->memmap[i].base;
             auto addr_len = mmap->memmap[i].length;
 
-            // Generic memory entries
-            if (mmap->memmap[i].type == STIVALE2_MMAP_USABLE || 
-                mmap->memmap[i].type == STIVALE2_MMAP_ACPI_RECLAIMABLE ||
-                mmap->memmap[i].type == STIVALE2_MMAP_ACPI_NVS
-            )
-            {
-                for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
-                {
-                    this->map(i, to_higher_half(i, DATA), 0x3); //Read write
-                }
-            }
-            // Unusable entries
-            else if (mmap->memmap[i].type == STIVALE2_MMAP_RESERVED)
-            {
-                for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
-                {
-                    this->map(i, to_higher_half(i, DATA), 0x1); //Read only
-                }
-            }
-            // Framebuffer and bootloader reclaimable memory
-            else
+            // Check if we need to map these entries in order to use the stivale2 terminal.
+            // We identity mapped 1 GiB of lower memory, if that doesn't cover the two entries below we map them.
+            if (addr_base + addr_len < GB)
+                continue;
+
+            if (mmap->memmap[i].type == STIVALE2_MMAP_FRAMEBUFFER ||
+                mmap->memmap[i].type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE)
             {
                 for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
                 {
@@ -67,20 +56,22 @@ namespace firefly::kernel::mm
             }
         }
 
-        auto base = reinterpret_cast<size_t>(kernel_start);
-        auto top  = reinterpret_cast<size_t>(kernel_end);
-        for (; base < top; base += PAGE_SIZE)
+        for (size_t n = 0; n < GB; n += PAGE_SIZE)
+        {
+            this->map(n, to_higher_half(n, DATA), 0x3);
+        }
+
+        for (size_t base = 0; base < 0x80000000; base += PAGE_SIZE)
         {
             this->map(base, to_higher_half(base, CODE), 0x3);
         }
 
         asm volatile("mov %0, %%cr3\n" :: "r"(this->kernel_pml4));
+        printf("vmm: Initialized\n");
     }
 
-    void VirtualMemoryManager::map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr)
+    walk_t VirtualMemoryManager::walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t access_flags)
     {
-        if (pml_ptr == nullptr) { pml_ptr = this->kernel_pml4; }
-
         auto idx4 = this->get_index(virtual_addr, 4);
         auto idx3 = this->get_index(virtual_addr, 3);
         auto idx2 = this->get_index(virtual_addr, 2);
@@ -108,11 +99,32 @@ namespace firefly::kernel::mm
             pml2[idx2] = reinterpret_cast<pte_t>(ptr->data[0]);
             pml2[idx2] |= access_flags;
         }
-        auto pml1 = (pte_t*)(pml2[idx2] & ~(511));    
+        return { 
+            .idx = idx1,
+            .pml1 = (pte_t*)(pml2[idx2] & ~(511))
+        };
+    }
+
+    void VirtualMemoryManager::map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr)
+    {
+        if (pml_ptr == nullptr) { pml_ptr = this->kernel_pml4; }
+
+        auto table_walk_result = walk(virtual_addr, pml_ptr, access_flags);
 
         // Note: This only works because allocate() memsets the addresses data to 0
-        if (pml1[idx1] != 0x0) trace::panic("Attempted to map mapped page");
-        pml1[idx1] = (physical_addr | access_flags);
+        if (table_walk_result.pml1[table_walk_result.idx] != 0x0) trace::panic("Attempted to map mapped page");
+        table_walk_result.pml1[table_walk_result.idx] = (physical_addr | access_flags);
+    }
+
+    void VirtualMemoryManager::remap(virt_t virtual_addr_old, virt_t virtual_addr_new, uint64_t access_flags, pte_t *pml_ptr)
+    {
+        /* Unmap page */
+        auto table_walk_result = walk(virtual_addr_old, pml_ptr, 0);
+        auto phys_addr = table_walk_result.pml1[table_walk_result.idx];
+        table_walk_result.pml1[table_walk_result.idx] = 0;
+        asm volatile("invlpg %0" :: "m"(virtual_addr_old));
+
+        this->map(phys_addr, virtual_addr_new, access_flags, pml_ptr);
     }
 
 } // namespace firefly::kernel::mm

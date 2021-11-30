@@ -24,8 +24,7 @@ executable_kwargs = {
     'cpp_args': kernel_build_flags,
     'include_directories': include_dir,
     'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o'],
-    'link_depends': ['linkage/linker_x86_64.ld'],
-    'pie': false # -fpie
+    'link_depends': ['linkage/linker_x86_64.ld']
 }
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel

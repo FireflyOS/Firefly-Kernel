@@ -13,7 +13,7 @@ SECTIONS
 {
     /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
     . = 0xffffffff80200000;
-    kernel_start = .;
+    kernel_start = . - 0xffffffff80200000;
     
     /* Then let's place all the other traditional executable sections afterwards. */
     .text : ALIGN(0x1000) {
@@ -36,9 +36,14 @@ SECTIONS
         *(.data*)
     } :data
 
+    .dynamic : ALIGN(0x1000) {
+        *(.dynamic)
+    } :data :dynamic
+
+
     .bss : ALIGN(0x1000) {
         *(COMMON)
         *(.bss*)
     } :data
-    kernel_end = .;
+    kernel_end = . - 0xffffffff80200000;
 }
