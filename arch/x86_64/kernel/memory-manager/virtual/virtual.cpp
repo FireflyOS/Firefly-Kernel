@@ -6,8 +6,8 @@
 #include <stl/cstdlib/stdio.h>
 
 // Kernel mapping is based on these values (Defined in the linker script)
-extern size_t KERNEL_IMAGE_BASE[];
-extern size_t KERNEL_IMAGE_TOP [];
+extern size_t kernel_start[];
+extern size_t kernel_end[];
 
 namespace firefly::kernel::mm
 {
@@ -67,8 +67,8 @@ namespace firefly::kernel::mm
             }
         }
 
-        auto base = reinterpret_cast<size_t>(KERNEL_IMAGE_BASE);
-        auto top  = reinterpret_cast<size_t>(KERNEL_IMAGE_TOP);
+        auto base = reinterpret_cast<size_t>(kernel_start);
+        auto top  = reinterpret_cast<size_t>(kernel_end);
         for (; base < top; base += PAGE_SIZE)
         {
             this->map(base, to_higher_half(base, CODE), 0x3);
