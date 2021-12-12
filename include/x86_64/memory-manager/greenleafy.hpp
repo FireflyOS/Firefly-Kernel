@@ -14,6 +14,7 @@ namespace firefly::mm::greenleafy {
     }; //(BLOCK_SIZE_LIMIT + 14) bytes per block 
 
     memory_block *use_block(uint32_t access);
+    void delete_block(uint64_t block_number);
     memory_block *get_block(uint64_t block_number, uint32_t access);
     
     uint32_t get_block_limit(void);

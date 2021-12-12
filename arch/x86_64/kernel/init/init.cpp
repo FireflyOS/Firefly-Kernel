@@ -118,7 +118,7 @@ struct fp {
 
     void (*e[2])(char) = {};
 
-    uint8_t (*f[5])(void) = {};
+    uint8_t (*f[5])(void) = {}; //unused
 
     uint32_t (*g[2])(const char *) = {};
 
@@ -133,6 +133,11 @@ struct fp {
     char *(*l[2])(size_t, char *, int) = {};
 
     char *(*m[2])(size_t, char *, int, bool) = {};
+
+    void (*n[2])(void) = {};
+    
+    uint8_t *kernel_settings;
+    char *kernel_settings_raw;
 } function_pointers;
 namespace itoa_b {
 char itoc(int num) {
@@ -183,12 +188,6 @@ void init_fp() {
     function_pointers.e[0] = &firefly::drivers::vbe::putc;
     function_pointers.e[1] = &firefly::kernel::io::legacy::writeCharSerial;
 
-    function_pointers.f[0] = &firefly::kernel::settings::get::block_count;
-    function_pointers.f[1] = &firefly::kernel::settings::get::disable_app_access_rights;
-    function_pointers.f[2] = &firefly::kernel::settings::get::disable_memory_block_access_rights;
-    function_pointers.f[3] = &firefly::kernel::settings::get::enable_serial_port;
-    function_pointers.f[4] = &firefly::kernel::settings::get::kernel_mode;
-
     function_pointers.g[0] = &firefly::kernel::checksum::checksum;
 
     function_pointers.h[0] = &firefly::kernel::sleep::sleep;
@@ -202,6 +201,10 @@ void init_fp() {
     function_pointers.l[0] = &itoa;
 
     function_pointers.m[0] = &itoa_b::itoab;
+
+    function_pointers.n[0] = &firefly::kernel::settings::init_settings;
+    function_pointers.kernel_settings = firefly::kernel::settings::kernel_settings;
+    function_pointers.kernel_settings_raw = firefly::kernel::settings::instruction;
 }
 
 fp *get_fp(void) {

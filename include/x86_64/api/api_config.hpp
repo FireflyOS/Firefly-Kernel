@@ -1,4 +1,4 @@
 #pragma once
 
-#define version 0x0001
-#define FAPI_ENDP 0xFFFFFFFF80200B00
+#define FAPI_VERSION 0x0001
+#define FAPI_ENDP 0xFFFFFFFF80201A70

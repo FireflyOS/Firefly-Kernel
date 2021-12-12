@@ -1,6 +1,9 @@
 #include <x86_64/libk++/ios.h>
 #include <x86_64/libk++/iostream.h>
 
+#include <x86_64/int/interrupt.hpp>
+#include <x86_64/drivers/serial_legacy.hpp>
+#include <x86_64/settings.hpp>
 
 namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
@@ -15,15 +18,7 @@ struct __attribute__((packed)) idt_gate {
 
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
-struct __attribute__((packed)) iframe {
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t rflags;
-    uint64_t rsp;
-    uint64_t ss;
-    uint64_t err;
-    uint64_t int_no;
-};
+
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe);
 __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe);
@@ -80,6 +75,11 @@ void test_int() {
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[maybe_unused]] iframe *iframe) {
+    if(firefly::kernel::settings::kernel_settings[5] == 1){
+        firefly::kernel::io::legacy::writeTextSerial("\nCPU Exception caught\n CS: 0x%x\n", iframe->cs);
+        firefly::kernel::io::legacy::writeTextSerial("EIP: %X\n", iframe->rip);
+        firefly::kernel::io::legacy::writeTextSerial("ESP: %X\n", iframe->rsp);
+    }
     printf("CPU Exception caught\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->rip);
     printf("ESP: %X\n", iframe->rsp);
@@ -90,6 +90,11 @@ __attribute__((interrupt)) __attribute__((noreturn)) void interrupt_wrapper([[ma
 }
 
 __attribute__((interrupt)) __attribute__((noreturn)) void exception_wrapper([[maybe_unused]] iframe *iframe) {
+    if(firefly::kernel::settings::kernel_settings[5] == 1){
+        firefly::kernel::io::legacy::writeTextSerial("\nAn external interrupt has occured\n CS: 0x%x\n", iframe->cs);
+        firefly::kernel::io::legacy::writeTextSerial("EIP: %X\n", iframe->rip);
+        firefly::kernel::io::legacy::writeTextSerial("ESP: %X\n", iframe->rsp);
+    }
     printf("An external interrupt has occured\n CS: 0x%x\n", iframe->cs);
     printf("EIP: %X\n", iframe->rip);
     printf("ESP: %X\n", iframe->rsp);

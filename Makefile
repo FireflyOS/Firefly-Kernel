@@ -53,6 +53,7 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/gdt
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/api
 	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/brainfuck
+	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/pmp
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/test
@@ -60,6 +61,7 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/settings
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/func_pointers
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/regs
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/shell
 endif
 
 target_archs:

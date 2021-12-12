@@ -16,7 +16,7 @@
 
 namespace firefly::kernel::io::legacy {
 bool serial_port_init() {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return false;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return false;
 
     outb(PORT + 1, 0x00);  // Disable all interrupts
     outb(PORT + 3, 0x80);  // Enable DLAB (set baud rate divisor)
@@ -34,24 +34,24 @@ bool serial_port_init() {
     return true;
 }
 int isGotSignal() {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return -1;
 
     return inb(PORT + 5) & 1;
 }
 char readSerial() {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return 0xff;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return 0xff;
 
     while (isGotSignal() == 0)
         ;
     return inb(PORT);
 }
 int isTransmitEmpty() {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return -1;
 
     return inb(PORT + 5) & 0x20;
 }
 void writeCharSerial(char a) {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return;
 
     while (isTransmitEmpty() == 0)
         ;
@@ -60,14 +60,14 @@ void writeCharSerial(char a) {
     return;
 }
 void writeSerial(const char* data, size_t size, bool istoupper) {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return;
 
     for (size_t i = 0; i < size; i++) writeCharSerial((!istoupper) ? data[i] : toupper(data[i]));
 
     return;
 }
 int writeTextSerial(const char* fmt, ...) {
-    if(firefly::kernel::settings::get::enable_serial_port() == 0x00) return -1;
+    if(firefly::kernel::settings::kernel_settings[1] == 0x00) return -1;
 
     va_list ap;
     va_start(ap, fmt);

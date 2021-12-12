@@ -41,21 +41,36 @@ struct fp {
 
     void (*e[2])(char) = {};
 
-    uint8_tt (*f[5])(void) = {};
+    uint8_tt (*f[5])(void) = {}; //unused
 
     uint32_tt (*g[2])(const char *) = {};
 
     void (*h[2])(unsigned long long) = {};
 
-    void (*i[2])(const char *, size_t, bool) = {};
+    void (*i[2])(const char *, api_size_t, bool) = {};
 
     void (*j[2])(const char *) = {};
 
     int (*k[2])(uint32_tt) = {};
 
-    char *(*l[2])(size_t, char *, int) = {};
+    char *(*l[2])(api_size_t, char *, int) = {};
 
-    char *(*m[2])(size_t, char *, int, bool) = {};
+    char *(*m[2])(api_size_t, char *, int, bool) = {};
+
+    void (*n[2])(void) = {};
+    
+    /*
+        Kernel Settings:
+            1.   - Kernel Mode ('d')debug, ('p')production
+            2.   - Enable Serial Port ('y')yes, ('n')no
+            3.   - Disable Application Access Rights ('y')yes, ('n')no
+            4.   - Disable Memory Block Access Rights ('y')yes, ('n')no
+            5.   - Limit Block Count to ('h')512 or ('l')256 or ('f')1024
+            6.   - Print interrupts and exceptions on serial port too. ('y')yes, ('n')no
+            7-8. - Reserved
+    */
+    unsigned char *kernel_settings;
+    char *kernel_settings_raw;
 };
 
 namespace FAPI {
@@ -72,7 +87,7 @@ namespace FAPI {
          * @param int base
          * @return char *
          **/
-        char *itoa(size_t num, char *str, int base);
+        char *itoa(api_size_t num, char *str, int base);
 
         /** 
          * @param size_t num
@@ -81,7 +96,7 @@ namespace FAPI {
          * @param bool toupper
          * @return char *
          **/
-        char *itoa(size_t num, char *str, int base, bool toupper);
+        char *itoa(api_size_t num, char *str, int base, bool toupper);
     }
     namespace stdio {
         /** 

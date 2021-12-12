@@ -7,23 +7,32 @@
 namespace firefly::mm::greenleafy {
     memory_block memory_blocks[BLOCK_LIMIT];
 
-    uint64_t current_block = 0;
-
     memory_block *use_block(uint32_t access) {
-        if(current_block == 512 && firefly::kernel::settings::get::block_count() == 0x51) return NULL;
-        if(current_block == 256 && firefly::kernel::settings::get::block_count() == 0x25) return NULL;
-        if(current_block == BLOCK_LIMIT && firefly::kernel::settings::get::block_count() == 0x12) {
-            firefly::trace::panic(firefly::trace::PM_NO_BLOCKS_AVALIABLE, firefly::trace::PC_NO_BLOCKS_AVALIABLE);
+        //search free blocks
+
+        uint64_t block_num = 0;
+        while(memory_blocks[block_num].is_used == 1){
+            block_num++;
         }
 
-        memory_blocks[current_block].block_access = access;
-        memory_blocks[current_block].is_used = 1;
-        memory_blocks[current_block].block_number = current_block;
+        memory_blocks[block_num].block_access = access;
+        memory_blocks[block_num].is_used = 1;
+        memory_blocks[block_num].block_number = block_num;
+
+        int i = 0;
+        while(i < BLOCK_SIZE_LIMIT) memory_blocks[block_num].block[i++] = 0;
         
-        kernel::io::legacy::writeTextSerial("New block was used (%d)! Address: 0x%X\n\n", current_block, &memory_blocks[current_block]);
+        kernel::io::legacy::writeTextSerial("New block was used (%d)! Address: 0x%X\n\n", block_num, &memory_blocks[block_num]);
 
-        return &memory_blocks[current_block++];
+        return &memory_blocks[block_num];
 
+    }
+
+    void delete_block(uint64_t block_number){
+        int i = 0;
+        while(i < BLOCK_SIZE_LIMIT) memory_blocks[block_number].block[i++] = 0;
+
+        memory_blocks[block_number].is_used = 0;
     }
     
     memory_block *get_block(uint64_t block_number, uint32_t access){

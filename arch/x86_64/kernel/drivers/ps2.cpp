@@ -1,6 +1,8 @@
 #include <x86_64/drivers/ps2.hpp>
 #include <stl/cstdlib/stdio.h>
 #include <x86_64/applications/application_manager.hpp>
+#include <x86_64/drivers/ps2mouse.hpp>
+#include <x86_64/drivers/serial_legacy.hpp>
 
 namespace firefly::drivers::ps2 {
     using namespace firefly::kernel::io;
@@ -150,6 +152,9 @@ namespace firefly::drivers::ps2 {
         if (!(inb(status_register) & status::out_buffer_status)) return;
 
         uint8_t scancode = inb(0x60);
+
+        firefly::kernel::io::legacy::writeTextSerial("scancode: 0x%X\n", scancode);
+        
 
         if (scancode == keys::caps_lock) {
             shift_pressed = !shift_pressed;

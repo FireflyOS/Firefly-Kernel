@@ -26,15 +26,15 @@ namespace FAPI {
             return result;
         }
         
-        char *itoa(size_t num, char *str, int base){
+        char *itoa(api_size_t num, char *str, int base){
             auto *sys_struct = (fp *)get_fp();
-            char *result = ((char *(*)(size_t, char *, int))sys_struct->l[0])(num, str, base);
+            char *result = ((char *(*)(api_size_t, char *, int))sys_struct->l[0])(num, str, base);
             return result;
         }
 
-        char *itoa(size_t num, char *str, int base, bool toupper){
+        char *itoa(api_size_t num, char *str, int base, bool toupper){
             auto *sys_struct = (fp *)get_fp();
-            char *result = ((char *(*)(size_t, char *, int, bool))sys_struct->m[0])(num, str, base, toupper);
+            char *result = ((char *(*)(api_size_t, char *, int, bool))sys_struct->m[0])(num, str, base, toupper);
             return result;
         }
     }
@@ -60,31 +60,13 @@ namespace FAPI {
             }
         }
         namespace settings {
-            namespace get {
-                uint8_tt block_count (){
-                    auto *sys_struct = (fp *)get_fp();
-                    return ((uint8_tt (*)(void))sys_struct->f[0])();
-                }
-
-                uint8_tt disable_app_access_rights (){
-                    auto *sys_struct = (fp *)get_fp();
-                    return ((uint8_tt (*)(void))sys_struct->f[1])();
-                }
-
-                uint8_tt disable_memory_block_access_rights (){
-                    auto *sys_struct = (fp *)get_fp();
-                    return ((uint8_tt (*)(void))sys_struct->f[2])();
-                }
-
-                uint8_tt enable_serial_port (){
-                    auto *sys_struct = (fp *)get_fp();
-                    return ((uint8_tt (*)(void))sys_struct->f[3])();
-                }
-
-                uint8_tt kernel_mode (){
-                    auto *sys_struct = (fp *)get_fp();
-                    return ((uint8_tt (*)(void))sys_struct->f[4])();
-                }
+            unsigned char *kernel_settings(){
+                auto *sys_struct = (fp *)get_fp();
+                return sys_struct->kernel_settings;
+            }
+            char *instruction(){
+                auto *sys_struct = (fp *)get_fp();
+                return sys_struct->kernel_settings_raw;
             }
         }
         namespace drivers {
@@ -113,9 +95,9 @@ namespace FAPI {
                     ((void (*)(char))sys_struct->e[1])(c);
                     return;
                 }
-                void writeSerial (const char *text, size_t size, bool istoupper) {
+                void writeSerial (const char *text, api_size_t size, bool istoupper) {
                     auto *sys_struct = (fp *)get_fp();
-                    ((void (*)(const char *, size_t, bool))sys_struct->i[0])(text, size, istoupper);
+                    ((void (*)(const char *, api_size_t, bool))sys_struct->i[0])(text, size, istoupper);
                     return;
                 }
             }
@@ -153,7 +135,7 @@ namespace FAPI {
             va_list ap;
             va_start(ap, fmt);
             int i = 0;
-            int len = strlen(fmt);
+            int len = api_strlen(fmt);
             int res = 0;
 
             for (; i < len; i++) {
@@ -169,20 +151,20 @@ namespace FAPI {
 
                         case 's': {
                             char* arg = va_arg(ap, char*);
-                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(arg) : kernel::io::legacy::writeSerial(arg, strlen(arg), false);
-                            i += 2, (res += 2 + strlen(arg));
+                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(arg) : kernel::io::legacy::writeSerial(arg, api_strlen(arg), false);
+                            i += 2, (res += 2 + api_strlen(arg));
                             break;
                         }
 
                         case 'i':
                         case 'd': {
-                            size_t arg = va_arg(ap, size_t);
+                            api_size_t arg = va_arg(ap, api_size_t);
                             if (arg == 0)
                                 (device_to_write == 0x00) ? kernel::drivers::vbe::putc('0') : kernel::io::legacy::writeCharSerial('0');
 
                             else {
                                 char buff[20];
-                                (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 10)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 10), strlen(std::itoa(arg, buff, 10)), false);
+                                (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 10)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 10), api_strlen(std::itoa(arg, buff, 10)), false);
                                 res += std::digitcount(arg);
                             }
                             i += 2;
@@ -190,26 +172,26 @@ namespace FAPI {
                         }
 
                         case 'x': {
-                            size_t arg = va_arg(ap, size_t);
+                            api_size_t arg = va_arg(ap, api_size_t);
                             char buff[20];
-                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 16)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 16), strlen(std::itoa(arg, buff, 16)), false);
-                            res += strlen(buff);
+                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 16)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 16), api_strlen(std::itoa(arg, buff, 16)), false);
+                            res += api_strlen(buff);
                             i += 2;
                             break;
                         }
                         case 'X': {
-                            size_t arg = va_arg(ap, size_t);
+                            api_size_t arg = va_arg(ap, api_size_t);
                             char buff[20];
-                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 16, true)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 16), strlen(std::itoa(arg, buff, 16)), true);
-                            res += strlen(buff);
+                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 16, true)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 16), api_strlen(std::itoa(arg, buff, 16)), true);
+                            res += api_strlen(buff);
                             i += 2;
                             break;
                         }
 
                         case 'o': {
-                            size_t arg = va_arg(ap, size_t);
+                            api_size_t arg = va_arg(ap, api_size_t);
                             char buff[20];
-                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 8)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 8), strlen(std::itoa(arg, buff, 8)), false);
+                            (device_to_write == 0x00) ? kernel::drivers::vbe::puts(std::itoa(arg, buff, 8)) : kernel::io::legacy::writeSerial(std::itoa(arg, buff, 8), api_strlen(std::itoa(arg, buff, 8)), false);
                             i += 2;
                             break;
                         }

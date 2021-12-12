@@ -8,6 +8,7 @@
 #include <x86_64/applications/help/main.hpp>
 #include <x86_64/applications/settings/main.hpp>
 #include <x86_64/applications/regs/main.hpp>
+#include <x86_64/applications/shell/main.hpp>
 
 #include <x86_64/settings.hpp>
 
@@ -34,6 +35,7 @@ namespace firefly::applications {
         register_application((int *)applications::help::help_main, applications::help::getc(), "Help");
         register_application((int *)applications::settings::settings_main, applications::settings::getc(), "Settings");
         register_application((int *)applications::regs::regs_main, applications::regs::getc(), "Registers");
+        register_application((int *)applications::shell::shell_main, applications::shell::getc(), "Shell");
 
         return;
     }
@@ -43,13 +45,13 @@ namespace firefly::applications {
 
         int checksum = firefly::kernel::checksum::checksum(application);
 
-        if(firefly::kernel::settings::get::kernel_mode() == 0x9a){
+        if(firefly::kernel::settings::kernel_settings[0] == 0x9a){
             printf("Checksum: %d\n", checksum);
         }
         
         uint8_t temp_pointer = 0;
         while(temp_pointer < 255){
-            if((apps_s[temp_pointer].checksum == checksum && (apps_s[temp_pointer].access <= access_rights || apps_s[temp_pointer].access == access_rights)) && firefly::kernel::settings::get::disable_app_access_rights() != 0xff) {
+            if((apps_s[temp_pointer].checksum == checksum && (apps_s[temp_pointer].access <= access_rights || apps_s[temp_pointer].access == access_rights)) && firefly::kernel::settings::kernel_settings[2] != 0xff) {
                 int result = ((int (*)(int, char **))apps_s[temp_pointer].address)(sizeof(argv), argv);
                 if (result == -1) printf("\n[ERROR] An error has occurred in the application!\nExit code: %d\n", result);
                 
@@ -57,7 +59,7 @@ namespace firefly::applications {
 
             }
 
-            if ((apps_s[temp_pointer].checksum == checksum) && firefly::kernel::settings::get::disable_app_access_rights() == 0xff){
+            if ((apps_s[temp_pointer].checksum == checksum) && firefly::kernel::settings::kernel_settings[2] == 0xff){
                 int result = ((int (*)(int, char **))apps_s[temp_pointer].address)(sizeof(argv), argv);
                 if (result == -1) printf("\n[ERROR] An error has occurred in the application!\nExit code: %d\n", result);
 
