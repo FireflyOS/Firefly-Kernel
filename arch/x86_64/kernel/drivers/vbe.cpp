@@ -66,7 +66,8 @@ void putc(char c) {
 }
 
 static bool check_special(char c) {
-    //Todo: Check if c will go out of bounds
+    if(console_x == (128 * glyph_width)) c = '\n';
+    
     if (c == '\n') {
         if (static_cast<size_t>(console_y) >= framebuffer_height - glyph_height) {
             scroll();

@@ -19,8 +19,6 @@
 
 #include <x86_64/brainfuck/bf.hpp>
 
-#include <x86_64/drivers/ps2mouse.hpp>
-
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0-x86_64-fork";

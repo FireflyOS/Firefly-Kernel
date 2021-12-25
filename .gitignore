@@ -38,9 +38,4 @@ binaries/
 /.vscode/*.log
 /.vscode/c_cpp_properties.json
 
-# "commit.sh" script
-commit.sh
-
-#Patch file
-patch.js
-toindev
+start.sh

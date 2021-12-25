@@ -75,7 +75,7 @@ namespace firefly::kernel::io {
     [[nodiscard]] inline uint8_t inl(uint16_t port) {
         uint8_t val;
         asm volatile(
-            "inl %%dx, %%al"
+            "inl %%dx, %%eax"
             : "=a"(val)
             : "d"(port));
         return val;

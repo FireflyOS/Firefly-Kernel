@@ -104,6 +104,7 @@ namespace firefly::drivers::ps2 {
         current_key = currentkey;
     }
     void app_input() {
+        //firefly::kernel::io::legacy::writeTextSerial(": app_input()\n");
         if (!(inb(status_register) & status::out_buffer_status)) return;
 
         uint8_t scancode = inb(0x60);
@@ -145,7 +146,8 @@ namespace firefly::drivers::ps2 {
                 }
             }
         }
-        return key_handle();
+        key_handle();
+        return;
     }    
 
     void handle_input() {

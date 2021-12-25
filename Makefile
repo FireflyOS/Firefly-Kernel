@@ -47,6 +47,7 @@ create_dirs:
 ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/memory-manager/
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers
+	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/drivers/pci
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/trace
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/init
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/int
@@ -54,6 +55,8 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/kernel/api
 	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/brainfuck
 	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/pmp
+	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/fs
+	mkdir -vp ${BUILD_DIR}/arch/${ARCH}/kernel/fs/custom
 	mkdir -vp $(BUILD_DIR)/arch/$(ARCH)/libk++
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/test
@@ -62,6 +65,8 @@ ifeq ($(ARCH), x86_64)
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/func_pointers
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/regs
 	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/shell
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/ls
+	mkdir -vp $(BUILD_DIR)/arch/${ARCH}/applications/cat
 endif
 
 target_archs:
@@ -80,7 +85,7 @@ windows:
 	qemu-system-$(ARCH).exe -d int -M smm=off -M q35 -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) 
 
 bios:
-	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
+	qemu-system-$(ARCH) -soundhw pcspk -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -cdrom $(ISO) $(QEMU_FLAGS) -d int
 
 uefi:
 	qemu-system-$(ARCH) -enable-kvm  -cpu host -m 256M -boot d -no-shutdown -serial stdio -no-reboot -bios /usr/share/ovmf/OVMF.fd -cdrom $(ISO) $(QEMU_FLAGS) -d int

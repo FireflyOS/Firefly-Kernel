@@ -9,6 +9,8 @@
 #include <x86_64/applications/settings/main.hpp>
 #include <x86_64/applications/regs/main.hpp>
 #include <x86_64/applications/shell/main.hpp>
+#include <x86_64/applications/ls/main.hpp>
+#include <x86_64/applications/cat/main.hpp>
 
 #include <x86_64/settings.hpp>
 
@@ -36,6 +38,8 @@ namespace firefly::applications {
         register_application((int *)applications::settings::settings_main, applications::settings::getc(), "Settings");
         register_application((int *)applications::regs::regs_main, applications::regs::getc(), "Registers");
         register_application((int *)applications::shell::shell_main, applications::shell::getc(), "Shell");
+        register_application((int *)applications::ls::ls_main, applications::ls::getc(), "List");
+        register_application((int *)applications::cat::cat_main, applications::cat::getc(), "Cat");
 
         return;
     }

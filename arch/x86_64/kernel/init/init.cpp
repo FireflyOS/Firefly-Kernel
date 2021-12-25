@@ -15,6 +15,8 @@
 #include <x86_64/settings.hpp>
 #include <x86_64/sleep.hpp>
 #include <x86_64/stivale2.hpp>
+#include <x86_64/drivers/pci/ide.hpp>
+#include <x86_64/fs/custom/main.hpp>
 
 
 // We need to tell the stivale bootloader where we want our stack to be.
@@ -218,6 +220,17 @@ extern "C" [[noreturn]] void kernel_init(struct stivale2_struct *stivale2_struct
 
     init_fp();
     firefly::kernel::io::legacy::writeTextSerial("fp *get_fp(void): 0x%X\n\n", &get_fp);
+
+    firefly::kernel::fs::custom::init("firefly");
+    firefly::kernel::fs::custom::f *file = firefly::kernel::fs::custom::make_file("test.txt", 1);
+    const char *data = "Hello World from Custom Filesystem!";
+    int i = 0;
+    while(i < 36){
+        file->data[i] = data[i];
+        i++;
+    }
+    file->size = 36;
+    file->is_used = 1;
 
     firefly::kernel::main::kernel_main();
     for (;;)

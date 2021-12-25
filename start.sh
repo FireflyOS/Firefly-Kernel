@@ -1,0 +1,1 @@
+"/usr/bin/qemu-system-x86_64" -cpu host -boot d -net none -m 512M -drive file="/home/k/QemuGUI_VirtualMachines/11/11.raw",if=none,id=device-8-file -device ide-hd,bus=ide.0,drive=device-8-file,id=device-8 -cdrom /home/k/Firefly-Kernel/Firefly_x86_64.iso -serial stdio -soundhw pcspk -enable-kvm -d int

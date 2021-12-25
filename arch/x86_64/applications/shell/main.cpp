@@ -1,4 +1,7 @@
 #include "x86_64/applications/shell/main.hpp"
+#include <x86_64/drivers/pci/ide.hpp>
+
+#define inb firefly::kernel::io::inb
 
 namespace firefly::applications::shell {
     int mousex, mousey;
@@ -79,9 +82,9 @@ namespace firefly::applications::shell {
         layers[mouse_layer_id].gbar_color = firefly::drivers::vbe::get_pixel(layers[mouse_layer_id].x, layers[mouse_layer_id].y + 8) + 32; 
         uint8_t scancode;
 
-        if ((firefly::kernel::io::inb(100) & 1)) {
+        if ((inb(100) & 1)) {
             halt_draw = false;
-            scancode = firefly::kernel::io::inb(0x60);
+            scancode = inb(0x60);
             //#define DEBUG_MODE
             #ifdef DEBUG_MODE
             firefly::kernel::io::legacy::writeTextSerial("scancode: 0x%X\n", scancode);
@@ -182,6 +185,7 @@ namespace firefly::applications::shell {
         return;
     }
     void shell_init([[maybe_unused]] firefly::kernel::mp::Process *process){
+        
         layer l0 = {2, 0, 0, 0, 1024, 740, 0xFFFFFFFF, 0, nullptr, nullptr, 1, 1, (char *)"syslayer_bg"};
         make_layer(&l0);
 
