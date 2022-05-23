@@ -32,6 +32,8 @@
 /build/
 /builddir/
 .idea
+/builddir/
+/.cache/
 
 # Makefile plugin
 /.vscode/*.log
