@@ -12,7 +12,12 @@ endif
 	meson compile
 
 run:
-	
+	cd build; \
+	../Scripts/qemu-bios.sh
+
+uefi:
+	cd build; \
+	../Scripts/qemu-uefi.sh
 
 clean:
 ifeq ($(wildcard ./build),)
