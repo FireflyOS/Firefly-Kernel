@@ -1,14 +1,17 @@
 #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
-#include <x86_64/libk++/iostream.h>
+#include "x86_64/libk++/iostream.h"
 
-#include <x86_64/drivers/ps2.hpp>
-#include <x86_64/drivers/serial.hpp>
-#include <x86_64/drivers/vbe.hpp>
-#include <x86_64/kernel.hpp>
-#include <x86_64/trace/strace.hpp>
+#include "x86_64/init/init.hpp"
+#include "x86_64/drivers/ps2.hpp"
+#include "x86_64/drivers/serial.hpp"
+#include "x86_64/drivers/vbe.hpp"
+#include "x86_64/kernel.hpp"
+#include "x86_64/trace/strace.hpp"
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
+#include "x86_64/memory-manager/virtual/virtual.hpp"
 #include "x86_64/gdt/tss.hpp"
+#include "x86_64/uspace/userspace.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -31,13 +34,26 @@ void write_ff_info() {
     puts("\n");
 }
 
+void test_userspace()
+{
+    asm ("xor %rax, %rax");
+    asm ("mov $0x12345, %rax");
+    for (;;);
+}
 
-[[noreturn]] void kernel_main() {
+[[noreturn]] void kernel_main(stivale2_struct *handover) {
+    (void)handover;
     // Never free rsp0
     auto rsp0 = firefly::kernel::mm::primary::allocate(1);
     if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
     firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0->data[0]));
     
+    auto tagmem = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
+    mm::VirtualMemoryManager vmm{true, tagmem};
+
+    // firefly::kernel::UserSpace user;
+    // user.jump(test_userspace);
+
     trace::panic("Reached the end of kernel");
     __builtin_unreachable();
 }

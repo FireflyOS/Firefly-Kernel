@@ -1,6 +1,7 @@
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 
 #include <stl/cstdlib/stdio.h>
+#include <stl/cstdlib/cstring.h>
 
 #include "x86_64/libk++/align.h"
 #include "x86_64/trace/strace.hpp"
@@ -9,10 +10,9 @@
 namespace firefly::kernel::mm::primary {
 static libkern::Bitmap bitmap;
 static uint32_t *arena;
-static int64_t allocation_base;  //Base address for the linked list structure (Should never be freed, may be reused)
+static int64_t allocation_base;  //Base address for the internal linear allocator (Should never be freed)
 static size_t allocation_index = 0;
 using libkern::align4k;
-
 
 static void *early_alloc(struct stivale2_mmap_entry &entry, int size) {
     size_t ret = entry.base;
@@ -30,6 +30,7 @@ T *small_alloc() {
 }
 
 void init(struct stivale2_struct_tag_memmap *mmap) {
+    printf("First line of mm::primary::init()\n");
     bool init_ok = false;
 
     // The highest possible *free* entry in the mmap
@@ -44,13 +45,10 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             highest_page = top;
     }
 
-    // // DEBUG: Print mmap contents
-    // for (size_t i = 0; i < mmap->entries; i++) {
-    //     printf("(%d) %X-%X [ %X (%s) ]\n", i, mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1, mmap->memmap[i].type, mmap->memmap[i].type == 1 ? "free" : "?");
-    // }
-
+    printf("After First loop of mm::primary::init()\n");
     size_t bitmap_size = (highest_page / PAGE_SIZE / 8);
     align4k<size_t>(bitmap_size);
+    printf("bitmap size: 0x%X\n", bitmap_size);
 
     // Iterate through mmap and find largest block to store the bitmap
     for (size_t i = 0; i < mmap->entries; i++) {
@@ -58,14 +56,13 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             continue;
 
         if (mmap->memmap[i].length >= bitmap_size) {
-            printf("Found entry to store the bitmap (%d bytes) at %X-%X\n", bitmap_size, mmap->memmap[i].base, mmap->memmap[i].base + mmap->memmap[i].length - 1);
-
             // Note: The entire memory contents are marked as used now, we free available memory after this
             arena = reinterpret_cast<uint32_t *>(early_alloc(mmap->memmap[i], bitmap_size));
             bitmap.init(arena, bitmap_size);
             bitmap.setall();
             init_ok = true;
 
+            printf("pmm: Can host bitmap\n");
             // Note: There is no need to resize this entry since `early_alloc` already did.
             break;
         }
@@ -74,14 +71,16 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
         trace::panic("Failed to initialize the primary allocation structure");
     }
 
+    printf("pmm: Before third loop\n");
     for (size_t i = 0; i < mmap->entries; i++) {
         if (mmap->memmap[i].type != STIVALE2_MMAP_USABLE)
             continue;
 
         size_t base = bitmap.allocator_conversion(false, mmap->memmap[i].base);
         size_t end = bitmap.allocator_conversion(false, mmap->memmap[i].length);
+        // printf("After allocator conversions\n");
         printf("Freeing %d pages at %X\n", end, bitmap.allocator_conversion(true, base));
-
+        printf("Base: 0x%X, end: 0x%X (0x%X)\n", base, end, base + end);
         for (size_t i = base; i < base + end; i++) {
             auto success = bitmap.clear(i).success;
             if (!success) {
@@ -89,17 +88,19 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             }
         }
     }
+    printf("pmm: After third loop\n");
 
-    // Setup the base address for the linked list.
+    // Reserve some memory for the internal allocator
     allocation_base = bitmap.find_first(libkern::BIT_SET);
     if (allocation_base == -1)
         trace::panic("No free memory");
 
     if (!bitmap.set(allocation_base).success)
-        trace::panic("Failed to mark the primary allocators linked list as used!");
+        trace::panic("Failed to mark the primary allocators 'allocation_base' as used!");
     
     allocation_base = bitmap.allocator_conversion(true, allocation_base);
 
+    printf("pmm: Initialized\n");
     //NOTE: Never free bit 0 - It's a nullptr
 }
 
@@ -131,6 +132,7 @@ primary_res_t *allocate(size_t pages) {
 
         bitmap.set(bit);
         res->data[i] = reinterpret_cast<void*>(bitmap.allocator_conversion(true, bit));
+        memset(res->data[i], 0x00, PAGE_SIZE);
     }
 
     allocation_index = 0;  //Reset linear allocator for next phys allocation

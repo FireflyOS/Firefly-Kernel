@@ -5,12 +5,27 @@
 #include "x86_64/compiler/clang++.hpp"
 #include "x86_64/gdt/tss.hpp"
 
-#define GDT_MAX_ENTRIES 5
-#define NULENT 0 /* null descriptor entry */
-#define CS_KRN 1
-#define DS_KRN 2
-#define CS_USR 3
-#define DS_USR 4
+#define GDT_MAX_ENTRIES 9 
+
+/* These GDT descriptors are mandatory if we want to use the stivale2 terminal */
+enum GDT_DESCRIPTORS
+{
+    NULENT, /* null descriptor entry */
+
+    /* 16 bit descriptors */
+    CS_KRN16,
+    DS_KRN16,
+    
+    /* 32 bit descriptors */
+    CS_KRN32,
+    DS_KRN32,
+    
+    /* 64 bit descriptors */
+    CS_KRN64,
+    DS_KRN64,
+    CS_USR64,
+    DS_USR64
+};
 
 namespace firefly::kernel::core::gdt {
 extern "C" void load_gdt(uint64_t);
@@ -49,8 +64,8 @@ enum SELECTOR : uint16_t
 
 class GDTconfig {
 public:
-    void set_tss(uint64_t base, uint8_t flags, uint8_t access);  // Used for: TSS
-    void set(int offset, uint8_t flags, uint8_t access);         // Used for: NULL, CS, DS
+    void set_tss(uint64_t base, uint8_t flags, uint8_t access);            // Used for: TSS
+    void set(int offset, uint8_t flags, uint8_t access, uint16_t limit=0); // Used for: NULL, CS, DS
 };
 void init();
 

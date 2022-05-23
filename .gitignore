@@ -30,6 +30,7 @@
 
 # Buildsystem
 /build/
+/builddir/
 .idea
 /builddir/
 /.cache/

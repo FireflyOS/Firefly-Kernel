@@ -9,7 +9,6 @@ namespace firefly::libkern
     {
         this->bitmap_instance = bitmap;
         this->limit = size;
-        printf("bitmap length: %d\n", this->limit);
         this->purge();
     }
 

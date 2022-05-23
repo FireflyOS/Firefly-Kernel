@@ -57,7 +57,7 @@ CPU_INTR_ERR%1:
 
 %macro register_handler 1
     mov rdi, %1
-    mov rsi, 0x8
+    mov rsi, 0x28
     mov rdx, 0x8E
     mov rcx, i
     call update

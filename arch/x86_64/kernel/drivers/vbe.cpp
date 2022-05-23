@@ -30,11 +30,7 @@ void put_pixel(int x, int y, int color) {
 }
 
 void early_init(stivale2_struct_tag_framebuffer* tagfb) {
-    framebuffer_addr = reinterpret_cast<uint32_t*>(
-        mm::relocation::conversion::from_higher_half(
-            tagfb->framebuffer_addr, mm::relocation::conversion::DATA
-        )
-    );
+    framebuffer_addr = reinterpret_cast<uint32_t*>(tagfb->framebuffer_addr);
     framebuffer_pitch = tagfb->framebuffer_pitch;
     framebuffer_height = tagfb->framebuffer_height;
     framebuffer_width = tagfb->framebuffer_width;
