@@ -9,7 +9,8 @@ ifeq ($(wildcard ./build),)
 	meson build --cross-file meson_config.txt
 endif
 	cd build; \
-	meson compile
+	meson compile && \
+	../Scripts/geniso.sh
 
 run:
 	cd build; \
