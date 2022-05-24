@@ -30,7 +30,6 @@ T *small_alloc() {
 }
 
 void init(struct stivale2_struct_tag_memmap *mmap) {
-    printf("First line of mm::primary::init()\n");
     bool init_ok = false;
 
     // The highest possible *free* entry in the mmap
@@ -45,10 +44,8 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             highest_page = top;
     }
 
-    printf("After First loop of mm::primary::init()\n");
     size_t bitmap_size = (highest_page / PAGE_SIZE / 8);
     align4k<size_t>(bitmap_size);
-    printf("bitmap size: 0x%X\n", bitmap_size);
 
     // Iterate through mmap and find largest block to store the bitmap
     for (size_t i = 0; i < mmap->entries; i++) {
@@ -62,7 +59,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             bitmap.setall();
             init_ok = true;
 
-            printf("pmm: Can host bitmap\n");
             // Note: There is no need to resize this entry since `early_alloc` already did.
             break;
         }
@@ -71,7 +67,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
         trace::panic("Failed to initialize the primary allocation structure");
     }
 
-    printf("pmm: Before third loop\n");
     for (size_t i = 0; i < mmap->entries; i++) {
         if (mmap->memmap[i].type != STIVALE2_MMAP_USABLE)
             continue;
@@ -80,7 +75,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
         size_t end = bitmap.allocator_conversion(false, mmap->memmap[i].length);
         // printf("After allocator conversions\n");
         printf("Freeing %d pages at %X\n", end, bitmap.allocator_conversion(true, base));
-        printf("Base: 0x%X, end: 0x%X (0x%X)\n", base, end, base + end);
         for (size_t i = base; i < base + end; i++) {
             auto success = bitmap.clear(i).success;
             if (!success) {
@@ -88,7 +82,6 @@ void init(struct stivale2_struct_tag_memmap *mmap) {
             }
         }
     }
-    printf("pmm: After third loop\n");
 
     // Reserve some memory for the internal allocator
     allocation_base = bitmap.find_first(libkern::BIT_SET);

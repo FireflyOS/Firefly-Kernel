@@ -109,15 +109,12 @@ void bootloader_services_init(stivale2_struct* handover)
     }
     
     firefly::kernel::device::stivale2_term::init(tag_term);
-    printf("After stivale2_term::init()\n");
 
     auto tagmem = static_cast<stivale2_struct_tag_memmap*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     if (tagmem == NULL) {
         firefly::trace::panic("Cannot obtain memory map");
     }
-    printf("Before mm::primary::init()\n");
     firefly::kernel::mm::primary::init(tagmem);
-    printf("After mm::primary::init()\n");
 }
 
 extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover)
@@ -126,7 +123,6 @@ extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover)
     firefly::kernel::core::interrupt::init();
 
     bootloader_services_init(handover);
-    printf("After bootloader_services_init\n");
 
     firefly::kernel::main::kernel_main(handover);
     __builtin_unreachable();
