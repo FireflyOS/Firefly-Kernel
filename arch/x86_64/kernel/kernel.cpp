@@ -19,6 +19,10 @@
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0";
 
+using namespace firefly::kernel;
+frg::intrusive_list<mm::pmm::FreelistNode,
+            frg::locate_member<mm::pmm::FreelistNode, frg::default_list_hook<mm::pmm::FreelistNode>, &mm::pmm::FreelistNode::next>> mm::pmm::freelist;
+
 namespace firefly::kernel::main {
 void write_ff_info() {
     printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
@@ -41,7 +45,7 @@ class Alloc
     public:
         void *allocate(size_t sz) {
             (void)sz;
-            return firefly::kernel::mm::primary::allocate(1)->data[0];
+            return firefly::kernel::mm::pmm::allocate();
         }
 
         void free(void *ptr)
@@ -50,38 +54,23 @@ class Alloc
         }
 };
 
-struct LIST {
-    frg::default_list_hook<LIST> next;
-    int a;
-};
-
 [[noreturn]] void kernel_main(stivale2_struct *handover) {
+
+    // mm::pmm::PhysicalAddress ptr = mm::pmm::allocate();
+    // while (ptr)
+    // {
+    //     printf("ptr: 0x%x\n");
+    //     ptr = mm::pmm::allocate();
+    // }
+
+    // for(;;);
     // Never free rsp0
-    auto rsp0 = firefly::kernel::mm::primary::allocate(1);
+    auto rsp0 = firefly::kernel::mm::pmm::allocate();
     if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
-    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0->data[0]));
+    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0));
     
     auto tagmem = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     mm::VirtualMemoryManager vmm{true, tagmem};
-
-    // Frigg port PoC / demo
-    frg::vector<int, Alloc> vec;
-    printf("%x\n", vec.size());
-
-    frg::intrusive_list<
-        LIST,
-        frg::locate_member<
-            LIST,
-            frg::default_list_hook<LIST>,
-            &LIST::next            
-        >
-    > list;
-    
-    LIST *l = (LIST*)mm::primary::allocate(1)->data[0];
-    l->a = 12;
-    list.push_back(l);
-    printf("Is list empty: %s\n", list.empty() ? "yes" : "no");
-    printf("list.pop_back().a: %d\n", list.pop_back()->a);
 
     trace::panic("Reached the end of kernel");
     __builtin_unreachable();

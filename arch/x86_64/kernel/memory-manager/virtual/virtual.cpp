@@ -8,7 +8,7 @@
 namespace firefly::kernel::mm
 {
     using namespace firefly::mm::relocation::conversion;
-    using namespace mm::primary;
+    using namespace mm;
 
     constexpr size_t GB = 0x40000000UL;
 
@@ -24,44 +24,44 @@ namespace firefly::kernel::mm
     {
         if (mmap == nullptr) trace::panic("The mmap argument passed was a nullptr!");
 
-        auto pml4 = allocate(1);
+        auto pml4 = pmm::allocate();
         if (pml4 == nullptr) trace::panic("Failed to allocate memory for the kernel pml4");
-        this->kernel_pml4 = static_cast<pte_t*>(pml4->data[0]);
+        this->kernel_pml4 = static_cast<pte_t*>(pml4);
 
-        for (size_t n = 0; n < GB; n += PAGE_SIZE)
+        for (size_t n = 0; n < GB * 4; n += PAGE_SIZE)
         {
             this->map(n, n, 0x3);
         }
 
-        for (size_t i = 0; i < mmap->entries; i++)
-        {
-            if (mmap->memmap[i].type == STIVALE2_MMAP_BAD_MEMORY) {continue;}
+        // for (size_t i = 0; i < mmap->entries; i++)
+        // {
+        //     if (mmap->memmap[i].type == STIVALE2_MMAP_BAD_MEMORY) {continue;}
 
-            // Note: These addresses are guaranteed to page aligned
-            auto addr_base = mmap->memmap[i].base;
-            auto addr_len = mmap->memmap[i].length;
+        //     // Note: These addresses are guaranteed to page aligned
+        //     auto addr_base = mmap->memmap[i].base;
+        //     auto addr_len = mmap->memmap[i].length;
 
-            // Check if we need to map these entries in order to use the stivale2 terminal.
-            // We identity mapped 1 GiB of lower memory, if that doesn't cover the two entries below we map them.
-            if (addr_base + addr_len < GB)
-                continue;
+        //     // Check if we need to map these entries in order to use the stivale2 terminal.
+        //     // We identity mapped 1 GiB of lower memory, if that doesn't cover the two entries below we map them.
+        //     if (addr_base + addr_len < GB)
+        //         continue;
 
-            if (mmap->memmap[i].type == STIVALE2_MMAP_FRAMEBUFFER ||
-                mmap->memmap[i].type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE)
-            {
-                for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
-                {
-                    this->map(i, i, 0x3); //Read write
-                }
-            }
-        }
+        //     if (mmap->memmap[i].type == STIVALE2_MMAP_FRAMEBUFFER ||
+        //         mmap->memmap[i].type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE)
+        //     {
+        //         for (auto i = addr_base; i < addr_base + addr_len; i += PAGE_SIZE)
+        //         {
+        //             this->map(i, i, 0x3); //Read write
+        //         }
+        //     }
+        // }
 
-        for (size_t n = 0; n < GB; n += PAGE_SIZE)
+        for (size_t n = 0; n < 2* GB; n += PAGE_SIZE)
         {
             this->map(n, to_higher_half(n, DATA), 0x3);
         }
 
-        for (size_t base = 0; base < 0x80000000; base += PAGE_SIZE)
+        for (size_t base = 0; base < 2 * GB; base += PAGE_SIZE)
         {
             this->map(base, to_higher_half(base, CODE), 0x3);
         }
@@ -78,25 +78,25 @@ namespace firefly::kernel::mm
         auto idx1 = this->get_index(virtual_addr, 1);
 
         if (!(pml_ptr[idx4] & 1)) {
-            auto ptr = allocate(1);
+            auto ptr = pmm::allocate();
             if (ptr == nullptr) trace::panic("OOM");
-            this->kernel_pml4[idx4] = reinterpret_cast<pte_t>(ptr->data[0]);
+            this->kernel_pml4[idx4] = reinterpret_cast<pte_t>(ptr);
             this->kernel_pml4[idx4] |= access_flags;
         }
         auto pml3 = (pte_t*)(this->kernel_pml4[idx4] & ~(511));
         
         if (!(pml3[idx3] & 1)) {
-            auto ptr = allocate(1);
+            auto ptr = pmm::allocate();
             if (ptr == nullptr) trace::panic("OOM");
-            pml3[idx3] = reinterpret_cast<pte_t>(ptr->data[0]);
+            pml3[idx3] = reinterpret_cast<pte_t>(ptr);
             pml3[idx3] |= access_flags;
         }
         auto pml2 = (pte_t*)(pml3[idx3] & ~(511));
 
         if ((pml2[idx2] & 1) == 0) {
-            auto ptr = allocate(1);
+            auto ptr = pmm::allocate();
             if (ptr == nullptr) trace::panic("OOM");
-            pml2[idx2] = reinterpret_cast<pte_t>(ptr->data[0]);
+            pml2[idx2] = reinterpret_cast<pte_t>(ptr);
             pml2[idx2] |= access_flags;
         }
         return { 
@@ -112,7 +112,7 @@ namespace firefly::kernel::mm
         auto table_walk_result = walk(virtual_addr, pml_ptr, access_flags);
 
         // Note: This only works because allocate() memsets the addresses data to 0
-        if (table_walk_result.pml1[table_walk_result.idx] != 0x0) trace::panic("Attempted to map mapped page");
+        // if (table_walk_result.pml1[table_walk_result.idx] != 0x0) trace::panic("Attempted to map mapped page");
         table_walk_result.pml1[table_walk_result.idx] = (physical_addr | access_flags);
     }
 

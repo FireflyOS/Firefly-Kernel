@@ -88,6 +88,7 @@ void test_int() {
 
 void interrupt_handler(iframe iframe) {
     printf("Int#: %d\nErr: %d\n", iframe.int_no, iframe.err);
+    printf("RIP: 0x%x\n",iframe.rip);
 
     for (;;)
         asm("cli\nhlt");

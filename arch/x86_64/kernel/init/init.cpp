@@ -114,7 +114,7 @@ void bootloader_services_init(stivale2_struct* handover)
     if (tagmem == NULL) {
         firefly::trace::panic("Cannot obtain memory map");
     }
-    firefly::kernel::mm::primary::init(tagmem);
+    firefly::kernel::mm::pmm::init(tagmem);
 }
 
 extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover)
