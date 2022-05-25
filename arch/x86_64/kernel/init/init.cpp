@@ -100,6 +100,9 @@ void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id)
     }
 }
 
+using namespace firefly::kernel;
+mm::pmm::Freelist<mm::pmm::PhysicalAddress> mm::pmm::freelist;
+
 void bootloader_services_init(stivale2_struct* handover)
 {
     auto tag_term = static_cast<stivale2_struct_tag_terminal*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_TERMINAL_ID));
@@ -120,10 +123,11 @@ void bootloader_services_init(stivale2_struct* handover)
 extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover)
 {
     firefly::kernel::core::gdt::init();
+    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(stack));
     firefly::kernel::core::interrupt::init();
 
     bootloader_services_init(handover);
 
-    firefly::kernel::main::kernel_main(handover);
+    firefly::kernel::kernel_main();
     __builtin_unreachable();
 }
