@@ -1,29 +1,23 @@
+#include "x86_64/kernel.hpp"
+
 #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
-#include "x86_64/libk++/iostream.h"
 
-#include "x86_64/init/init.hpp"
 #include "x86_64/drivers/ps2.hpp"
 #include "x86_64/drivers/serial.hpp"
 #include "x86_64/drivers/vbe.hpp"
-#include "x86_64/kernel.hpp"
-#include "x86_64/trace/strace.hpp"
+#include "x86_64/init/init.hpp"
+#include "x86_64/libk++/iostream.h"
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/memory-manager/virtual/virtual.hpp"
-#include "x86_64/gdt/tss.hpp"
-#include "x86_64/uspace/userspace.hpp"
-#include <frg/vector.hpp>
-#include <frg/list.hpp>
+#include "x86_64/trace/strace.hpp"
+
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
 constexpr const char *VERSION_STRING = "0.0";
 
-using namespace firefly::kernel;
-frg::intrusive_list<mm::pmm::FreelistNode,
-            frg::locate_member<mm::pmm::FreelistNode, frg::default_list_hook<mm::pmm::FreelistNode>, &mm::pmm::FreelistNode::next>> mm::pmm::freelist;
-
-namespace firefly::kernel::main {
+namespace firefly::kernel {
 void write_ff_info() {
     printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
 
@@ -40,39 +34,10 @@ void write_ff_info() {
     puts("\n");
 }
 
-class Alloc
-{
-    public:
-        void *allocate(size_t sz) {
-            (void)sz;
-            return firefly::kernel::mm::pmm::allocate();
-        }
+[[noreturn]] void kernel_main() {
+    mm::VirtualMemoryManager vmm{ true };
 
-        void free(void *ptr)
-        {
-            (void)ptr;
-        }
-};
-
-[[noreturn]] void kernel_main(stivale2_struct *handover) {
-
-    // mm::pmm::PhysicalAddress ptr = mm::pmm::allocate();
-    // while (ptr)
-    // {
-    //     printf("ptr: 0x%x\n");
-    //     ptr = mm::pmm::allocate();
-    // }
-
-    // for(;;);
-    // Never free rsp0
-    auto rsp0 = firefly::kernel::mm::pmm::allocate();
-    if (rsp0 == nullptr) firefly::trace::panic("Failed to allocate memory for the TSS for core 0 (main core)");
-    firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(rsp0));
-    
-    auto tagmem = static_cast<stivale2_struct_tag_memmap *>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
-    mm::VirtualMemoryManager vmm{true, tagmem};
-
-    trace::panic("Reached the end of kernel");
+    trace::panic("Reached the end of the kernel");
     __builtin_unreachable();
 }
-}  // namespace firefly::kernel::main
+}  // namespace firefly::kernel

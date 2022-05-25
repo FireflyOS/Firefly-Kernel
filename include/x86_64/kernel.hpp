@@ -1,6 +1,6 @@
 #pragma once
 
-namespace firefly::kernel::main {
-[[noreturn]] void kernel_main(stivale2_struct *handover);
+namespace firefly::kernel {
+[[noreturn]] void kernel_main();
 void write_ff_info();
-}
+}  // namespace firefly::kernel
