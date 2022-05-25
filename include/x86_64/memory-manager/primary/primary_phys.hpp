@@ -4,10 +4,6 @@
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
 
-#include <frg/list.hpp>
-
-#include "x86_64/compiler/clang++.hpp"
-#include "x86_64/libk++/align.h"
 #include "x86_64/memory-manager/mm.hpp"
 #include "x86_64/stivale2.hpp"
 #include "x86_64/trace/strace.hpp"
