@@ -11,12 +11,11 @@ kernel_build_flags = [
 cxx_files += files('libk++/bitmap.cpp', 'libk++/iostream.cpp')
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/utils.cpp', 'kernel/drivers/ps2.cpp',
-    'kernel/drivers/serial.cpp', 'kernel/drivers/vbe.cpp',
+    'kernel/drivers/serial.cpp', 'kernel/drivers/vbe.cpp', 'kernel/int/interrupt.cpp',
     'kernel/fb/framebuffer.cpp', 'kernel/gdt/gdt.cpp', 'kernel/gdt/tss.cpp', 'kernel/init/init.cpp',
-    'kernel/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/memory-manager/secondary/buddy/buddy_heap.cpp', 'kernel/memory-manager/secondary/buddy/buddy.cpp',
-    'kernel/memory-manager/secondary/slob/slob.cpp', 'kernel/scheduler/spinlock.cpp', 'kernel/trace/strace.cpp',
-    'kernel/trace/symbols.cpp', 'kernel/uspace/userspace.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
+    'kernel/scheduler/spinlock.cpp', 'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp',
+    'kernel/uspace/userspace.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
     'kernel/fb/stivale2-term.cpp'
 )
 asm_files += files('kernel/gdt/gdt.asm', 'kernel/int/interrupt.asm')
