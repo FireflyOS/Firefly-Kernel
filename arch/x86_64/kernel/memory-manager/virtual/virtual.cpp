@@ -24,7 +24,7 @@ void VirtualMemoryManager::configure_initial_kernel_mapping() {
     if (pml4 == nullptr) trace::panic("Failed to allocate memory for the kernel pml4");
     this->kernel_pml4 = static_cast<pte_t *>(pml4);
 
-    for (size_t n = 0; n < GB * 4; n += PAGE_SIZE) {
+    for (size_t n = PAGE_SIZE; n < GB * 4; n += PAGE_SIZE) {
         this->map(n, n, 0x3, kernel_pml4);
     }
 
