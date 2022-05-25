@@ -4,6 +4,7 @@
 #include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
 
+#include "x86_64/logger.hpp"
 #include "x86_64/memory-manager/mm.hpp"
 #include "x86_64/stivale2.hpp"
 #include "x86_64/trace/strace.hpp"
@@ -35,7 +36,7 @@ public:
             list = block;
 
             if constexpr (verbose)
-                printf("freelist::add(): Added '0x%x' to the freelist\n", block);
+                info_logger << "freelist::add(): Added '" << info_logger.hex(block) << "' to the freelist\n";
         }
 
         T remove(FillMode fill) {
@@ -64,7 +65,7 @@ public:
             auto top = base + pages * PAGE_SIZE;
 
             if constexpr (verbose)
-                printf("base: 0x%x | top: 0x%x | pages: %d\n", base, top, pages);
+                info_logger << info_logger.fmt("base: 0x%x | top: 0x%x | pages: %d\n", base, top, pages);
 
             if (!pages)
                 continue;
@@ -73,7 +74,7 @@ public:
                 freelist.add(reinterpret_cast<PhysicalAddress>(base + (i * PAGE_SIZE)));
             }
         }
-        printf("pmm: Initialized\n");
+        info_logger << "pmm: Initialized " << logger::endl;
     }
 
     static PhysicalAddress allocate(FillMode fill = FillMode::ZERO) {

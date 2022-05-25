@@ -1,4 +1,4 @@
-#include "x86_64/libk++/iostream.h"
+#include "x86_64/logger.hpp"
 
 namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
@@ -87,9 +87,9 @@ void test_int() {
 }
 
 void interrupt_handler(iframe iframe) {
-    printf("Int#: %d\nErr: %d\n", iframe.int_no, iframe.err);
-    printf("RIP: 0x%x\n",iframe.rip);
-
+    info_logger << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << logger::endl;
+    info_logger << "RIP: " << info_logger.hex(iframe.rip) << logger::endl;
+    
     for (;;)
         asm("cli\nhlt");
 }

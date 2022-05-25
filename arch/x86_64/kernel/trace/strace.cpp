@@ -1,13 +1,13 @@
 #include <stl/cstdlib/stdio.h>
-#include <x86_64/libk++/iostream.h>
 
-#include <x86_64/trace/symbols.hpp>
+#include "x86_64/trace/symbols.hpp"
+#include "x86_64/logger.hpp"
 
 namespace firefly::trace {
 
 void trace_stack();
 [[noreturn]] void panic(const char *msg) {
-    printf("\n**** Kernel panic ****\nReason: %s\n\n", msg);
+    kernel::info_logger << "\n**** Kernel panic ****\nReason: " << msg << "\n";
     trace_stack();
 
     while (1)
@@ -20,7 +20,7 @@ struct stackframe {
 };
 
 void trace_stack() {
-    printf("Stack trace:\n");
+    kernel::info_logger << "Stack trace:\n";
     struct stackframe *stkf;
     asm("mov %%rbp, %0"
         : "=r"(stkf));

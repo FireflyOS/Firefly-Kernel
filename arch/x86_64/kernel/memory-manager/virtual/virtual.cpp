@@ -3,6 +3,7 @@
 #include <stl/cstdlib/stdio.h>
 
 #include "x86_64/fb/stivale2-term.hpp"
+#include "x86_64/logger.hpp"
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/memory-manager/relocation.hpp"
 #include "x86_64/trace/strace.hpp"
@@ -36,7 +37,7 @@ void VirtualMemoryManager::configure_initial_kernel_mapping() {
     }
 
     asm volatile("mov %0, %%cr3\n" ::"r"(this->kernel_pml4));
-    printf("vmm: Initialized\n");
+    info_logger << "vmm: Initialized" << logger::endl;
 }
 
 walk_t VirtualMemoryManager::walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t access_flags) {

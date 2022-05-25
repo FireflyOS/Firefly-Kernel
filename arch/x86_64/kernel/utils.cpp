@@ -1,7 +1,7 @@
-#include <stl/utility.h>
-#include <x86_64/libk++/iostream.h>
+#include "x86_64/utils.hpp"
 
-#include <x86_64/utils.hpp>
+#include <stl/cstdlib/cstdint.h>
+#include <stl/utility.h>
 
 namespace firefly::kernel::util {
 uint32_t rev32(uint32_t bytes) {

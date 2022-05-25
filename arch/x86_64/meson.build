@@ -8,7 +8,7 @@ kernel_build_flags = [
     '-mno-3dnow', '-mno-sse', '-mno-sse2', '-Wno-c99-extensions', '-Wno-gnu'
 ]
 
-cxx_files += files('libk++/bitmap.cpp', 'libk++/iostream.cpp')
+cxx_files += files('libk++/bitmap.cpp')
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/utils.cpp', 'kernel/drivers/ps2.cpp',
     'kernel/drivers/serial.cpp', 'kernel/drivers/vbe.cpp', 'kernel/int/interrupt.cpp',

@@ -1,7 +1,9 @@
+#include "x86_64/trace/symbols.hpp"
+
+#include <stl/cstdlib/cstring.h>
 #include <stl/cstdlib/stdio.h>
 
-#include <x86_64/trace/symbols.hpp>
-#include <stl/cstdlib/cstring.h>
+#include "x86_64/logger.hpp"
 
 extern "C" sym_table_t symbol_table[];
 
@@ -35,12 +37,15 @@ sym_table_t SymbolTable::lookup(uint64_t addr) const noexcept {
 
 bool backtrace(uint64_t addr, int iteration) {
     SymbolTable table{};
-    auto const&[base, name] = table[addr];
-    printf("#%d %X \t%s\n", iteration, base, name);
-    
+    auto const& [base, name] = table[addr];
+
+    using firefly::kernel::info_logger;
+
+    info_logger << info_logger.fmt("#%d %X \t%s\n", iteration, base, name);
+
     /* Don't trace symbols below kernel_init */
     if (strcmp(name, "kernel_init") == 0)
         return false;
-    
+
     return true;
 }

@@ -7,7 +7,7 @@
 #include "x86_64/drivers/serial.hpp"
 #include "x86_64/drivers/vbe.hpp"
 #include "x86_64/init/init.hpp"
-#include "x86_64/libk++/iostream.h"
+#include "x86_64/logger.hpp"
 #include "x86_64/memory-manager/primary/primary_phys.hpp"
 #include "x86_64/memory-manager/virtual/virtual.hpp"
 #include "x86_64/trace/strace.hpp"
@@ -18,8 +18,8 @@
 constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel {
-void write_ff_info() {
-    printf("FireflyOS\nVersion: %s\nContributors:", VERSION_STRING);
+void log_core_firefly_contributors() {
+    info_logger << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     firefly::std::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -27,11 +27,11 @@ void write_ff_info() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            puts("\n\t");
+            info_logger << info_logger.newline() << info_logger.tab();
         }
-        printf("%s  ", arr[i]);
+        info_logger << " " << arr[i];
     }
-    puts("\n");
+    info_logger << info_logger.newline();
 }
 
 [[noreturn]] void kernel_main() {

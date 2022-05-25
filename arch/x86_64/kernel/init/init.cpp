@@ -2,7 +2,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <x86_64/libk++/iostream.h>
 
 #include "x86_64/drivers/vbe.hpp"
 #include "x86_64/fb/framebuffer.hpp"
@@ -112,6 +111,8 @@ void bootloader_services_init(stivale2_struct* handover)
     }
     
     firefly::kernel::device::stivale2_term::init(tag_term);
+    
+    log_core_firefly_contributors(); // This is here to make sure it's the first message being logged
 
     auto tagmem = static_cast<stivale2_struct_tag_memmap*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     if (tagmem == NULL) {

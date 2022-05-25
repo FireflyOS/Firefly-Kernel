@@ -2,5 +2,5 @@
 
 namespace firefly::kernel {
 [[noreturn]] void kernel_main();
-void write_ff_info();
+void log_core_firefly_contributors();
 }  // namespace firefly::kernel
