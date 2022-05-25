@@ -30,8 +30,7 @@ public:
         T list;
 
     public:
-        void add(const T &data) {
-            T block = data;
+        void add(const T &block) {
             *(T *)block = list;
             list = block;
 
@@ -41,7 +40,7 @@ public:
 
         T remove(FillMode fill) {
             T element = list;
-            list = *(void **)list;
+            list = *(T *)list;
 
             if (fill != FillMode::NONE)
                 memset(element, fill, PAGE_SIZE);
