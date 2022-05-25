@@ -10,15 +10,15 @@ ifeq ($(wildcard ./build),)
 endif
 	cd build; \
 	meson compile && \
-	../Scripts/geniso.sh
+	../scripts/geniso.sh
 
 run:
 	cd build; \
-	../Scripts/qemu-bios.sh
+	../scripts/qemu-bios.sh
 
 uefi:
 	cd build; \
-	../Scripts/qemu-uefi.sh
+	../scripts/qemu-uefi.sh
 
 clean:
 ifeq ($(wildcard ./build),)
