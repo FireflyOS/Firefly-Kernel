@@ -1,6 +1,7 @@
 #include "firefly/kernel.hpp"
 
-#include <stl/array.h>
+#include <frg/array.h>
+// #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
 
 #include "firefly/drivers/ps2.hpp"
@@ -20,7 +21,7 @@ namespace firefly::kernel {
 void log_core_firefly_contributors() {
     info_logger << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
-    firefly::std::array<const char *, 3> arr = {
+    frg::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
     };
 
