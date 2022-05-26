@@ -1,4 +1,4 @@
-#include "firefly/fb/stivale2-term.hpp"
+#include "firefly/console/stivale2-term.hpp"
 #include <stl/cstdlib/cstring.h>
 #include <stddef.h>
 

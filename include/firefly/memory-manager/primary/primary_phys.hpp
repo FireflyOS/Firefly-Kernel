@@ -65,7 +65,7 @@ public:
             auto top = base + pages * PAGE_SIZE;
 
             if constexpr (verbose)
-                info_logger << info_logger.fmt("base: 0x%x | top: 0x%x | pages: %d\n", base, top, pages);
+                info_logger << info_logger.format("base: 0x%x | top: 0x%x | pages: %d\n", base, top, pages);
 
             if (!pages)
                 continue;

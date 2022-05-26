@@ -2,11 +2,11 @@
 
 #include <stl/cstdlib/stdio.h>
 
-#include "firefly/fb/stivale2-term.hpp"
+#include "firefly/console/stivale2-term.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/relocation.hpp"
-#include "firefly/trace/strace.hpp"
+#include "firefly/panic.hpp"
 
 namespace firefly::kernel::mm {
 using namespace firefly::mm::relocation::conversion;
@@ -21,7 +21,7 @@ VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping) {
 
 void VirtualMemoryManager::configure_initial_kernel_mapping() {
     auto pml4 = pmm::allocate();
-    if (pml4 == nullptr) trace::panic("Failed to allocate memory for the kernel pml4");
+    if (pml4 == nullptr) panic("Failed to allocate memory for the kernel pml4");
     this->kernel_pml4 = static_cast<pte_t *>(pml4);
 
     for (size_t n = PAGE_SIZE; n < GB * 4; n += PAGE_SIZE) {
@@ -48,7 +48,7 @@ walk_t VirtualMemoryManager::walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t 
 
     if (!(pml_ptr[idx4] & 1)) {
         auto ptr = pmm::allocate();
-        if (ptr == nullptr) trace::panic("OOM");
+        if (ptr == nullptr) panic("OOM");
         this->kernel_pml4[idx4] = reinterpret_cast<pte_t>(ptr);
         this->kernel_pml4[idx4] |= access_flags;
     }
@@ -56,7 +56,7 @@ walk_t VirtualMemoryManager::walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t 
 
     if (!(pml3[idx3] & 1)) {
         auto ptr = pmm::allocate();
-        if (ptr == nullptr) trace::panic("OOM");
+        if (ptr == nullptr) panic("OOM");
         pml3[idx3] = reinterpret_cast<pte_t>(ptr);
         pml3[idx3] |= access_flags;
     }
@@ -64,7 +64,7 @@ walk_t VirtualMemoryManager::walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t 
 
     if ((pml2[idx2] & 1) == 0) {
         auto ptr = pmm::allocate();
-        if (ptr == nullptr) trace::panic("OOM");
+        if (ptr == nullptr) panic("OOM");
         pml2[idx2] = reinterpret_cast<pte_t>(ptr);
         pml2[idx2] |= access_flags;
     }

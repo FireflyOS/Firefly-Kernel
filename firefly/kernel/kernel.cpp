@@ -5,12 +5,11 @@
 
 #include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"
-#include "firefly/drivers/vbe.hpp"
 #include "firefly/init/init.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
-#include "firefly/trace/strace.hpp"
+#include "firefly/panic.hpp"
 
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -37,7 +36,7 @@ void log_core_firefly_contributors() {
 [[noreturn]] void kernel_main() {
     mm::VirtualMemoryManager vmm{ true };
 
-    trace::panic("Reached the end of the kernel");
+    panic("Reached the end of the kernel");
     __builtin_unreachable();
 }
 }  // namespace firefly::kernel

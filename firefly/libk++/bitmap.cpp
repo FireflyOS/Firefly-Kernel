@@ -1,4 +1,4 @@
-#include "firefly/libk++/bitmap.h"
+#include "libk++/bitmap.h"
 
 #include <stl/algorithm.h>
 #include <stl/cstdlib/cstring.h>

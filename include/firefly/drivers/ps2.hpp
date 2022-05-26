@@ -2,7 +2,7 @@
 #include <stl/array.h>
 #include <firefly/drivers/ports.hpp>
 #include <stl/optional.h>
-#include <firefly/utils.hpp>
+#include "libk++/utils.hpp"
 
 /**
  *                          The PS/2 port driver

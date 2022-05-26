@@ -3,16 +3,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "firefly/drivers/vbe.hpp"
-#include "firefly/fb/framebuffer.hpp"
-#include "firefly/fb/stivale2-term.hpp"
+#include "firefly/console/stivale2-term.hpp"
 #include "firefly/intel64/gdt/gdt.hpp"
 #include "firefly/intel64/gdt/tss.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/stivale2.hpp"
-#include "firefly/trace/strace.hpp"
+#include "firefly/panic.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialized array in .bss.
@@ -116,7 +114,7 @@ void bootloader_services_init(stivale2_struct* handover)
 
     auto tagmem = static_cast<stivale2_struct_tag_memmap*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     if (tagmem == NULL) {
-        firefly::trace::panic("Cannot obtain memory map");
+        firefly::panic("Cannot obtain memory map");
     }
     firefly::kernel::mm::pmm::init(tagmem);
 }
