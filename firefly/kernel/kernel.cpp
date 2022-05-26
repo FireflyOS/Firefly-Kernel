@@ -1,6 +1,6 @@
 #include "firefly/kernel.hpp"
 
-#include <frg/array.h>
+#include <frg/array.hpp>
 // #include <stl/array.h>
 #include <stl/cstdlib/stdio.h>
 
