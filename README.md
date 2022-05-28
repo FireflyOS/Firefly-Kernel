@@ -23,6 +23,6 @@ make all run # Alternatively you can use 'make all uefi' for uefi emulation
 make -C limine/
 meson build --cross-file meson_config.txt # You *must* use build, other scripts depend on this directory name
 cd build
-meson compile && ../Scripts/geniso.sh && ../Scripts/qemu-bios.sh # If meson compile is not supported you can either upgrade meson or use ninja
+meson compile && ../scripts/geniso.sh && ../scripts/qemu-bios.sh # If meson compile is not supported you can either upgrade meson or use ninja
 ```
 Note: It is assumed you have meson version `0.60.1` or higher, you may or may not run into problems with older versions.
