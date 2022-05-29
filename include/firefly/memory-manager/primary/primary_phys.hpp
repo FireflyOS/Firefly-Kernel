@@ -1,22 +1,35 @@
 #pragma once
 
-#include <stdint.h>
 #include <cstdlib/cstring.h>
+#include <stdint.h>
+
+#include <frg/list.hpp>
 
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"
+#include "firefly/memory-manager/zone-specifier.hpp"
 #include "firefly/stivale2.hpp"
 #include "firefly/trace/strace.hpp"
 
-namespace firefly::kernel::mm {
+// Since the pmm class has only static members and functions they need to be written out once.
+// This is just a wrapper to make this easier and cleaner
+#define COMPILE_TIME_CONFIGURE_PMM_CLASS                       \
+    frg::intrusive_list<                                       \
+        firefly::kernel::mm::Zone,                             \
+        frg::locate_member<                                    \
+            firefly::kernel::mm::Zone,                         \
+            frg::default_list_hook<firefly::kernel::mm::Zone>, \
+            &firefly::kernel::mm::Zone::next>>                 \
+        firefly::kernel::mm::pmm::zones;                       \
+                                                               \
+    firefly::kernel::mm::pmm::Freelist<firefly::kernel::mm::pmm::PhysicalAddress> firefly::kernel::mm::pmm::freelist  // NOTE: Deprecation inbound for this
 
-namespace {
-constexpr bool verbose = false;
-}
+namespace firefly::kernel::mm {
 
 class pmm {
 public:
     using PhysicalAddress = void *;
+    static constexpr bool verbose = false;
 
     enum FillMode : char {
         ZERO = 0,
@@ -52,6 +65,7 @@ public:
 
     static void init(stivale2_struct_tag_memmap *mmap) {
         freelist.add(nullptr);
+        int num_zones = 0;
 
         for (auto i = 0ul; i < mmap->entries; i++) {
             auto entry = mmap->memmap[i];
@@ -72,6 +86,9 @@ public:
             for (auto i = 0ul; i <= pages; i++) {
                 freelist.add(reinterpret_cast<PhysicalAddress>(base + (i * PAGE_SIZE)));
             }
+
+            auto zone = init_zone(base, len, num_zones++);
+            zones.push_back(zone);
         }
         info_logger << "pmm: Initialized " << logger::endl;
     }
@@ -83,5 +100,13 @@ public:
     static void deallocate(PhysicalAddress ptr) {
         freelist.add(ptr);
     }
+
+    static frg::intrusive_list<
+        Zone,
+        frg::locate_member<
+            Zone,
+            frg::default_list_hook<Zone>,
+            &Zone::next>>
+        zones;
 };
 }  // namespace firefly::kernel::mm

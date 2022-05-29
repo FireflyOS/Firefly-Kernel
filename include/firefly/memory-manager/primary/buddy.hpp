@@ -7,16 +7,12 @@
 #include <algorithm>  // std::min, std::max
 
 #include "firefly/logger.hpp"
+#include "firefly/memory-manager/mm.hpp"
 
 namespace firefly::kernel::mm {
 template <int highest_order>
 class BuddyAllocator {
 public:
-    enum FillMode : char {
-        ZERO = 0,
-        NONE = 1  // Don't fill
-    };
-
     using Order = int;
     using PhysicalAddress = uint64_t *;
 

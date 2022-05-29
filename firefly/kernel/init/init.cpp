@@ -9,12 +9,12 @@
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
-#include "firefly/stivale2.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/stivale2.hpp"
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialized array in .bss.
-static uint8_t stack[4096*2] __attribute__((aligned(0x1000)));
+static uint8_t stack[4096 * 2] __attribute__((aligned(0x1000)));
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -40,8 +40,7 @@ static stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
 struct stivale2_header_tag_terminal terminal_hdr_tag = {
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_TERMINAL_ID,
-        .next       = (uint64_t)&framebuffer_hdr_tag
-    },
+        .next = (uint64_t)&framebuffer_hdr_tag },
     .flags = 0
 };
 
@@ -76,8 +75,7 @@ __attribute__((section(".stivale2hdr"), used)) static stivale2_header stivale_hd
 
 // We will now write a helper function which will allow us to scan for tags
 // that we want FROM the bootloader (structure tags).#include <cstdlib/#include <cstdint>>
-void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id)
-{
+void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id) {
     stivale2_tag* current_tag = (stivale2_tag*)stivale2_struct->tags;
     for (;;) {
         // If the tag pointer is NULL (end of linked list), we did not find
@@ -97,20 +95,21 @@ void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id)
     }
 }
 
-using namespace firefly::kernel;
-mm::pmm::Freelist<mm::pmm::PhysicalAddress> mm::pmm::freelist;
+#include "firefly/memory-manager/zone-specifier.hpp"
 
-void bootloader_services_init(stivale2_struct* handover)
-{
+using namespace firefly::kernel;
+COMPILE_TIME_CONFIGURE_PMM_CLASS;
+
+void bootloader_services_init(stivale2_struct* handover) {
     auto tag_term = static_cast<stivale2_struct_tag_terminal*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_TERMINAL_ID));
     if (tag_term == NULL) {
         for (;;)
             asm("hlt");
     }
-    
+
     firefly::kernel::device::stivale2_term::init(tag_term);
-    
-    log_core_firefly_contributors(); // This is here to make sure it's the first message being logged
+
+    log_core_firefly_contributors();  // This is here to make sure it's the first message being logged
 
     auto tagmem = static_cast<stivale2_struct_tag_memmap*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_MEMMAP_ID));
     if (tagmem == NULL) {
@@ -119,8 +118,7 @@ void bootloader_services_init(stivale2_struct* handover)
     firefly::kernel::mm::pmm::init(tagmem);
 }
 
-extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover)
-{
+extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover) {
     firefly::kernel::core::gdt::init();
     firefly::kernel::core::tss::core0_tss_init(reinterpret_cast<size_t>(stack));
     firefly::kernel::core::interrupt::init();
