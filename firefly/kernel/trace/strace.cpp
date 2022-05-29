@@ -1,17 +1,7 @@
-#include <stl/cstdlib/stdio.h>
-
 #include "firefly/logger.hpp"
 #include "firefly/trace/symbols.hpp"
 
 namespace firefly::trace {
-
-// [[noreturn]] void panic(const char *msg) {
-//     kernel::info_logger << "\n**** Kernel panic ****\nReason: " << msg << "\n";
-//     trace_stack();
-
-//     while (1)
-//         ;
-// }
 
 struct stackframe {
     struct stackframe *frame;

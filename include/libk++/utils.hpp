@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stl/cstdlib/cstdint.h>
+#include <cstdint>
 
 namespace firefly::kernel {
 uint32_t bgr2rgb(uint32_t bytes[], int offset);

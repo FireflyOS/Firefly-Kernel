@@ -1,8 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <stl/cstdlib/cstring.h>
-#include <stl/cstdlib/stdio.h>
+#include <cstdlib/cstring.h>
 
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"

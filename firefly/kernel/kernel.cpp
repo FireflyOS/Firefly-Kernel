@@ -1,7 +1,6 @@
 #include "firefly/kernel.hpp"
 
 #include <frg/array.hpp>
-#include <stl/cstdlib/stdio.h>
 
 #include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"

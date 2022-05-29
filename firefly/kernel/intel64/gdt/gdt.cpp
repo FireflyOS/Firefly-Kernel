@@ -1,6 +1,5 @@
-#include <stl/cstdlib/stdio.h>
-
 #include "firefly/intel64/gdt/gdt.hpp"
+
 #include "firefly/intel64/gdt/tss.hpp"
 
 namespace firefly::kernel::core::gdt {
@@ -30,13 +29,11 @@ void GDTconfig::set_tss(uint64_t base, uint8_t flags, uint8_t access) {
     gdt_config.tssd.reserved = 0;
 }
 
-uint16_t ltr_entry_offset() noexcept
-{
+uint16_t ltr_entry_offset() noexcept {
     return gdt_config.registered_entries * 8;
 }
 
-uint16_t gdt_entry_offset(enum SELECTOR selector) noexcept
-{
+uint16_t gdt_entry_offset(enum SELECTOR selector) noexcept {
     return selector * 8;
 }
 

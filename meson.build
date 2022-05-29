@@ -11,7 +11,7 @@ endif
 # Set by subdirs
 cxx_files = []
 asm_files = []
-include_dir = include_directories('include/', 'include/stl/', 'include/cxxshim/', 'include/frigg/')
+include_dir = include_directories('include/', 'include/cxxshim/', 'include/frigg/')
 
 subdir('include/')
 subdir('firefly/') # kernel

@@ -1,5 +1,5 @@
 #pragma once
-#include <stl/cstdlib/cstdint.h>
+#include <cstddef>
 
 #define KERNEL_CODE_OFFSET 0xFFFFFFFF80000000UL
 #define KERNEL_DATA_OFFSET 0xFFFF800000000000UL
@@ -13,20 +13,20 @@ enum ADDRESS_TYPE {
 inline size_t to_higher_half(size_t address, enum ADDRESS_TYPE addr_type) {
     if (addr_type == CODE)
         return (address + KERNEL_CODE_OFFSET);
-    
+
     else if (addr_type == DATA)
         return (address + KERNEL_DATA_OFFSET);
-    
+
     return 0;
 }
 
 inline size_t from_higher_half(size_t address, enum ADDRESS_TYPE addr_type) {
     if (addr_type == CODE)
         return (address - KERNEL_CODE_OFFSET);
-    
+
     else if (addr_type == DATA)
         return (address - KERNEL_DATA_OFFSET);
-    
+
     return 0;
 }
 }  // namespace conversion

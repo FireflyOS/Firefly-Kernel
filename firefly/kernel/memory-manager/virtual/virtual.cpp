@@ -1,7 +1,5 @@
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
-#include <stl/cstdlib/stdio.h>
-
 #include "firefly/console/stivale2-term.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"

@@ -75,7 +75,7 @@ __attribute__((section(".stivale2hdr"), used)) static stivale2_header stivale_hd
 };
 
 // We will now write a helper function which will allow us to scan for tags
-// that we want FROM the bootloader (structure tags).#include <cstdlib/cstdint.h>
+// that we want FROM the bootloader (structure tags).#include <cstdlib/#include <cstdint>>
 void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id)
 {
     stivale2_tag* current_tag = (stivale2_tag*)stivale2_struct->tags;

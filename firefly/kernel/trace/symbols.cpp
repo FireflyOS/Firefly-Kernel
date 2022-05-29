@@ -1,7 +1,6 @@
 #include "firefly/trace/symbols.hpp"
 
-#include <stl/cstdlib/cstring.h>
-#include <stl/cstdlib/stdio.h>
+#include <cstdlib/cstring.h>
 
 #include "firefly/logger.hpp"
 

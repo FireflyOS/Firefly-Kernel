@@ -1,5 +1,5 @@
 #include "firefly/console/stivale2-term.hpp"
-#include <stl/cstdlib/cstring.h>
+#include <cstdlib/cstring.h>
 #include <stddef.h>
 
 namespace firefly::kernel::device::stivale2_term

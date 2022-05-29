@@ -1,7 +1,8 @@
 #ifndef __SERIAL_KERNEL_HPP__
 #define __SERIAL_KERNEL_HPP__
 
-#include <cstdlib/cstdint.h>
+#include <cstdint>
+#include <cstddef>
 
 namespace firefly::kernel::io {
 class SerialPort {

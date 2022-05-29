@@ -1,8 +1,7 @@
 #include "libk++/bitmap.h"
 
-#include <stl/algorithm.h>
-#include <stl/cstdlib/cstring.h>
-#include <stl/cstdlib/stdio.h>
+#include <algorithm>
+#include <cstdlib/cstring.h>
 
 #include "firefly/logger.hpp"
 

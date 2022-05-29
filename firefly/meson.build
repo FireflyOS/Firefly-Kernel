@@ -13,7 +13,6 @@ cxx_files += files(
     'kernel/kernel.cpp', 'kernel/drivers/ps2.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
-    'kernel/memory-manager/secondary/buddy/buddy_heap.cpp', 'kernel/memory-manager/secondary/buddy/buddy.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
     'kernel/console/stivale2-term.cpp'
 )
