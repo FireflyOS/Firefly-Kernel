@@ -5,6 +5,7 @@
 
 namespace firefly {
 
+[[gnu::used]]
 [[noreturn]] static void panic(const char *msg) {
     kernel::info_logger << "\n**** Kernel panic ****\nReason: " << msg << "\n";
     trace::trace_callstack();

@@ -33,22 +33,30 @@ void log_core_firefly_contributors() {
     info_logger << info_logger.newline();
 }
 
+#include "firefly/memory-manager/zone-specifier.hpp"
+
 [[noreturn]] void kernel_main() {
     mm::VirtualMemoryManager vmm{ true };
+
+    for (int i = 0; i < 6; i++)
+    {
+        auto ptr = mm::pmm::allocate();
+        info_logger << info_logger.hex(ptr) << '\n';
+    }
 
     // A little buddy allocator test.
     // Note: This may not work for you because it manages 8192 bytes,
     // but only 4096 have been allocated. This is because our buddy
     // allocator can only allocate 4096 as the smallest allocation which wouldn't make for a good test.
-    info_logger << "\nBuddy test: Allocating, freeing and allocating a page..\n";
-    mm::BuddyAllocator<13> instance((uint64_t *)mm::pmm::allocate());
+    // info_logger << "\nBuddy test: Allocating, freeing and allocating a page..\n";
+    // mm::BuddyAllocator instance((uint64_t *)mm::pmm::allocate(), 13);
 
-    auto ptr = instance.alloc(8192);
-    info_logger << "ptr: " << info_logger.hex(ptr) << '\n';
-    instance.free(ptr, 12);
+    // auto ptr = instance.alloc(8192);
+    // info_logger << "ptr: " << info_logger.hex(ptr) << '\n';
+    // instance.free(ptr, 12);
 
-    ptr = instance.alloc(4096);
-    info_logger << "ptr: " << info_logger.hex(ptr) << '\n';
+    // ptr = instance.alloc(4096);
+    // info_logger << "ptr: " << info_logger.hex(ptr) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

@@ -10,7 +10,7 @@ kernel_build_flags = [
 
 cxx_files += files('libk++/bitmap.cpp', 'libk++/fmt.cpp', 'libk++/utils.cpp')
 cxx_files += files(
-    'kernel/kernel.cpp', 'kernel/drivers/ps2.cpp',
+    'kernel/kernel.cpp', 'kernel/drivers/ps2.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',

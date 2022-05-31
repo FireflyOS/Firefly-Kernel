@@ -1,10 +1,15 @@
 #pragma once
 
+#include <cstdlib/cmath.h>
+
 #include <cstddef>
 #include <frg/list.hpp>
 
 #include "firefly/memory-manager/mm.hpp"
+#include "firefly/memory-manager/primary/buddy.hpp"
+#include "firefly/memory-manager/primary/bootstrap_allocator.hpp"
 #include "libk++/align.h"
+#include "libk++/bits.h"
 
 namespace firefly::kernel::mm {
 
@@ -16,8 +21,10 @@ enum ZoneType {
 };
 
 struct Zone {
-    PhysicalAddress base;
-    PhysicalAddress top;
+    BuddyAllocator allocator;
+
+    size_t base;
+    size_t top;
     size_t page_count;
     size_t length;
     ZoneId zone_id;
@@ -25,27 +32,28 @@ struct Zone {
     frg::default_list_hook<Zone> next;
 };
 
-static Zone *init_zone(size_t base, size_t length, ZoneId id, ZoneType type = ZONE_TYPE_LOW) {
-    // We have to remove one whole page from each zone to allocate memory for the
-    // Zone struct itself, so we made sure this won't be an empty zone.
-    if (base + length <= 4096) {
-        return nullptr;
-    }
+[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator allocator, ZoneType type = ZONE_TYPE_LOW) {
+    Zone *zone = (Zone *)allocator.allocate_buffer();
+    if (!zone)
+        panic("Failed to allocate memory for a zone structure (Try increasing `BootstrapAllocator.largest_size`)\n");
 
-    Zone *zone = reinterpret_cast<Zone *>(base);
+    // Some frigg assertions may fail due to the random values in uninitialized memory.
+    // So we clear it to avoid any UB (this bug took a while to figure out lol)
+    memset((void *)zone, 0, sizeof(Zone));
 
-    // Todo: Maybe we can do 'base += sizeof(Zone)' and give
-    // the left over bytes until the next page* to the slab allocator    *The number of bytes left would be: '(base + PAGE_SIZE) - sizeof(Zone)'
-    base += PAGE_SIZE;
-    length -= PAGE_SIZE;
-
-    info_logger << info_logger.format("zone: 0x%X-0x%X\n", base, base + length);
-    zone->base = reinterpret_cast<PhysicalAddress>(base);
-    zone->top = reinterpret_cast<PhysicalAddress>(base + length - 1);
-    zone->page_count = length / PAGE_SIZE;
-    zone->length = length;
-    zone->zone_id = id;
+    // info_logger << info_logger.format("zone: 0x%X-0x%X\n", base, base + len);
+    zone->base = base;
+    zone->length = len;
+    zone->page_count = len / PAGE_SIZE;
+    zone->zone_id = nr;
     zone->zone_type = type;
+
+    auto top = base + len;
+    long size_bytes = (top - base);
+    auto suitable_order = log2(size_bytes);
+
+    // info_logger << "Order for size " << size_bytes << " is: " << suitable_order << '\n';
+    zone->allocator.init_from_zone(reinterpret_cast<BuddyAllocator::PhysicalAddress>(base), suitable_order);
 
     return zone;
 }

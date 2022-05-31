@@ -10,29 +10,46 @@
 #include "firefly/memory-manager/mm.hpp"
 
 namespace firefly::kernel::mm {
-template <int highest_order>
 class BuddyAllocator {
 public:
     using Order = int;
     using PhysicalAddress = uint64_t *;
 
-    constexpr static Order min_order = 9;
-    constexpr static Order max_order = highest_order - 3;
-    constexpr static bool verbose = false;
+    Order max_order = 0;                                // Represents the largest allocation and is determined at runtime.
+    constexpr static Order largest_allowed_order = 30;  // 1GiB is the largest allocation on instance of this class may serve.
+    constexpr static Order min_order = 9;               // 4kib, this is the smallest allocation size and will never change.
+    constexpr static bool verbose{}, sanity_checks{};   // sanity_checks ensures we don't go out-of-bounds on the freelist.
+                                                        // Beware: These options will impact the performance of the allocator.
 
-    BuddyAllocator(PhysicalAddress base)
-        : base(base) {
+    BuddyAllocator(PhysicalAddress base, int target_order)
+        : max_order(target_order - 3), base(base) {
         if constexpr (verbose)
             info_logger << "min-order: " << min_order << ", max-order: " << max_order << logger::endl;
 
         freelist.add(base, max_order - min_order);
     }
 
-    PhysicalAddress alloc_order(Order order, FillMode fill = FillMode::NONE) {
+    // When a constructor is not used it's most likely used as part of a 'struct Zone'.
+    // Therefore we allow the kernel to add information to the allocator later via 'init_from_zone'
+    void init_from_zone(PhysicalAddress base, int target_order) {
+        // Constructor has been called already..
+        if (this->base)
+            return;
+
+        this->base = base;
+        max_order = target_order - 3;
+
+        if constexpr (verbose)
+            info_logger << "min-order: " << min_order << ", max-order: " << max_order << logger::endl;
+
+        freelist.add(base, max_order - min_order);
+    }
+
+    PhysicalAddress alloc_order(Order order, FillMode fill = FillMode::ZERO) {
         return alloc(1 << order, fill);
     }
 
-    PhysicalAddress alloc(uint64_t size, [[maybe_unused]] FillMode fill = FillMode::NONE) {
+    PhysicalAddress alloc(uint64_t size, FillMode fill = FillMode::ZERO) {
         Order order = std::max(min_order, log2(size >> 3));
         assert_truth(order <= max_order);
 
@@ -64,14 +81,18 @@ public:
         if (fill != FillMode::NONE)
             memset(static_cast<void *>(block), fill, size);
 
+        // info_logger << "Allocated " << block << " at order " << ord << " (max: " << max_order << ")  with a size of " << size << '\n';
         return block;
     }
 
     void free(PhysicalAddress block, Order order) {
-        if (block == nullptr)
+        order -= 3;
+
+        if (block == nullptr || order > max_order || order < min_order)
             return;
 
-        order -= 3;
+        if (!freelist.get_element(order - min_order) && order != max_order)
+            return;
 
         // There are no buddies at max_order
         if (order == max_order) {
@@ -82,14 +103,26 @@ public:
         coalesce(block, order);
     }
 
+    int log2(int size) {
+        int result = 0;
+        while ((1 << result) < size) {
+            ++result;
+        }
+        return result;
+    }
+
 private:
     template <typename T, int orders>
     class Freelist {
     private:
-        T list[orders + 1]{};  // Todo: Think of a way to allocate enough memory for this array dynamically
+        T list[orders + 1]{};
 
     public:
         void add(const T &block, Order order) {
+            if constexpr (sanity_checks)
+                if (order < min_order || order > largest_allowed_order)
+                    assert_truth(!"Order mismatch");
+
             if (block)
                 *(T *)block = list[order];
 
@@ -97,7 +130,13 @@ private:
         }
 
         T remove(Order order) {
+            if constexpr (sanity_checks)
+                if (order < min_order || order > largest_allowed_order)
+                    assert_truth(!"Order mismatch");
+
             T element = list[order];
+
+            // info_logger << "element: " << info_logger.hex(element) << " order: " << order << "\n";
 
             if (element == nullptr)
                 return nullptr;
@@ -105,6 +144,10 @@ private:
             list[order] = *(T *)list[order];
 
             return element;
+        }
+
+        T get_element(Order order) const {
+            return list[order];
         }
 
         T next(const T &block) const {
@@ -121,14 +164,6 @@ private:
         }
     };
 
-    static constexpr int log2(int size) {
-        int result = 0;
-        while ((1 << result) < size) {
-            ++result;
-        }
-        return result;
-    }
-
     inline PhysicalAddress buddy_of(PhysicalAddress block, Order order) {
         return base + ((block - base) ^ (1 << order));
     }
@@ -138,7 +173,6 @@ private:
         // Try to merge 'block' and it's buddy into one larger block at 'order + 1'
         // If both block are free, remove them and insert the smaller of
         // the two blocks into the next highest order and repeat that process.
-
         if (order == max_order)
             return;
 
@@ -163,7 +197,7 @@ private:
     }
 
 private:
-    Freelist<PhysicalAddress, max_order - min_order> freelist;
-    PhysicalAddress base;
+    Freelist<PhysicalAddress, largest_allowed_order - min_order> freelist;
+    PhysicalAddress base{};
 };
 }  // namespace firefly::kernel::mm
