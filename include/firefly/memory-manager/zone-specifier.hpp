@@ -32,7 +32,7 @@ struct Zone {
     frg::default_list_hook<Zone> next;
 };
 
-[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator allocator, ZoneType type = ZONE_TYPE_LOW) {
+[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator allocator, const bool verbose = false, ZoneType type = ZONE_TYPE_LOW) {
     Zone *zone = (Zone *)allocator.allocate_buffer();
     if (!zone)
         panic("Failed to allocate memory for a zone structure (Try increasing `BootstrapAllocator.largest_size`)\n");
@@ -41,8 +41,11 @@ struct Zone {
     // So we clear it to avoid any UB (this bug took a while to figure out lol)
     memset((void *)zone, 0, sizeof(Zone));
 
-    // info_logger << info_logger.format("zone: 0x%X-0x%X\n", base, base + len);
+    if (verbose)
+        info_logger << "Zone#" << nr << " " << info_logger.hex(base) << " - " << info_logger.hex(base+len) << '\n';
+
     zone->base = base;
+    zone->top = base + len;
     zone->length = len;
     zone->page_count = len / PAGE_SIZE;
     zone->zone_id = nr;
@@ -52,7 +55,9 @@ struct Zone {
     long size_bytes = (top - base);
     auto suitable_order = log2(size_bytes);
 
-    // info_logger << "Order for size " << size_bytes << " is: " << suitable_order << '\n';
+    if (verbose)
+        info_logger << "Order for size " << size_bytes << " is: " << suitable_order << '\n';
+    
     zone->allocator.init_from_zone(reinterpret_cast<BuddyAllocator::PhysicalAddress>(base), suitable_order);
 
     return zone;

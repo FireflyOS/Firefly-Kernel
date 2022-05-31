@@ -36,7 +36,7 @@ void log_core_firefly_contributors() {
 #include "firefly/memory-manager/zone-specifier.hpp"
 
 [[noreturn]] void kernel_main() {
-    mm::VirtualMemoryManager vmm{ true };
+    // mm::VirtualMemoryManager vmm{ true };
 
     for (int i = 0; i < 6; i++)
     {
