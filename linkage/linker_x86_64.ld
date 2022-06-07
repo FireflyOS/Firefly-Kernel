@@ -13,7 +13,6 @@ SECTIONS
 {
     /* We wanna be placed in the higher half, 2MiB above 0 in physical memory. */
     . = 0xffffffff80200000;
-    kernel_start = . - 0xffffffff80200000;
     
     /* Then let's place all the other traditional executable sections afterwards. */
     .text : ALIGN(0x1000) {
@@ -26,7 +25,7 @@ SECTIONS
         KEEP(*(.stivale2hdr))
     } :rodata
 
-    .rodata : {
+    .rodata : ALIGN(0x1000) {
         *(.rodata*)
         KEEP(*(SORT(.ctors)))
         KEEP(*(.ctors))
@@ -45,5 +44,4 @@ SECTIONS
         *(COMMON)
         *(.bss*)
     } :data
-    kernel_end = . - 0xffffffff80200000;
 }
