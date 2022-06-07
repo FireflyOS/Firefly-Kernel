@@ -6,8 +6,8 @@
 #include <frg/list.hpp>
 
 #include "firefly/memory-manager/mm.hpp"
-#include "firefly/memory-manager/primary/buddy.hpp"
 #include "firefly/memory-manager/primary/bootstrap_allocator.hpp"
+#include "firefly/memory-manager/primary/buddy.hpp"
 #include "libk++/align.h"
 #include "libk++/bits.h"
 
@@ -32,17 +32,23 @@ struct Zone {
     frg::default_list_hook<Zone> next;
 };
 
-[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator allocator, const bool verbose = false, ZoneType type = ZONE_TYPE_LOW) {
+[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator &allocator, const bool verbose = false, ZoneType type = ZONE_TYPE_LOW) {
     Zone *zone = (Zone *)allocator.allocate_buffer();
+
+    // This shouldn't happen. If it does, something is *really* wrong
     if (!zone)
-        panic("Failed to allocate memory for a zone structure (Try increasing `BootstrapAllocator.largest_size`)\n");
+    {
+        if (verbose)
+            info_logger << "WARNING: Bogus address for zone#" << nr << " | Discarding...\n";
+        return nullptr;
+    }
 
     // Some frigg assertions may fail due to the random values in uninitialized memory.
     // So we clear it to avoid any UB (this bug took a while to figure out lol)
     memset((void *)zone, 0, sizeof(Zone));
 
     if (verbose)
-        info_logger << "Zone#" << nr << " " << info_logger.hex(base) << " - " << info_logger.hex(base+len) << '\n';
+        info_logger << "Zone#" << nr << " " << info_logger.hex(base) << " - " << info_logger.hex(base + len) << '\n';
 
     zone->base = base;
     zone->top = base + len;
@@ -57,9 +63,9 @@ struct Zone {
 
     if (verbose)
         info_logger << "Order for size " << size_bytes << " is: " << suitable_order << '\n';
-    
-    zone->allocator.init_from_zone(reinterpret_cast<BuddyAllocator::PhysicalAddress>(base), suitable_order);
 
+    zone->allocator.init_from_zone(reinterpret_cast<BuddyAllocator::PhysicalAddress>(base), suitable_order);
+    
     return zone;
 }
 

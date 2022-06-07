@@ -52,28 +52,26 @@ void init(stivale2_struct_tag_memmap *mmap) {
 
         // Split the memory map into sizes of powers of two
         // This ensures we waste as little memory as possible
-        for (int i = 0; i < 64; i++) {
-            long long x = 1;
-
-            if (len & (x << i)) {
-                Zone *z = init_zone(base, 1 << i, num_zones++, zone_allocator, verbose);
-                zones.push_back(z);
-                base += 1 << i;
+        for (uint64_t i = 0; i < 64; i++) {
+            if (len & (1LL << i)) {
+                Zone *z = init_zone(base, (1LL << i), ++num_zones, zone_allocator, verbose);
+                zones.push_front(z);
+                base += (1LL << i);
             }
         }
     }
-    --num_zones; // zones are zero indexed, so we remove one excess refcount
 
     active_zone = zones.pop_front();
+
     info_logger << "Active zone: id=" << active_zone->zone_id << "/" << num_zones << " base-top=" << info_logger.hex(active_zone->base) << " - " << info_logger.hex(active_zone->top) << " [" << active_zone->page_count << " pages]\n";
     info_logger << "pmm: Initialized " << logger::endl;
 }
 
-PhysicalAddress allocate([[maybe_unused]] FillMode fill) {
+PhysicalAddress allocate(uint64_t size, FillMode fill) {
     // NOTE: This logic is temporary.
-    // This function should have a size parameter and search
-    // the 'zones' list for a zone that is large enough to perform
-    // this allocation.
+    // This function should search the 'zones' list for a zone
+    // that is large enough to perform this allocation.
+    // (The zones should probably be sorted or something as well)
     //
     // This function should proceed to ask the buddy for 'size' bytes
     // of memory and find a new zone if the buddy returned a nullptr.
@@ -81,21 +79,27 @@ PhysicalAddress allocate([[maybe_unused]] FillMode fill) {
     // for full zones to help speed up allocations and deallocations.
 
     auto zone = active_zone;
-    auto ptr = zone->allocator.alloc(4096);
+    auto ptr = zone->allocator.alloc(size, fill);
 
     if (!ptr) {
-        info_logger << zones.front()->allocator.alloc(4096) << '\n';
-        active_zone = zones.pop_front();
+        info_logger << "Completely allocated zone#" << active_zone->zone_id << " : " << info_logger.hex(active_zone->base) << '\n';
 
-        if (!active_zone)
+        if (zones.empty())
             panic("OOM");
 
-        ptr = active_zone->allocator.alloc(4096);
+        active_zone = zones.pop_front();
+        ptr = active_zone->allocator.alloc(size, fill);
     }
 
+    // if (ptr)
+    //     memset((void*)ptr, 0, PAGE_SIZE);
     return ptr;
 }
 
+// Can't implement deallocate(), because if a zone is OOM it's
+// just discarded and not stored anywhere as of now.
+//
+// For more information see the comment in allocate().
 void deallocate([[maybe_unused]] PhysicalAddress ptr) {
     info_logger << "pmm::deallocate() is a stub!\n";
 }
@@ -111,10 +115,9 @@ static uint64_t calculate_num_zones(stivale2_struct_tag_memmap *mmap) {
         auto len = entry.length;
 
         for (int i = 0; i < 64; i++) {
-            long long x = 1;
-
-            if (len & (x << i))
-                ++num_zones;
+            if (len & (1LL << i)) {
+                num_zones++;
+            }
         }
     }
 
@@ -139,11 +142,11 @@ static BootstrapAllocator reserve_zone_memory(stivale2_struct_tag_memmap *mmap) 
         auto &len = entry.length;
         auto &base = entry.base;
 
-        if (len >= min_required_size) {
-            alloc.init_buffer(base, min_required_size, num_zones);
-            memset(reinterpret_cast<void *>(base), 0, min_required_size);
-            base += PAGE_SIZE;
-            len -= PAGE_SIZE;
+        if (len >= min_required_size && base > 0) {
+            alloc.init_buffer(base, sizeof(Zone), min_required_size);
+
+            base += min_required_size;
+            len -= min_required_size;
             break;
         }
     }

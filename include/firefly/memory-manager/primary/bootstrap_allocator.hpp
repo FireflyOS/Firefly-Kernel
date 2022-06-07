@@ -10,36 +10,30 @@ namespace firefly::kernel::mm {
 // (TODO: Put it in a discard_after_boot section or something)
 class BootstrapAllocator {
 private:
-    static constexpr auto block_size = sizeof(int) * 8;
-    static constexpr auto largest_size = 128;
-    static constexpr uint8_t reserved{ 1 }, free{ 0 };
-    static constexpr bool sanity_checks{};
-
-    uint8_t map[largest_size]{};  // Allows up to 128 allocations of one size
-    uint64_t *base{};
+    static constexpr bool sanity_checks{ true };
+    uint8_t *base{};
     uint64_t size, length;
 
 public:
     void init_buffer(uint64_t base, uint64_t size, uint64_t length) {
-        this->base = reinterpret_cast<uint64_t *>(base);
+        info_logger << "BootstrapAllocator-init: base: " << info_logger.hex(base) << " size: " << size << " len: " << length << '\n';
+        this->base = reinterpret_cast<uint8_t *>(base);
         this->size = size;
         this->length = length;
     }
 
     void *allocate_buffer() {
-        for (uint64_t i = 0; i < length; i++) {
-            if (map[i] == free) {
-                map[i] = reserved;
-                return reinterpret_cast<void *>(((uintptr_t)base * i) + size);
+        auto _base = base;
+        base += size;
+
+        if (base >= base + length) {
+            if constexpr (sanity_checks) {
+                panic("Failed to allocate a memory buffer. Try increasing the buffers size during initialization.");
             }
+            return nullptr;
         }
 
-        if constexpr (sanity_checks) {
-            panic("Failed to allocate a memory buffer. Try increasing `BootstrapAllocator.largest_size`");
-            __builtin_unreachable();
-        }
-
-        return nullptr;
+        return _base;
     }
 };
 }  // namespace firefly::kernel::mm

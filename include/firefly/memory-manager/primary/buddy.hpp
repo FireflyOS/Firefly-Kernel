@@ -51,7 +51,13 @@ public:
 
     PhysicalAddress alloc(uint64_t size, FillMode fill = FillMode::ZERO) {
         Order order = std::max(min_order, log2(size >> 3));
-        assert_truth(order <= max_order);
+
+        if (order > max_order) {
+            if constexpr (verbose)
+                info_logger << "Requested order " << order << " (" << size << ") is too large for this buddy instance | max-order: " << max_order << '\n';
+
+            return nullptr;
+        }
 
         if constexpr (verbose)
             info_logger << "Suitable order for allocation of size '" << size << "' is: " << order << logger::endl;
@@ -79,9 +85,11 @@ public:
         }
 
         if (fill != FillMode::NONE)
-            memset(static_cast<void *>(block), fill, size);
+            memset(static_cast<void *>(block), fill, (1 << (order + 3)));  // 'size' is not guaranteed to be a power of two. (Hence the manual pow2)
 
-        // info_logger << "Allocated " << block << " at order " << ord << " (max: " << max_order << ")  with a size of " << size << '\n';
+        if constexpr (verbose)
+            info_logger << "Allocated " << block << " at order " << ord << " (max: " << max_order << ")  with a size of " << size << '\n';
+
         return block;
     }
 
@@ -135,8 +143,6 @@ private:
                     assert_truth(!"Order mismatch");
 
             T element = list[order];
-
-            // info_logger << "element: " << info_logger.hex(element) << " order: " << order << "\n";
 
             if (element == nullptr)
                 return nullptr;
