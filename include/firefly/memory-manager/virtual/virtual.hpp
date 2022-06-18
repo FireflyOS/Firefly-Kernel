@@ -19,7 +19,7 @@ struct walk_t {
 
 class VirtualMemoryManager {
 public:
-    VirtualMemoryManager(bool initial_mapping = false);
+    VirtualMemoryManager(bool initial_mapping = false, stivale2_struct_tag_memmap *mmap = nullptr);
 
 public:
     void map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr);
@@ -37,7 +37,7 @@ private:
     }
 
 private:
-    void configure_initial_kernel_mapping();
+    void configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap);
     walk_t walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t access_flags);
 };
 }  // namespace firefly::kernel::mm

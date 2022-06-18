@@ -33,10 +33,8 @@ void log_core_firefly_contributors() {
     info_logger << info_logger.newline();
 }
 
-#include "firefly/memory-manager/zone-specifier.hpp"
-
 [[noreturn]] void kernel_main() {
-    mm::VirtualMemoryManager vmm{ true };
+    // mm::VirtualMemoryManager vmm{ true };
 
     // Test OOM
     for(;;)
@@ -44,7 +42,7 @@ void log_core_firefly_contributors() {
         auto ptr = mm::pmm::allocate();
         if (!ptr)
             break;
-        // info_logger << info_logger.hex(ptr) << '\n';
+        info_logger << info_logger.hex(ptr) << '\n';
     }
 
     panic("Reached the end of the kernel");
