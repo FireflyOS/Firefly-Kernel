@@ -22,7 +22,9 @@ enum ZoneType {
 
 struct Zone {
     BuddyAllocator allocator;
+    BuddyAllocator::Order order;
 
+    size_t index_in_tree_ordering;
     size_t base;
     size_t top;
     size_t page_count;
@@ -32,7 +34,7 @@ struct Zone {
     frg::default_list_hook<Zone> next;
 };
 
-[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator &allocator, const bool verbose = false, ZoneType type = ZONE_TYPE_LOW) {
+[[gnu::used]] static Zone *init_zone(uint64_t &base, uint64_t len, int nr, BootstrapAllocator &allocator, size_t index_in_tree_ordering, const bool verbose = false, ZoneType type = ZONE_TYPE_LOW) {
     Zone *zone = (Zone *)allocator.allocate_buffer();
 
     // This shouldn't happen. If it does, something is *really* wrong
@@ -50,6 +52,7 @@ struct Zone {
     if (verbose)
         info_logger << "Zone#" << nr << " " << info_logger.hex(base) << " - " << info_logger.hex(base + len) << '\n';
 
+    zone->index_in_tree_ordering = index_in_tree_ordering;
     zone->base = base;
     zone->top = base + len;
     zone->length = len;
@@ -59,7 +62,7 @@ struct Zone {
 
     auto top = base + len;
     long size_bytes = (top - base);
-    auto suitable_order = log2(size_bytes);
+    auto suitable_order = zone->order = log2(size_bytes);
 
     if (verbose)
         info_logger << "Order for size " << size_bytes << " is: " << suitable_order << '\n';
