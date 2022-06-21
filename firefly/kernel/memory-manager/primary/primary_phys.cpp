@@ -1,6 +1,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 
 #include <frg/algorithm.hpp>
+#include <frg/array.hpp>
 #include <frg/vector.hpp>
 
 #include "firefly/memory-manager/primary/bootstrap_allocator.hpp"
@@ -51,8 +52,24 @@ frg::vector<Zone *, VectorAllocator> trees_ordering;
 // a `BuddyTree` contains a `size_t`, current index in trees_ordering, and then you can swap them around
 // because you can just easily fix the sorting in `trees_ordering`, then you can keep track of where the sizes start
 // in the following
-// std::array<size_t, ORDER_COUNT> trees_ordering_start; // so saying ORDER_COUNT == 2, and you have
+
+static constexpr auto tree_ordering_array_sz = BuddyAllocator::largest_allowed_order - BuddyAllocator::smallest_allowed_order;
+[[maybe_unused]] static constexpr int tree_ordering_full = tree_ordering_array_sz + 1;  // trees_ordering_start[array_size + 1] points to unusable (fully allocated) memory
+[[maybe_unused]] static constexpr int tree_ordering_largest = tree_ordering_array_sz;   // points to the largest allocation size
+[[maybe_unused]] static constexpr int tree_ordering_smallest = 0;                       // points to the smallest allocation size
+[[maybe_unused]] static constexpr int tree_ordering_invalid = -1;                       // there is no allocatable size here And there never will be.
+                                                                                        // An example would be a machine with 512mb, but the max size of a buddy allocator is 1gb.
+                                                                                        // Therefore some entries in 'trees_ordering_start' would be -1.
+
+frg::array<int64_t, tree_ordering_array_sz + 1> trees_ordering_start;
+// so saying tree_ordering_array_sz (i.e. "ORDER_COUNT" or "num_orders") == 2, and you have
 // { 0, 600} contained, that means that trees_ordering_start[:600] contains order 0 free, and 600 is where order 1 starts
+//
+// In other words (still assuming order_count == 2):
+//  trees_ordering_start[min_sz ] -> value at this index is: 10 -> trees_ordering[10]: elements 10 - 20 are of size N
+//  trees_ordering_start[max_sz ] -> value at this index is: 20 -> trees_ordering[20]: elements 20 - 21 are of size N
+//  trees_ordering_start[full_sz] -> value at this index is: 21 -> trees_ordering[21]: elements 21 - ?? are of size N
+//
 
 // Preallocates memory for the zone structs
 static BootstrapAllocator reserve_zone_memory(stivale2_struct_tag_memmap *mmap);
@@ -68,7 +85,6 @@ void init(stivale2_struct_tag_memmap *mmap) {
     */
 
     BootstrapAllocator zone_allocator = reserve_zone_memory(mmap);
-    size_t index_in_tree_ordering{};
 
     for (auto i = 0ul; i < mmap->entries; i++) {
         auto entry = mmap->memmap[i];
@@ -82,7 +98,7 @@ void init(stivale2_struct_tag_memmap *mmap) {
         // This ensures we waste as little memory as possible
         for (uint64_t i = 0; i < 64; i++) {
             if (len & (1LL << i)) {
-                Zone *z = init_zone(base, (1LL << i), ++num_zones, zone_allocator, index_in_tree_ordering++, verbose);
+                Zone *z = init_zone(base, (1LL << i), ++num_zones, zone_allocator, verbose);
                 zones.push_front(z);
                 base += (1LL << i);
             }
@@ -93,8 +109,7 @@ void init(stivale2_struct_tag_memmap *mmap) {
     info_logger << "Active zone: id=" << active_zone->zone_id << "/" << num_zones << " base-top=" << info_logger.hex(active_zone->base) << " - " << info_logger.hex(active_zone->top) << " [" << active_zone->page_count << " pages]\n";
 
     // Sort vector by the Zone's order
-    for (auto x : zones)
-    {
+    for (auto x : zones) {
         info_logger << "zone#" << x->zone_id << " order: " << x->order << '\n';
         trees_ordering.push(x);
     }
@@ -104,11 +119,12 @@ void init(stivale2_struct_tag_memmap *mmap) {
     });
 
     for (auto x : trees_ordering)
-        info_logger << "zone#" << x->zone_id << ", idx: " << x->order << '\n';
-
-    info_logger << "vector.size: " << trees_ordering.size() << '\n';
+        info_logger << "zone#" << x->zone_id << ", idx: " << x->index_in_tree_ordering << '\n';
 
     info_logger << "pmm: Initialized " << logger::endl;
+    
+    for (;;)
+        ;
 }
 
 // Need this for the VectorAllocator

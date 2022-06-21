@@ -15,11 +15,12 @@ public:
     using Order = int;
     using PhysicalAddress = uint64_t *;
 
-    Order max_order = 0;                                // Represents the largest allocation and is determined at runtime.
-    constexpr static Order largest_allowed_order = 30;  // 1GiB is the largest allocation on instance of this class may serve.
-    constexpr static Order min_order = 9;               // 4kib, this is the smallest allocation size and will never change.
-    constexpr static bool verbose{}, sanity_checks{};   // sanity_checks ensures we don't go out-of-bounds on the freelist.
-                                                        // Beware: These options will impact the performance of the allocator.
+    Order max_order = 0;                                 // Represents the largest allocation and is determined at runtime.
+    constexpr static Order min_order = 9;                // 4kib, this is the smallest allocation size and will never change.
+    constexpr static Order largest_allowed_order = 30;   // 1GiB is the largest allocation on instance of this class may serve.
+    constexpr static Order smallest_allowed_order = 12;  // Todo: This will need to be refactored, two min_orders is just weird..
+    constexpr static bool verbose{}, sanity_checks{};    // sanity_checks ensures we don't go out-of-bounds on the freelist.
+                                                         // Beware: These options will impact the performance of the allocator.
 
     BuddyAllocator(PhysicalAddress base, int target_order)
         : max_order(target_order - 3), base(base) {
@@ -124,6 +125,7 @@ private:
     class Freelist {
     private:
         T list[orders + 1]{};
+        int nodes_avail_at_order[orders + 1]{};
 
     public:
         void add(const T &block, Order order) {
@@ -134,6 +136,7 @@ private:
             if (block)
                 *(T *)block = list[order];
 
+            nodes_avail_at_order[order]++;
             list[order] = block;
         }
 
@@ -147,6 +150,7 @@ private:
             if (element == nullptr)
                 return nullptr;
 
+            nodes_avail_at_order[order]--;
             list[order] = *(T *)list[order];
 
             return element;
