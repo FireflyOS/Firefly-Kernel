@@ -8,7 +8,7 @@ This project is for you!
 
 Our goal is to build an operating system where everyone can participate and learn; both newbies and professionals alike.
  
-Join us on Discord if you'd like to talk: https://discord.gg/SF3QhUJE
+Join us on Discord if you'd like to talk: https://discord.gg/sfsdhXs8wA (Channel: #cursed-firefly-dev)
 
 ## x64 demo:
 ![Firefly OS](docs/x64-progress.png)
