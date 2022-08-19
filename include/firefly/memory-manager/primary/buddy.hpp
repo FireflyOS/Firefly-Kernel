@@ -36,16 +36,10 @@ public:
     }
 };
 
-#define trace(_, ...) firefly::kernel::info_logger << firefly::kernel::info_logger.format(__VA_ARGS__)
-
 class BuddyAllocator {
 public:
     using Order = int;
     using AddressType = uint64_t *;
-    enum FillMode : int {
-        ZERO,
-        NONE
-    };
 
     Order max_order = 0;                                // Represents the largest allocation and is determined at runtime.
     constexpr static Order min_order = 9;               // 4kib, this is the smallest allocation size and will never change.
@@ -58,7 +52,7 @@ public:
         max_order = target_order - 3;
 
         if constexpr (verbose)
-            trace(TRACE_BUDDY, "min-order: %ld, max-order: %ld", min_order, max_order);
+            firefly::kernel::info_logger << firefly::kernel::info_logger.format("min-order: %d, max-order: %d", min_order, max_order);
 
         freelist.init();
         freelist.add(base, max_order - min_order);
@@ -70,14 +64,14 @@ public:
         if constexpr (sanity_checks) {
             if (order > max_order) {
                 if constexpr (verbose)
-                    trace(TRACE_ERROR, "Requested order %d (%ld) is too large for this buddy instance | max-order is: %d", order, size, max_order);
+                    firefly::kernel::info_logger << firefly::kernel::info_logger.format("Requested order %d (%d) is too large for this buddy instance | max-order is: %d", order, size, max_order);
 
                 return BuddyAllocationResult();
             }
         }
 
         if constexpr (verbose)
-            trace(TRACE_BUDDY, "Suitable order for allocation of size '%ld' is: %d", size, order);
+            firefly::kernel::info_logger << firefly::kernel::info_logger.format("Suitable order for allocation of size '%d' is: %d", size, order);
 
         AddressType block = nullptr;
         Order ord = order;
@@ -90,7 +84,7 @@ public:
 
         if (block == nullptr) {
             if constexpr (verbose)
-                trace(TRACE_BUDDY, "Block is a nullptr (order: %d, size: %ld)", order, size);
+                firefly::kernel::info_logger << firefly::kernel::info_logger.format("Block is a nullptr (order: %d, size: %d)", order, size);
 
             return BuddyAllocationResult();
         }
@@ -108,9 +102,9 @@ public:
             memset(static_cast<void *>(block), fill, correct_size);
 
         if constexpr (verbose)
-            trace(TRACE_BUDDY, "Allocated 0x%lx at order %d (max: %ld | min: %ld) with a size of %ld", block, ord, max_order, min_order, size);
+            firefly::kernel::info_logger << firefly::kernel::info_logger.format("Allocated 0xlx at order %d (max: %d | min: %d) with a size of %d", block, ord, max_order, min_order, size);
 
-        return BuddyAllocationResult(block, ord + 1, correct_size / 4096);
+        return BuddyAllocationResult(block, ord + 1, correct_size / PAGE_SIZE);
     }
 
     void free(AddressType block, Order order) {
@@ -152,11 +146,10 @@ private:
                 if (order < min_order || order > largest_allowed_order)
                     assert_truth(!"Order mismatch");
 
-            memset((void *)block, 0, 4096);
-
-            if (block)
+            if (block) {
+                memset((void *)block, 0, PAGE_SIZE);
                 *(T *)block = list[order];
-
+            }
             list[order] = block;
         }
 
@@ -241,14 +234,13 @@ public:
         uint64_t total{};
         for (Index i = 0; i < memmap_response->entries; i++) {
             auto *e = &memmap_response->memmap[i];
-            if (e->type != STIVALE2_MMAP_USABLE || e->length <= 4096)
+            if (e->type != STIVALE2_MMAP_USABLE || e->length <= PAGE_SIZE)
                 continue;
 
             for (uint64_t j = 0; j < 64; j++) {
                 if (e->length & (1ll << j)) {
                     auto top = e->base + (1ll << j);
                     auto size_bytes = top - e->base;
-                    trace(TRACE_BUDDY, "[%d] BuddyAllocator managing: 0x%lx-0x%lx [%ld]", idx, e->base, top, (1ll << j));
                     buddies[idx++].init((uint64_t *)e->base, log2(size_bytes));
                     e->base += (1ll << j);
                     total += (1ll << j);
@@ -272,7 +264,7 @@ public:
             }();
         }
 
-        trace(TRACE_BUDDY, "Managing a grand total of: %ld bytes", total);
+        firefly::kernel::info_logger << firefly::kernel::info_logger.format("Managing a grand total of: %d bytes\n", total);
     }
 
     // Returns the highest address in the memory map.
@@ -281,27 +273,29 @@ public:
         return highest_address;
     }
 
-    AddressType must_alloc(uint64_t size) {
-        auto ptr = this->alloc(size);
+    AddressType must_alloc(uint64_t size, FillMode fill = FillMode::NONE) {
+        auto ptr = this->alloc(size, fill);
         if (!ptr)
             firefly::panic("must_alloc failed to allocate memory!");
 
         return ptr;
     }
 
-    AddressType alloc(uint64_t size) {
+    AddressType alloc(uint64_t size, FillMode fill = FillMode::NONE) {
         BuddyAllocator::Order order = log2(size);
         Index min_idx = suitable_buddy(order);
 
-        // Buddy allocators are sorted from largest to smallest order
+        // Buddy allocators are sorted from the largest to smallest order
         for (Index i = min_idx; i > 0; i--) {
-            auto ptr = buddies[i].alloc(size);
+            // Perform the allocation
+            auto ptr = buddies[i].alloc(size, fill);
+
             if (ptr.unpack()) {
                 // Mark the allocated pages as such in the pagelist
                 auto npages = ptr.npages;
                 auto base = reinterpret_cast<uint64_t>(ptr.unpack());
 
-                for (int j = 0; j < npages; j++, base += 4096) {
+                for (int j = 0; j < npages; j++, base += PAGE_SIZE) {
                     auto page = pagelist.phys_to_page(base);
                     page->refcount++;
                     page->order = ptr.order;
@@ -327,10 +321,10 @@ public:
         int order = page->order;
 
         // Mark the pages in the pagelist as free and perform some checks
-        auto npages = (1 << (page->order + 3)) / 4096;
+        uint32_t npages = (1 << (page->order + 3)) / PAGE_SIZE;
         auto base = reinterpret_cast<uint64_t>(ptr);
 
-        for (auto i = 0; i < npages; i++, base += 4096) {
+        for (uint32_t i = 0; i < npages; i++, base += PAGE_SIZE) {
             page = pagelist.phys_to_page(base);
             assert_truth(page->refcount == 1 && "This pages refcount is not 1. This means that there was an attempt to free an actively used block of memory");
             page->reset();
@@ -341,7 +335,7 @@ public:
 
 private:
     // Selection sort
-    inline void sort(struct stivale2_struct_tag_memmap *mmap) {
+    inline void sort(stivale2_struct_tag_memmap *mmap) {
         // Iterate over elements in the base array
         for (uint64_t i = 0; i < mmap->entries; i++) {
             // Sort the elements by swapping them where applicable.
@@ -357,11 +351,11 @@ private:
         }
     }
 
-    inline uint64_t buddies_required(struct stivale2_struct_tag_memmap *mmap) {
+    inline uint64_t buddies_required(stivale2_struct_tag_memmap *mmap) {
         uint64_t num_buddies_required = 0;
         for (Index i = 0; i < mmap->entries; i++) {
             const auto *e = &mmap->memmap[i];
-            if (e->type != STIVALE2_MMAP_USABLE || e->length <= 4096)
+            if (e->type != STIVALE2_MMAP_USABLE || e->length <= PAGE_SIZE)
                 continue;
 
             for (uint64_t j = 0; j < 64; j++)
@@ -369,11 +363,11 @@ private:
                     ++num_buddies_required;
         }
 
-        // assert_truth(num_buddies_required > 0ul && "Bad memory map?");
+        assert_truth(num_buddies_required > 0ul && "Bad memory map?");
         return num_buddies_required;
     }
 
-    inline uint64_t reserve_buddy_allocator_memory(struct stivale2_struct_tag_memmap *mmap) {
+    inline uint64_t reserve_buddy_allocator_memory(stivale2_struct_tag_memmap *mmap) {
         const auto size = buddies_required(std::move(mmap)) * sizeof(BuddyAllocator);
 
         for (Index i = 0; i < mmap->entries; i++) {
@@ -381,10 +375,9 @@ private:
             if (e->type != STIVALE2_MMAP_USABLE || e->length < size)
                 continue;
 
-            trace(TRACE_BUDDY, "Creating %ld large hole at region [0x%lx-0x%lx]", size, e->base, e->base + e->length);
+            firefly::kernel::info_logger << firefly::kernel::info_logger.format("Creating %d large hole at region [0x%x-0x%x]\n", size, e->base, e->base + e->length);
             buddies = reinterpret_cast<BuddyAllocator *>(e->base);
 
-            // firefly::libkern::align4k<uint64_t>(static_cast<uint64_t>(e->base));
             e->base = firefly::libkern::align_up4k(e->base + size);
             e->length -= firefly::libkern::align_down4k(size);
             return (size / sizeof(BuddyAllocator));
@@ -417,5 +410,5 @@ private:
     Index top_idx{};
 };
 
-// Defined in primary_phys.cpp
+// Instance created in primary_phys.cpp
 extern BuddyManager buddy;

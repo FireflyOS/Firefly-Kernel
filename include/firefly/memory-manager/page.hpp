@@ -1,26 +1,18 @@
 #pragma once
 
-// #include "atomic.hpp"
-// #include "compiler.hpp"
-// #include "list.hpp"
-// #include "trace.hpp"
 #include <cstdlib/cassert.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <utility>
 
 #include "firefly/compiler/clang++.hpp"
-#include "libk++/bits.h"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/stivale2.hpp"
-// #include <limine.h>
+#include "libk++/bits.h"
 
-static constexpr auto page_shift = 12;
-static constexpr auto page_size = 4096;
 static constexpr auto GLOB_PAGE_ARRAY = HIGH_VMA + MiB(512);
-// extern uintptr_t GLOB_PAGE_ARRAY[], GLOB_PAGE_ARRAY_SIZE[];
-// static const auto page_array_sz = reinterpret_cast<uintptr_t>(GLOB_PAGE_ARRAY_SIZE);
 
 enum class RawPageFlags : int {
     None = 0,
@@ -33,7 +25,7 @@ struct RawPage {
     int order;
     int buddy_index;
     int refcount;
-    // atomic_uint refcount;
+    // std::atomic_int refcount;
 
     bool is_buddy_page(int min_order) const {
         return order >= min_order;
@@ -54,11 +46,6 @@ public:
     void init(struct stivale2_struct_tag_memmap *memmap_response) {
         for (size_t i = 0; i < memmap_response->entries; i++) {
             auto *e = &memmap_response->memmap[i];
-
-            // Ensure the array size is not exceeded
-            // auto const projected_index = largest_index + (e->length / 4096);
-            // assert(projected_index <= page_array_sz);
-
             for (size_t j = 0; j <= e->length; j += 4096, largest_index++) {
                 // clang-format off
                 auto const page = RawPage
@@ -72,8 +59,6 @@ public:
 
         firefly::kernel::info_logger << firefly::kernel::info_logger.format("RawPage size: %d bytes\n", sizeof(RawPage));
         firefly::kernel::info_logger << firefly::kernel::info_logger.format("Pagelist overhead: %d Bytes", largest_index * sizeof(RawPage));
-        // trace(TRACE_CPU, "RawPage size: %ld bytes", sizeof(RawPage));
-        // trace(TRACE_CPU, "Pagelist overhead: %ld Bytes", largest_index * sizeof(RawPage));
 
         // largest_index is incremented one too many times.
         --largest_index;
@@ -90,11 +75,11 @@ public:
     }
 
     inline auto phys_to_page(uint64_t addr) const {
-        return &pages[(addr >> page_shift) - 1];
+        return &pages[(addr >> PAGE_SHIFT) - 1];
     }
 
     inline auto page_to_phys(RawPage *p) const {
-        return get_page(p) << page_shift;
+        return get_page(p) << PAGE_SHIFT;
     }
 
     auto operator[](Index i) const {
@@ -112,4 +97,5 @@ private:
     Index largest_index{};  // largest index into the 'pages' array
 };
 
-static Pagelist pagelist;
+// Instance created in primary_phys.cpp
+extern Pagelist pagelist;
