@@ -99,6 +99,8 @@ void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id) {
 
 using namespace firefly::kernel;
 #include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/memory-manager/page.hpp"
+#include "firefly/memory-manager/primary/buddy.hpp"
 void bootloader_services_init(stivale2_struct* handover) {
     auto tag_term = static_cast<stivale2_struct_tag_terminal*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_TERMINAL_ID));
     if (tag_term == NULL) {
@@ -114,8 +116,11 @@ void bootloader_services_init(stivale2_struct* handover) {
     if (tagmem == NULL) {
         firefly::panic("Cannot obtain memory map");
     }
-    firefly::kernel::mm::pmm::init(tagmem);
-    mm::VirtualMemoryManager vmm{ true, tagmem };
+
+    // firefly::kernel::mm::pmm::init(tagmem);
+    // mm::VirtualMemoryManager vmm{ true, tagmem };
+	pagelist.init(std::move(tagmem));
+	buddy.init(std::move(tagmem));
 }
 
 extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover) {

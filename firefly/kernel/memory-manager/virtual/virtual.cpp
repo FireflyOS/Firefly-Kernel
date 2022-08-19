@@ -10,7 +10,10 @@ namespace firefly::kernel::mm {
 using namespace firefly::mm::relocation::conversion;
 using namespace mm;
 
+namespace pmm { void *allocate([[maybe_unused]] uint64_t size=0) { return nullptr; }}
+
 constexpr size_t GB = 0x40000000UL;
+constexpr size_t PAGE_SIZE = 4096;
 
 VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping, stivale2_struct_tag_memmap *mmap) {
     if (initial_mapping)

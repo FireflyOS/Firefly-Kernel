@@ -33,17 +33,20 @@ void log_core_firefly_contributors() {
     info_logger << info_logger.newline();
 }
 
+#include "firefly/memory-manager/primary/buddy.hpp"
+
 [[noreturn]] void kernel_main() {
-    mm::VirtualMemoryManager vmm{ true };
+    // mm::VirtualMemoryManager vmm{ true };
 
     // Test OOM
-    // for(;;)
-    // {
-    //     auto ptr = mm::pmm::allocate();
-    //     if (!ptr)
-    //         break;
-    //     info_logger << info_logger.hex(ptr) << '\n';
-    // }
+    for(;;)
+    {
+        // auto ptr = mm::pmm::allocate();
+		auto ptr = buddy.alloc(4096);
+        info_logger << info_logger.hex(ptr) << '\n';
+        if (!ptr)
+            break;
+    }
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

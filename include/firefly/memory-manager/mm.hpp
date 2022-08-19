@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+static constexpr uint64_t HIGH_VMA = 0xFFFF800000000000UL;
+static constexpr uint64_t KERNEL_CODE_VMA = 0xFFFFFFFF80000000UL;
+
 static constexpr uint32_t PAGE_SIZE = 4096;
 using PhysicalAddress = void *;
 
