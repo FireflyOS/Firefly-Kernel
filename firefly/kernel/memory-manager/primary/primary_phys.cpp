@@ -123,8 +123,8 @@ void init(stivale2_struct_tag_memmap *mmap) {
 
     info_logger << "pmm: Initialized " << logger::endl;
     
-    for (;;)
-        ;
+    // for (;;)
+    //     ;
 }
 
 // Need this for the VectorAllocator

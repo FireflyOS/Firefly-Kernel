@@ -34,16 +34,16 @@ void log_core_firefly_contributors() {
 }
 
 [[noreturn]] void kernel_main() {
-    // mm::VirtualMemoryManager vmm{ true };
+    mm::VirtualMemoryManager vmm{ true };
 
     // Test OOM
-    for(;;)
-    {
-        auto ptr = mm::pmm::allocate();
-        if (!ptr)
-            break;
-        info_logger << info_logger.hex(ptr) << '\n';
-    }
+    // for(;;)
+    // {
+    //     auto ptr = mm::pmm::allocate();
+    //     if (!ptr)
+    //         break;
+    //     info_logger << info_logger.hex(ptr) << '\n';
+    // }
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();
