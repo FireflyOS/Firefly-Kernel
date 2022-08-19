@@ -24,8 +24,14 @@ struct RawPage {
     RawPageFlags flags;
     int order;
     int buddy_index;
-    int refcount;
-    // std::atomic_int refcount;
+    std::atomic_int refcount;
+
+    void operator=(const RawPage &other) {
+        flags = other.flags;
+        order = other.order;
+        buddy_index = other.buddy_index;
+        refcount.store(other.refcount, std::memory_order_seq_cst);
+    }
 
     bool is_buddy_page(int min_order) const {
         return order >= min_order;
