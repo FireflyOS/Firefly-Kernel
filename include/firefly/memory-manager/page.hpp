@@ -49,7 +49,7 @@ class Pagelist {
     using AddressType = uint64_t;
 
 public:
-    void init(struct stivale2_struct_tag_memmap *memmap_response) {
+    void init(stivale2_struct_tag_memmap *memmap_response) {
         for (size_t i = 0; i < memmap_response->entries; i++) {
             auto *e = &memmap_response->memmap[i];
             for (size_t j = 0; j <= e->length; j += 4096, largest_index++) {
@@ -64,7 +64,7 @@ public:
         }
 
         firefly::kernel::info_logger << firefly::kernel::info_logger.format("RawPage size: %d bytes\n", sizeof(RawPage));
-        firefly::kernel::info_logger << firefly::kernel::info_logger.format("Pagelist overhead: %d Bytes", largest_index * sizeof(RawPage));
+        firefly::kernel::info_logger << firefly::kernel::info_logger.format("Pagelist overhead: %d Bytes\n", largest_index * sizeof(RawPage));
 
         // largest_index is incremented one too many times.
         --largest_index;
