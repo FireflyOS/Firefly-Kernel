@@ -38,3 +38,4 @@
 # Makefile plugin
 /.vscode/*.log
 /.vscode/c_cpp_properties.json
+/.vscode/*
