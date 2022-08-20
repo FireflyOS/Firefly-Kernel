@@ -9,4 +9,4 @@ namespace firefly::kernel::mm::pmm {
 void init(stivale2_struct_tag_memmap *mmap);
 PhysicalAddress allocate(uint64_t size = 4096, FillMode fill = FillMode::ZERO);
 void deallocate(PhysicalAddress ptr);
-};  // namespace firefly::kernel::mm::pmm
+}  // namespace firefly::kernel::mm::pmm
