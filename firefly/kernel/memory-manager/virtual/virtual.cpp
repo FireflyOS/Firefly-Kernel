@@ -11,19 +11,31 @@ using namespace firefly::mm::relocation::conversion;
 using namespace mm;
 
 constexpr size_t GB = 0x40000000UL;
+constexpr size_t PAGE_SIZE = 4096;
 
-VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping) {
+VirtualMemoryManager::VirtualMemoryManager(bool initial_mapping, stivale2_struct_tag_memmap *mmap) {
     if (initial_mapping)
-        this->configure_initial_kernel_mapping();
+        this->configure_initial_kernel_mapping(mmap);
 }
 
-void VirtualMemoryManager::configure_initial_kernel_mapping() {
+void VirtualMemoryManager::configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap) {
     auto pml4 = pmm::allocate();
     if (pml4 == nullptr) panic("Failed to allocate memory for the kernel pml4");
     this->kernel_pml4 = static_cast<pte_t *>(pml4);
 
     for (size_t n = PAGE_SIZE; n < GB * 4; n += PAGE_SIZE) {
         this->map(n, n, 0x3, kernel_pml4);
+    }
+    
+    for (auto i = 0ul; i < mmap->entries; i++) {
+        auto entry = mmap->memmap[i];
+        if (entry.type == STIVALE2_MMAP_USABLE) {
+            auto base = entry.base;
+            auto top = base + entry.length;
+            for (; base != top; base += PAGE_SIZE) {
+                this->map(base, base, 0x3, kernel_pml4);
+            }
+        }
     }
 
     for (size_t n = 0; n < 2 * GB; n += PAGE_SIZE) {

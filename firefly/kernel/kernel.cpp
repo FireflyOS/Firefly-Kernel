@@ -2,12 +2,9 @@
 
 #include <frg/array.hpp>
 
-#include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"
 #include "firefly/init/init.hpp"
-#include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
-#include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/panic.hpp"
 
 
@@ -33,8 +30,6 @@ void log_core_firefly_contributors() {
 }
 
 [[noreturn]] void kernel_main() {
-    mm::VirtualMemoryManager vmm{ true };
-
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

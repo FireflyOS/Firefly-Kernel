@@ -8,6 +8,7 @@ writer = open(PARSED, "w+")
 symbol_table_naked = """
 #include <symbols.hpp>
 
+__attribute__((section(".rodata")))
 sym_table_t symbol_table[] = {
 """
 
