@@ -2,9 +2,6 @@
 
 #include <stdint.h>
 
-#define ALIGN_UP(__number) (((__number) + 4096 - 1) & ~(4096 - 1))
-#define ALIGN_DOWN(__number) ((__number) & ~(4096 - 1))
-
 namespace firefly::libkern {
 template <typename T = uint64_t>
 inline T align_up4k(T in) {
