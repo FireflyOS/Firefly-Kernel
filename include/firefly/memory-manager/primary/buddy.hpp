@@ -316,9 +316,15 @@ public:
         if (!page->is_buddy_page(BuddyAllocator::min_order))
             return;
 
+        if (page->refcount == 0) {
+            firefly::kernel::info_logger << "Caught potential double-free: " << firefly::kernel::info_logger.hex(ptr) << firefly::kernel::logger::endl;
+            return;
+        }
+
         // Save some data before the page gets reset.
         int buddy_index = page->buddy_index;
         int order = page->order;
+
 
         // Mark the pages in the pagelist as free and perform some checks
         uint32_t npages = (1 << (page->order + 3)) / PAGE_SIZE;
