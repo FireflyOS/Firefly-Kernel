@@ -58,7 +58,7 @@ public:
          		{
                     .flags = (e->type != STIVALE2_MMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
                 };
-                pages[largest_index] = std::move(page);
+                pages[largest_index] = page;
                 // clang-format on
             }
         }

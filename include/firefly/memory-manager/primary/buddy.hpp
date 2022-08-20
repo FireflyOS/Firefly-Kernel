@@ -226,8 +226,8 @@ public:
     void init(struct stivale2_struct_tag_memmap *memmap_response) {
         highest_address = memmap_response->memmap[memmap_response->entries - 1].base + memmap_response->memmap[memmap_response->entries - 1].length;
 
-        sort(std::move(memmap_response));
-        auto num_buddies = reserve_buddy_allocator_memory(std::move(memmap_response));
+        sort(memmap_response);
+        auto num_buddies = reserve_buddy_allocator_memory(memmap_response);
         memset(static_cast<void *>(buddies), 0, sizeof(BuddyAllocator) * num_buddies);
 
         Index idx{};
@@ -368,7 +368,7 @@ private:
     }
 
     inline uint64_t reserve_buddy_allocator_memory(stivale2_struct_tag_memmap *mmap) {
-        const auto size = buddies_required(std::move(mmap)) * sizeof(BuddyAllocator);
+        const auto size = buddies_required(mmap) * sizeof(BuddyAllocator);
 
         for (Index i = 0; i < mmap->entries; i++) {
             auto *e = &mmap->memmap[i];

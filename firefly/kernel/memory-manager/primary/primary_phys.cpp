@@ -10,8 +10,8 @@ namespace firefly::kernel::mm::pmm {
 static BuddyManager buddy;
 
 void init(stivale2_struct_tag_memmap *mmap) {
-    buddy.init(std::move(mmap));
-    pagelist.init(std::move(mmap));
+    buddy.init(mmap);
+    pagelist.init(mmap);
     info_logger << "pmm: Initialized" << logger::endl;
 }
 
