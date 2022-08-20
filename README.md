@@ -1,6 +1,15 @@
 # Firefly-Kernel
 Kernel for FireflyOS which can be booted on UEFI and BIOS
 
+## A note to the reader:
+Are you interested in writing a kernel but lack a "study buddy" or don't know where to get started?
+
+This project is for you!
+
+Our goal is to build an operating system where everyone can participate and learn; both newbies and professionals alike.
+ 
+Join us on Discord if you'd like to talk: https://discord.gg/sfsdhXs8wA (Channel: #cursed-firefly-dev)
+
 ## x64 demo:
 ![Firefly OS](docs/x64-progress.png)
 
