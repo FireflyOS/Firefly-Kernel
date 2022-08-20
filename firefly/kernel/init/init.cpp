@@ -15,7 +15,7 @@
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialized array in .bss.
-static uint8_t stack[4096 * 2] __attribute__((aligned(0x1000)));
+static uint8_t stack[PAGE_SIZE * 2] __attribute__((aligned(PAGE_SIZE)));
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -41,7 +41,7 @@ static stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
 struct stivale2_header_tag_terminal terminal_hdr_tag = {
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_TERMINAL_ID,
-        .next = (uint64_t)&framebuffer_hdr_tag },
+        .next = reinterpret_cast<uint64_t>(&framebuffer_hdr_tag) },
     .flags = 0
 };
 
@@ -57,7 +57,7 @@ __attribute__((section(".stivale2hdr"), used)) static stivale2_header stivale_hd
     // Let's tell the bootloader where our stack is.
     // We need to add the sizeof(stack) since in x86(_64) the stack grows
     // downwards.
-    .stack = (uintptr_t)stack + sizeof(stack),
+    .stack = reinterpret_cast<uintptr_t>(stack) + sizeof(stack),
     // Bit 1, if set, causes the bootloader to return to us pointers in the
     // higher half, which we likely want.
     // Bit 2, if set, tells the bootloader to enable protected memory ranges,
@@ -71,13 +71,13 @@ __attribute__((section(".stivale2hdr"), used)) static stivale2_header stivale_hd
     .flags = (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4),
     // This header structure is the root of the linked list of header tags and
     // points to the first one in the linked list.
-    .tags = (uintptr_t)&terminal_hdr_tag
+    .tags = reinterpret_cast<uintptr_t>(&terminal_hdr_tag)
 };
 
 // We will now write a helper function which will allow us to scan for tags
 // that we want FROM the bootloader (structure tags).#include <cstdlib/#include <cstdint>>
 void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id) {
-    stivale2_tag* current_tag = (stivale2_tag*)stivale2_struct->tags;
+    stivale2_tag* current_tag = reinterpret_cast<stivale2_tag*>(stivale2_struct->tags);
     for (;;) {
         // If the tag pointer is NULL (end of linked list), we did not find
         // the tag. Return NULL to signal this.
@@ -92,7 +92,7 @@ void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id) {
         }
 
         // Get a pointer to the next tag in the linked list and repeat.
-        current_tag = (stivale2_tag*)current_tag->next;
+        current_tag = reinterpret_cast<stivale2_tag*>(current_tag->next);
     }
 }
 
