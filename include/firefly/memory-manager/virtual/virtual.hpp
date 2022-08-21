@@ -3,41 +3,49 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <frigg/frg/manual_box.hpp>
+
+#include "firefly/logger.hpp"
+#include "firefly/memory-manager/mm.hpp"
+#include "firefly/memory-manager/virtual/vspace.hpp"
 #include "firefly/stivale2.hpp"
 
 namespace firefly::kernel::mm {
-using pte_t = uint64_t;
-using virt_t = uint64_t;
-using phys_t = uint64_t;
 
-constexpr size_t page_offset = 12;  //Lower 12 bits of a virtual address denote the offset in the page frame - We don't need that
-
-struct walk_t {
-    int64_t idx;
-    pte_t *pml1;
-};
-
-class VirtualMemoryManager {
-public:
-    VirtualMemoryManager(bool initial_mapping = false, stivale2_struct_tag_memmap *mmap = nullptr);
-
-public:
-    void map(phys_t physical_addr, virt_t virtual_addr, uint64_t access_flags, pte_t *pml_ptr);
-    inline pte_t *get_kernel_pml4() {
-        return this->kernel_pml4;
+/* Represents kernel page tables. Global singleton. */
+class kernelPageSpace : VirtualSpace {
+private:
+    friend class frg::manual_box<kernelPageSpace>;
+    kernelPageSpace(PhysicalAddress root) {
+        initSpace(root);
     }
 
-private:
-    pte_t *kernel_pml4;
+public:
+    static void init();
+    static kernelPageSpace &accessor();
 
-private:
-    int64_t get_index(virt_t virtual_addr, const int idx) {
-        // 9 bits per index - 9 * idx = index 'idx' in virtual_address, skip the first 12 bits
-        return (virtual_addr >> (page_offset + (9 * (idx - 1)))) & 0x1FF;  // We subtract 1 from idx so that we don't have to input idx 0-3, but rather 1-4
+    VIRTUAL_SPACE_FUNC_MAP_RANGE;
+    VIRTUAL_SPACE_FUNC_UNMAP;
+    VIRTUAL_SPACE_FUNC_MAP;
+};
+
+/* Represents user processes page tables. Private, one (or more) per task. Currently unused (no userspace) */
+class userPageSpace : VirtualSpace {
+    userPageSpace(PhysicalAddress root) {
+        initSpace(root);
     }
 
-private:
-    void configure_initial_kernel_mapping(stivale2_struct_tag_memmap *mmap);
-    walk_t walk(virt_t virtual_addr, pte_t *pml_ptr, uint64_t access_flags);
+    void map(T virtual_addr, T physical_addr, AccessFlags flags) const override {
+        (void)virtual_addr;
+        (void)physical_addr;
+        (void)flags;
+        info_logger << "userPageSpace: map() is a stub!\n";
+    }
+
+    void unmap(T virtual_addr) const override {
+        (void)virtual_addr;
+        info_logger << "userPageSpace: map() is a stub!\n";
+    }
 };
+
 }  // namespace firefly::kernel::mm

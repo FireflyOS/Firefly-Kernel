@@ -5,7 +5,7 @@
 
 Pagelist pagelist;
 
-namespace firefly::kernel::mm::pmm {
+namespace firefly::kernel::mm::Physical {
 
 static BuddyManager buddy;
 
@@ -19,7 +19,11 @@ PhysicalAddress allocate(uint64_t size, FillMode fill) {
     return buddy.alloc(size, fill);
 }
 
+PhysicalAddress must_allocate(uint64_t size, FillMode fill) {
+	return buddy.must_alloc(size, fill);
+}
+
 void deallocate(PhysicalAddress ptr) {
     buddy.free(static_cast<BuddyAllocator::AddressType>(ptr));
 }
-}  // namespace firefly::kernel::mm::pmm
+}  // namespace firefly::kernel::mm::Physical

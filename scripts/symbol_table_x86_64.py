@@ -9,7 +9,7 @@ symbol_table_naked = """
 #include <symbols.hpp>
 
 __attribute__((section(".rodata")))
-sym_table_t symbol_table[] = {
+SymbolTablePair symbol_table[] = {
 """
 
 def init_writer():
