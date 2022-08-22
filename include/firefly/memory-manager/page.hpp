@@ -12,17 +12,7 @@
 #include "firefly/stivale2.hpp"
 #include "libk++/bits.h"
 
-// TODO: This is a *really* bad idea and only temporary.
-// We need to have some memory mapped area (for example: 0xffffd0... )
-// because AddressLayout::High is already used for something else, meaning it could overwrite
-// RawPage's and break the buddy allocator.
-//
-// Solutions are:
-// - Fork limine and map an address range from the bootloader.
-// - Alternatively one could write an early memory allocator (We can use our freelist allocator for this) and map
-//   the address range using limine's pagetables. Once our own page-tables have been loaded we can make all allocated
-//   memory available to the paging freelist allocator (not implemented yet)
-static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::High + MiB(512);
+static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
 
 enum class RawPageFlags : int {
     None = 0,

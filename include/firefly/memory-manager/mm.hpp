@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 enum AddressLayout : uint64_t {
+    PageData = 0xFFFFD00000000000UL,
     High = 0xFFFF800000000000UL,
     Code = 0xFFFFFFFF80000000UL,
     Low = 0x0000000000000000UL

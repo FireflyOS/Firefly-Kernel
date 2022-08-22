@@ -21,6 +21,7 @@ void kernelPageSpace::init() {
     kPageSpaceSingleton.get()->mapRange(0, GiB(4), AccessFlags::ReadWrite, AddressLayout::Low);
     kPageSpaceSingleton.get()->mapRange(0, GiB(2), AccessFlags::ReadWrite, AddressLayout::High);
     kPageSpaceSingleton.get()->mapRange(0, GiB(2), AccessFlags::ReadWrite, AddressLayout::Code);
+	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData);
     kPageSpaceSingleton.get()->loadAddressSpace();
 
     info_logger << "vmm: Initialized" << logger::endl;
