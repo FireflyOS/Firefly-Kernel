@@ -5,7 +5,8 @@ load_gdt:
     lgdt [rdi]
     
     push 0x28
-    push .flush
+	lea rax, [rel .flush]
+	push rax
     retfq
     .flush:
         mov ax, 0x30

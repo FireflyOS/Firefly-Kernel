@@ -44,4 +44,10 @@ SECTIONS
         *(COMMON)
         *(.bss*)
     } :data
+
+
+	/DISCARD/ : {
+		*.a:*(*)
+		*.o(*)
+	}
 }

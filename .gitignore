@@ -34,8 +34,9 @@
 .idea
 /builddir/
 /.cache/
+/compile/*
 
-# Makefile plugin
+# IDE
 /.vscode/*.log
 /.vscode/c_cpp_properties.json
 /.vscode/*

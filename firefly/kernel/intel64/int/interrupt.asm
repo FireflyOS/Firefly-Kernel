@@ -1,11 +1,9 @@
 bits 64
 
 global interrupt_wrapper
-global exception_wrapper
 global assign_cpu_exceptions
 
 extern interrupt_handler
-extern exception_handler
 extern update
 
 %macro popa64 0
@@ -56,7 +54,7 @@ CPU_INTR_ERR%1:
 %endmacro
 
 %macro register_handler 1
-    mov rdi, %1
+    lea rdi, [rel %1]
     mov rsi, 0x28
     mov rdx, 0x8E
     mov rcx, i
@@ -113,16 +111,5 @@ interrupt_wrapper:
     call interrupt_handler
 
     popa64
-    iretq
-
-exception_wrapper:
-    cld
-    pusha64
-    ; also save SSE state when we figure that out
-
-    ; pass error code
-    push qword [rsp + (13 * 8)]
-    call exception_handler
-
-    popa64
+	add rsp, 16
     iretq
