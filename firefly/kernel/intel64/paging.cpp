@@ -75,7 +75,7 @@ void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags
 }
 
 void boot_map_extra_region(stivale2_struct_tag_memmap *mmap) {
-    constexpr int required_size = 80;  // TODO: Make sure this value is okay, it's completely random
+    constexpr int required_size = 4;
 
     for (uint64_t i = 0; i < mmap->entries; i++) {
         auto *e = &mmap->memmap[i];
