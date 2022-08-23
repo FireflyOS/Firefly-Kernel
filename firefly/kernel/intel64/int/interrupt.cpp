@@ -1,4 +1,5 @@
 #include "firefly/logger.hpp"
+#include "firefly/trace/symbols.hpp"
 
 namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
@@ -62,12 +63,12 @@ extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t ind
 
 struct __attribute__((packed)) idt_reg {
     /**
-         *                  size of table in bytes - 1
-         */
+     *                  size of table in bytes - 1
+     */
     uint16_t limit;
     /**
-         *                  base address of idt
-         */
+     *                  base address of idt
+     */
     idt_gate *base;
 } idtr = {
     .limit = (sizeof(struct idt_gate) * 256) - 1,
@@ -82,19 +83,16 @@ void init() {
         : "memory");
 }
 
-void test_int() {
-    asm volatile("int $4");
-}
-
 void interrupt_handler(iframe iframe) {
     info_logger << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << logger::endl;
     info_logger << "RIP: " << info_logger.hex(iframe.rip) << logger::endl;
-    
+    backtrace(iframe.rip);
+
     for (;;)
         asm("cli\nhlt");
 }
 
-//Todo: Do we need this?
+// Todo: Do we need this?
 void exception_handler([[maybe_unused]] iframe iframe) {
     // printf("An external interrupt has occured\n CS: 0x%x\n", iframe.cs);
     // printf("EIP: %X\n", iframe.rip);

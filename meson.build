@@ -1,4 +1,4 @@
-project('FireflyOS', 'cpp', default_options: ['cpp_std=c++2a'])
+project('FireflyOS', 'cpp', default_options: ['cpp_std=c++2a', 'b_asneeded=false', 'b_lundef=false', 'buildtype=plain'])
 
 if not meson.is_cross_build()
     error('This is not a cross build, refer to the build instructions.')

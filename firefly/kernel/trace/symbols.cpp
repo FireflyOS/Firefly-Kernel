@@ -34,9 +34,9 @@ SymbolTablePair SymbolTable::lookup(uint64_t addr) const noexcept {
     }
 }
 
-bool backtrace([[maybe_unused]]uint64_t addr, [[maybe_unused]]int iteration) {
+bool backtrace(uint64_t addr, [[maybe_unused]]int iteration) {
     SymbolTable table{};
-    [[maybe_unused]]auto const& [base, name] = table[addr];
+    auto const& [base, name] = table[addr];
 
 
     using firefly::kernel::info_logger;

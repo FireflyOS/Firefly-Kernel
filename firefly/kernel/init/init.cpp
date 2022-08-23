@@ -112,7 +112,6 @@ void bootloader_services_init(stivale2_struct* handover) {
     if (tagmem == NULL) {
         firefly::panic("Cannot obtain memory map");
     }
-
 	core::paging::boot_map_extra_region(tagmem);
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
