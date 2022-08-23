@@ -1,7 +1,7 @@
-cpp_args = [
+kernel_build_flags = [
     '-target', 'x86_64-unknown-elf', '-m64', '-mcmodel=kernel',
     '-std=c++20', '-Werror', '-Wall', '-Wextra', '-pedantic',
-    '-g', '-nostdlib', '-fno-builtin', '-fpic', '-pipe', '-O2',
+    '-g', '-nostdlib', '-fno-builtin', '-fPIC',
     '-mno-red-zone', '-fno-stack-check', '-fno-stack-protector',
     '-fno-omit-frame-pointer', '-ffreestanding', '-fno-exceptions',
     '-fno-rtti', '-Wno-zero-length-array', '-mno-80387', '-mno-mmx',
