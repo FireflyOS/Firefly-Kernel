@@ -1,4 +1,6 @@
-project('FireflyOS', 'cpp', default_options: ['cpp_std=c++2a'])
+project('FireflyOS', 'cpp', 
+	default_options : ['b_asneeded=false', 'b_lundef=false',
+	'buildtype=plain', 'cpp_std=c++2a'])
 
 if not meson.is_cross_build()
     error('This is not a cross build, refer to the build instructions.')
@@ -21,10 +23,10 @@ asm_gen = generator(nasm, output: '@BASENAME@.o', arguments: ['-felf64', '@INPUT
 asm_obj = asm_gen.process(asm_files)
 
 executable_kwargs = {
-'cpp_args': kernel_build_flags,
+'cpp_args': cpp_args,
 'include_directories': include_dir,
-'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o'],
-'link_depends': ['linkage/linker_x86_64.ld']
+'pie': true,
+'link_args': ['-T../linkage/linker_x86_64.ld', '-nostdlib', '-Wl,-z,text', '-Wl,-static', '-Wl,-z,max-page-size=0x1000', 'kernel_x86_64.elf.p/symtable.o']
 }
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel
@@ -32,7 +34,7 @@ run_command('scripts/gensym.sh', check: true)
 
 exe = executable(
     'kernel_x86_64.elf',
-    cxx_files, asm_obj,
+    asm_obj, cxx_files,
     kwargs: executable_kwargs
 )
 
