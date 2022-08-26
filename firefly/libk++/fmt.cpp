@@ -111,13 +111,12 @@ int printf(const char* fmt, ...) {
 }
 
 int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
-    for (size_t i = 0; i < size; i++) {
-        switch (fmt[i]) {
+    while (*fmt != '\0') {
+        switch (*fmt) {
             case '%': {
-                switch (fmt[i + 1]) {
+                switch (*++fmt) {
                     case 'c': {
                         auto arg = va_arg(ap, int);
-                        i++;
                         *str++ = arg;
                         break;
                     }
@@ -128,7 +127,6 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                         for (size_t j = 0; j < len; j++)
                             *str++ = arg[j];
 
-                        i++;
                         break;
                     }
 
@@ -145,7 +143,6 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                             for (size_t j = 0; j < len; j++)
                                 *str++ = res[j];
                         }
-                        i++;
                         break;
                     }
 
@@ -161,7 +158,6 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                             for (size_t j = 0; j < len; j++)
                                 *str++ = res[j];
                         }
-                        i++;
                         break;
                     }
 
@@ -177,7 +173,6 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                             for (size_t j = 0; j < len; j++)
                                 *str++ = res[j];
                         }
-                        i++;
                         break;
                     }
                 }
@@ -186,11 +181,12 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
             }
 
             default:
-                *str++ = fmt[i];
+                *str++ = *fmt;
                 break;
         }
+        ++fmt;
     }
-    *str++ = '\0';
+    *str = '\0';
 
     return 0;
 }
