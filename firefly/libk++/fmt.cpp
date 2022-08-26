@@ -102,9 +102,11 @@ char buffer[512];
 int printf(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(buffer, (size_t)512, fmt, ap);
+    size_t outLen = vsnprintf(buffer, sizeof(buffer), fmt, ap);
     va_end(ap);
 
+    if (outLen >= sizeof(buffer))
+        return -1;
     firefly::kernel::device::stivale2_term::write(buffer);
 
     return 0;

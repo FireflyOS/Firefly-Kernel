@@ -49,8 +49,10 @@ public:
     const char *format(const char *fmt, ...) {
         va_list ap;
         va_start(ap, fmt);
-        libkern::fmt::vsnprintf((char *)&buffer, (size_t)511, fmt, ap);
+        size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
         va_end(ap);
+        if (outLen >= sizeof(buffer))
+            return nullptr;
 
         return const_cast<char *>(buffer);
     }
