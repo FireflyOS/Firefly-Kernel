@@ -102,7 +102,7 @@ char buffer[512];
 int printf(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf((char*)&buffer, (size_t)511, fmt, ap);
+    vsnprintf(buffer, (size_t)512, fmt, ap);
     va_end(ap);
 
     firefly::kernel::device::stivale2_term::write(buffer);
