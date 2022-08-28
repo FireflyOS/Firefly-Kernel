@@ -1,6 +1,7 @@
 #include "libk++/fmt.hpp"
 
 #include "firefly/console/stivale2-term.hpp"
+#include "cstdlib/cassert.h"
 
 namespace firefly::libkern::fmt {
 
@@ -113,6 +114,8 @@ int printf(const char* fmt, ...) {
 }
 
 int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
+    assert(fmt != nullptr);
+    assert(size == 0 || str != nullptr);
     size_t usedLen = 0;
     auto append = [size, &usedLen, &str] (char ch) {
         if (usedLen < size - 1)
