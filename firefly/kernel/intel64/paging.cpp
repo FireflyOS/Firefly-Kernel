@@ -74,7 +74,7 @@ void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags
     invalidatePage(reinterpret_cast<VirtualAddress>(virtual_addr));
 }
 
-void boot_map_extra_region(stivale2_struct_tag_memmap *mmap) {
+void bootMapExtraRegion(stivale2_struct_tag_memmap *mmap) {
     constexpr int required_size = 4;
 
     for (uint64_t i = 0; i < mmap->entries; i++) {
