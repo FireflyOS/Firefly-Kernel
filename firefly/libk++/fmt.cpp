@@ -1,6 +1,7 @@
 #include "libk++/fmt.hpp"
 
 #include "firefly/console/stivale2-term.hpp"
+#include "cstdlib/cassert.h"
 
 namespace firefly::libkern::fmt {
 
@@ -102,23 +103,33 @@ char buffer[512];
 int printf(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf((char*)&buffer, (size_t)511, fmt, ap);
+    size_t outLen = vsnprintf(buffer, sizeof(buffer), fmt, ap);
     va_end(ap);
 
+    if (outLen >= sizeof(buffer))
+        return -1;
     firefly::kernel::device::stivale2_term::write(buffer);
 
     return 0;
 }
 
 int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
-    for (size_t i = 0; i < size; i++) {
-        switch (fmt[i]) {
+    assert(fmt != nullptr);
+    assert(size == 0 || str != nullptr);
+    size_t usedLen = 0;
+    auto append = [size, &usedLen, &str] (char ch) {
+        if (usedLen < size - 1)
+            *str++ = ch;
+        ++usedLen;
+    };
+
+    while (*fmt != '\0') {
+        switch (*fmt) {
             case '%': {
-                switch (fmt[i + 1]) {
+                switch (*++fmt) {
                     case 'c': {
                         auto arg = va_arg(ap, int);
-                        i++;
-                        *str++ = arg;
+                        append(arg);
                         break;
                     }
 
@@ -126,9 +137,8 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                         auto arg = va_arg(ap, char*);
                         size_t len = strlen(arg);
                         for (size_t j = 0; j < len; j++)
-                            *str++ = arg[j];
+                            append(arg[j]);
 
-                        i++;
                         break;
                     }
 
@@ -136,32 +146,30 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                     case 'd': {
                         uint64_t arg = va_arg(ap, uint64_t);
                         if (arg == 0)
-                            *str++ = '0';
+                            append('0');
                         else {
                             char res[20];
                             itoa(arg, res, 10);
 
                             size_t len = strlen(res);
                             for (size_t j = 0; j < len; j++)
-                                *str++ = res[j];
+                                append(res[j]);
                         }
-                        i++;
                         break;
                     }
 
                     case 'x': {
                         uint64_t arg = va_arg(ap, uint64_t);
                         if (arg == 0)
-                            *str++ = '0';
+                            append('0');
                         else {
                             char res[20];
                             itoa(arg, res, 16);
 
                             size_t len = strlen(res);
                             for (size_t j = 0; j < len; j++)
-                                *str++ = res[j];
+                                append(res[j]);
                         }
-                        i++;
                         break;
                     }
 
@@ -169,15 +177,14 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                         uint64_t arg = va_arg(ap, uint64_t);
                         char res[20];
                         if (arg == 0)
-                            *str++ = '0';
+                            append('0');
                         else {
                             itoa(arg, res, 16, true);
 
                             size_t len = strlen(res);
                             for (size_t j = 0; j < len; j++)
-                                *str++ = res[j];
+                                append(res[j]);
                         }
-                        i++;
                         break;
                     }
                 }
@@ -186,12 +193,14 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
             }
 
             default:
-                *str++ = fmt[i];
+                append(*fmt);
                 break;
         }
+        ++fmt;
     }
-    *str++ = '\0';
+    if (size != 0 && str)
+        *str = '\0';
 
-    return 0;
+    return usedLen;
 }
 }  // namespace firefly::libkern::fmt
