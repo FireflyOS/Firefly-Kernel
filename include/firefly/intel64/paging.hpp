@@ -26,5 +26,5 @@ enum class CacheMode : int {
 void invalidatePage(const VirtualAddress page);
 void invalidatePage(const uint64_t page);
 void map(const uint64_t virtual_addr, const uint64_t physical_addr, AccessFlags access_flags, const uint64_t *pml_ptr);
-void boot_map_extra_region(stivale2_struct_tag_memmap *mmap);
+void bootMapExtraRegion(stivale2_struct_tag_memmap *mmap);
 }  // namespace firefly::kernel::core::paging
