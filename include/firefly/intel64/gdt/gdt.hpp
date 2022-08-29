@@ -32,7 +32,7 @@ struct Gdt {
         uint8_t access;
         uint8_t flags;
         uint8_t base2{ 0 };
-    } gdtDescriptors[GDT_MAX_ENTRIES];
+    } gdtDescriptors[GDT_MAX_ENTRIES+1];
 
     tss::descriptor tssDescriptors;
 } PACKED;

@@ -54,7 +54,7 @@ def parse_symbol_tables(unparsed_sym_table):
         
 
 def compile_sym_table():
-    system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/firefly/trace -o symtable.o")
+    system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/firefly/trace -o kernel_x86_64.elf.p/symtable.o")
 
 if __name__ == '__main__':
     # This might seem really stupid, and that's because it is
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         destroy_writer()
         
         compile_sym_table()
-        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f) font.o') # Relink kernel with symbol tables
+        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f) ../fonts/vgafont.obj') # Relink kernel with symbol tables
         writer = open(PARSED, "w+")
 
     print("[*] Wrote symbol table")

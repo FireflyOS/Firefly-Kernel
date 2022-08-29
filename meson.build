@@ -9,6 +9,7 @@ if meson.get_compiler('cpp').get_id() != 'gcc'
 endif
 
 # Set by subdirs
+c_files   = []
 cxx_files = []
 asm_files = []
 include_dir = include_directories('include/', 'include/cxxshim/', 'include/frigg/')
@@ -21,10 +22,10 @@ asm_gen = generator(nasm, output: '@BASENAME@.o', arguments: ['-felf64', '@INPUT
 asm_obj = asm_gen.process(asm_files)
 
 executable_kwargs = {
-'cpp_args': kernel_build_flags,
-'include_directories': include_dir,
-'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj'],
-'link_depends': ['linkage/linker_x86_64.ld']
+	'cpp_args': kernel_cxx_flags,
+	'c_args': kernel_c_flags,
+	'include_directories': include_dir,
+	'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj', '-static', '-Wl,-z-max-page-size=0x1000'],
 }
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel
@@ -32,7 +33,7 @@ run_command('scripts/gensym.sh', check: true)
 
 exe = executable(
     'kernel_x86_64.elf',
-    cxx_files, asm_obj,
+    c_files, cxx_files, asm_obj,
     kwargs: executable_kwargs
 )
 
