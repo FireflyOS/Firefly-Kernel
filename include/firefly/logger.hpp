@@ -2,7 +2,7 @@
 
 #include <stdarg.h>
 
-#include "firefly/console/stivale2-term.hpp"
+#include "firefly/console/console.hpp"
 #include "libk++/fmt.hpp"
 
 namespace firefly::kernel {

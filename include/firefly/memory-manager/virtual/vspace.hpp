@@ -5,7 +5,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 
-#pragma region Macro wrappers
+// #pragma region Macro wrappers
 /* Use these macros when no custom logic is needed. It's shorter and cleaner. */
 #define VIRTUAL_SPACE_FUNC_UNMAP        \
     void unmap(T virt) const override { \
@@ -21,7 +21,7 @@
     void mapRange(T base, T len, AccessFlags flags, AddressLayout off = AddressLayout::Low) const override { \
         VirtualSpace::mapRange(base, len, flags, off);                                                       \
     }
-#pragma endregion
+// #pragma endregion
 
 namespace firefly::kernel::mm {
 

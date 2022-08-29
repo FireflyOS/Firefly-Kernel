@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "firefly/console/console.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
@@ -80,10 +81,11 @@ void* stivale2_get_tag(stivale2_struct* stivale2_struct, uint64_t id) {
     }
 }
 
+#include "firefly/drivers/ports.hpp"
 void bootloader_services_init(stivale2_struct* handover) {
     using namespace firefly::kernel;
     const auto verify = [](auto tag) {
-        if (tag == NULL) {
+        if (unlikely(tag == NULL)) {
             for (;;)
                 asm("hlt");
         }
@@ -95,6 +97,11 @@ void bootloader_services_init(stivale2_struct* handover) {
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
+
+    auto tagfb = verify(static_cast<stivale2_struct_tag_framebuffer*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID)));
+	console::init(tagfb);
+	
+	console::write("Hello, world!");
 }
 
 extern "C" [[noreturn]] void kernel_init(stivale2_struct* handover) {

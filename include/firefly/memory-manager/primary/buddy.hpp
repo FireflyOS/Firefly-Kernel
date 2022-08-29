@@ -6,11 +6,10 @@
 
 #include "cstdlib/cmath.h"
 #include "firefly/stivale2.hpp"
-// #include "memory.hpp"
+#include "libk++/memory.hpp"
 #include <utility>
 
 #include "cstdlib/cassert.h"
-#include "cstdlib/cstring.h"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/page.hpp"
 #include "libk++/align.h"

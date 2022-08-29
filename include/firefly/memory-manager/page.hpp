@@ -42,7 +42,7 @@ struct RawPage {
         if (likely(reset_refcount))
             refcount = 0;
     }
-} PACKED;
+} ;
 
 class Pagelist {
     using Index = int;

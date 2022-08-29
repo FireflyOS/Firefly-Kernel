@@ -1,23 +1,25 @@
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
-extern "C" void* memset(void* __restrict dest, int value, size_t count) {
-    auto _ptr = reinterpret_cast<char*>(dest);
-    for (size_t i = 0; i < count; _ptr[i++] = value)
-        ;
-    return dest;
-}
+// void *memset(void *__restrict dest, int value, size_t count) {
+//     auto _ptr = reinterpret_cast<char *>(dest);
+//     for (size_t i = 0; i < count; _ptr[i++] = value)
+//         ;
+//     return dest;
+// }
 
-extern "C" void memcpy(void* __restrict dest, const void* src, size_t count) {
-    // cast pointers to char*,
-    // since void pointers are not suitable for arithmetics
-    char* csrc = (char*)src;
-    char* cdest = (char*)dest;
+// void *memcpy(void *__restrict dest, const void *src, size_t count) {
+//     // cast pointers to char*,
+//     // since void pointers are not suitable for arithmetics
+//     char *csrc = (char *)src;
+//     char *cdest = (char *)dest;
 
-    for (size_t i = 0; i < count; i++) {
-        cdest[i] = csrc[i];
-    }
-}
+//     for (size_t i = 0; i < count; i++) {
+//         cdest[i] = csrc[i];
+//     }
+
+//     return dest;
+// }
 
 /**
  * @brief		compares n bytes of two blocks of memory
@@ -159,11 +161,9 @@ char *strtok(char *s, const char *delimiters) {
     return token;
 }
 
-int digitcount(uint32_t num)
-{
+int digitcount(uint32_t num) {
     int res = 0;
-    while (num != 0)
-    {
+    while (num != 0) {
         ++res;
         num /= 10;
     }

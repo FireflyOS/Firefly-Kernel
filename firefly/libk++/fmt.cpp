@@ -1,6 +1,6 @@
 #include "libk++/fmt.hpp"
 
-#include "firefly/console/stivale2-term.hpp"
+#include "firefly/console/console.hpp"
 #include "cstdlib/cassert.h"
 
 namespace firefly::libkern::fmt {
@@ -108,7 +108,7 @@ int printf(const char* fmt, ...) {
 
     if (outLen >= sizeof(buffer))
         return -1;
-    firefly::kernel::device::stivale2_term::write(buffer);
+    firefly::kernel::console::write(buffer);
 
     return 0;
 }

@@ -1,11 +1,11 @@
-project('FireflyOS', 'cpp', default_options: ['cpp_std=c++2a', 'b_asneeded=false', 'b_lundef=false', 'buildtype=plain'])
+project('FireflyOS', ['cpp', 'c'], default_options: ['cpp_std=c++2a', 'b_asneeded=false', 'b_lundef=false', 'buildtype=plain'])
 
 if not meson.is_cross_build()
     error('This is not a cross build, refer to the build instructions.')
 endif
 
-if meson.get_compiler('cpp').get_id() != 'clang'
-    error('Attempted to build with a compiler that is not clang')
+if meson.get_compiler('cpp').get_id() != 'gcc'
+    error('Attempted to build with a compiler that is not gcc')
 endif
 
 # Set by subdirs
@@ -23,7 +23,7 @@ asm_obj = asm_gen.process(asm_files)
 executable_kwargs = {
 'cpp_args': kernel_build_flags,
 'include_directories': include_dir,
-'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o'],
+'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj'],
 'link_depends': ['linkage/linker_x86_64.ld']
 }
 

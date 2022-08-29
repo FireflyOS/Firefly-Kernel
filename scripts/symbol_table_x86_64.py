@@ -54,12 +54,12 @@ def parse_symbol_tables(unparsed_sym_table):
         
 
 def compile_sym_table():
-    system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/firefly/trace -o kernel_x86_64.elf.p/symtable.o")
+    system(f"clang++ -ffreestanding -x c++ -c ./parsed_x86_64.sym -m64 -I ../include/firefly/trace -o symtable.o")
 
 if __name__ == '__main__':
     # This might seem really stupid, and that's because it is
     # But for some reason the script just won't write the symbol
-    # table correctly the first time (These issues started occuring after switching from make to meson)
+    # table correctly the first time (These issues started occurring after switching from make to meson)
     # I have no idea what the issue is, and I don't care enough to find an actual solution
     # If you figure it out, please make a PR
     for x in range(2):
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         destroy_writer()
         
         compile_sym_table()
-        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f)') # Relink kernel with symbol tables
+        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f) font.o') # Relink kernel with symbol tables
         writer = open(PARSED, "w+")
 
     print("[*] Wrote symbol table")

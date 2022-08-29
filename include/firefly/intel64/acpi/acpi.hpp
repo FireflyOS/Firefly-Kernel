@@ -16,7 +16,7 @@ struct RSDP {
     uint8_t revision;
     uint32_t rsdtAddress;
 } PACKED;
-
+ void
 // RSDP version 2+
 struct RSDPextension : RSDP {
     uint32_t length;
