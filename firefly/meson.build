@@ -14,6 +14,6 @@ cxx_files += files(
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
-    'kernel/console/stivale2-term.cpp', 'kernel/intel64/paging.cpp'
+    'kernel/console/stivale2-term.cpp', 'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp'
 )
 asm_files += files('kernel/intel64/gdt/gdt.asm', 'kernel/intel64/int/interrupt.asm')

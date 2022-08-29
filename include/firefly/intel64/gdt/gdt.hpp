@@ -5,71 +5,42 @@
 #include "firefly/compiler/clang++.hpp"
 #include "firefly/intel64/gdt/tss.hpp"
 
-#define GDT_MAX_ENTRIES 9 
+static constexpr int8_t GDT_MAX_ENTRIES{ 4 };
 
-/* These GDT descriptors are mandatory if we want to use the stivale2 terminal */
-enum GDT_DESCRIPTORS
-{
-    NULENT, /* null descriptor entry */
-
-    /* 16 bit descriptors */
-    CS_KRN16,
-    DS_KRN16,
-    
-    /* 32 bit descriptors */
-    CS_KRN32,
-    DS_KRN32,
-    
-    /* 64 bit descriptors */
-    CS_KRN64,
-    DS_KRN64,
-    CS_USR64,
-    DS_USR64
+enum SegmentSelector : int8_t {
+    null,
+    kernCS,
+    kernDS,
+    userCS,
+    userDS,
+    tss
 };
 
 namespace firefly::kernel::core::gdt {
 extern "C" void load_gdt(uint64_t);
 
-class gdtd_t {
-public:
-    uint16_t limit;
-    uint16_t base0;
-    uint8_t base1;
-    uint8_t access;
-    uint8_t flags;
-    uint8_t base2;
-} PACKED;
-
-class gdtr_t {
-public:
+struct Gdtr {
     uint16_t size;
     uint64_t base;
 } PACKED;
 
-class GDT {
-public:
-    gdtd_t gdtd[GDT_MAX_ENTRIES];
-    tss::tss_descriptor tssd;
-    size_t registered_entries;
+struct Gdt {
+    struct PACKED {
+        uint16_t limit{ 0 };
+        uint16_t base0{ 0 };
+        uint8_t base1{ 0 };
+        uint8_t access;
+        uint8_t flags;
+        uint8_t base2{ 0 };
+    } gdtDescriptors[GDT_MAX_ENTRIES];
+
+    tss::descriptor tssDescriptors;
 } PACKED;
 
-enum SELECTOR : uint16_t
-{
-    KRN_NULL = 0x0,
-    KRN_CS,
-    KRN_DS,
-    USR_CS,
-    USR_DS
-};
+void init(Gdt &gdt);
+void setGdtEntry(Gdt &cpuGdt, uint64_t selectorIdx, uint8_t flags, uint8_t access);
+void setTssEntry(Gdt &cpuGdt, uint64_t selectorIdx, uint8_t flags, uint8_t access);
 
-class GDTconfig {
-public:
-    void set_tss(uint64_t base, uint8_t flags, uint8_t access);            // Used for: TSS
-    void set(int offset, uint8_t flags, uint8_t access, uint16_t limit=0); // Used for: NULL, CS, DS
-};
-void init();
-
-uint16_t ltr_entry_offset() noexcept;
-uint16_t gdt_entry_offset(enum SELECTOR selector) noexcept;
-
+uint16_t tssEntryOffset();
+uint16_t gdtEntryOffset(SegmentSelector selector);
 }  // namespace firefly::kernel::core::gdt
