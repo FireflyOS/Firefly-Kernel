@@ -71,7 +71,7 @@ protected:
     }
 
     inline void loadAddressSpace() const {
-        asm("mov %0, %%cr3" ::"r"(reinterpret_cast<uintptr_t>(pml4)));
+        asm volatile("mov %0, %%cr3" ::"r"(reinterpret_cast<uintptr_t>(pml4)));
     }
 
 private:

@@ -1,0 +1,8 @@
+cd build; \
+ninja clean
+[1/2] Cleaning custom target directories
+[2/2] Cleaning
+Cleaning... 27 files.
+cd build; \
+meson compile && \
+../scripts/geniso.sh

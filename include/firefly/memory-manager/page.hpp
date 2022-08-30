@@ -12,7 +12,8 @@
 #include "firefly/stivale2.hpp"
 #include "libk++/bits.h"
 
-static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
+extern uintptr_t GLOB_PAGE_ARRAY[];
+// static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
 
 enum class RawPageFlags : int {
     None = 0,
@@ -36,6 +37,7 @@ struct RawPage {
     bool is_buddy_page(int min_order) const {
         return order >= min_order;
     }
+
     void reset(bool reset_refcount = true) {
         flags = RawPageFlags::None;
         order = 0;
@@ -58,6 +60,7 @@ public:
          		{
                     .flags = (e->type != STIVALE2_MMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
                 };
+				// firefly::kernel::info_logger << "pages: " << firefly::kernel::info_logger.hex(pages) << '\n';
                 pages[largest_index] = page;
                 // clang-format on
             }
@@ -99,7 +102,7 @@ private:
         AddressType address;
     };
 
-    RawPage *pages = (struct RawPage *)GLOB_PAGE_ARRAY;
+    RawPage *pages = (struct RawPage *)(reinterpret_cast<uintptr_t>(GLOB_PAGE_ARRAY));
     Index largest_index{};  // largest index into the 'pages' array
 };
 

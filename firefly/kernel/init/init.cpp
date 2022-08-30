@@ -96,7 +96,18 @@ void bootloader_services_init(stivale2_struct* handover) {
 
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
+	info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';info_logger << info_logger.hex(mm::Physical::allocate()) << '\n';
     mm::kernelPageSpace::init();
+	for (;;)
+		;
 
     auto tagfb = verify(static_cast<stivale2_struct_tag_framebuffer*>(stivale2_get_tag(handover, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID)));
 	console::init(tagfb);

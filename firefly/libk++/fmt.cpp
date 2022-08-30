@@ -108,7 +108,13 @@ int printf(const char* fmt, ...) {
 
     if (outLen >= sizeof(buffer))
         return -1;
-    firefly::kernel::console::write(buffer);
+
+	for (int i = 0; i < outLen; i++)
+		asm volatile(
+			"outb %%al, %%dx"
+			:
+			: "d"(0xe9), "a"(buffer[i]));
+    // firefly::kernel::console::write(buffer);
 
     return 0;
 }

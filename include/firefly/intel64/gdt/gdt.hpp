@@ -5,7 +5,7 @@
 #include "firefly/compiler/clang++.hpp"
 #include "firefly/intel64/gdt/tss.hpp"
 
-static constexpr int8_t GDT_MAX_ENTRIES{ 4 };
+static constexpr int8_t GDT_MAX_ENTRIES{ 5 };
 
 enum SegmentSelector : int8_t {
     null,
@@ -32,7 +32,7 @@ struct Gdt {
         uint8_t access;
         uint8_t flags;
         uint8_t base2{ 0 };
-    } gdtDescriptors[GDT_MAX_ENTRIES+1];
+    } gdtDescriptors[GDT_MAX_ENTRIES];
 
     tss::descriptor tssDescriptors;
 } PACKED;
