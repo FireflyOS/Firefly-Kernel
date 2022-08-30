@@ -111,8 +111,8 @@ int printf(const char* fmt, ...) {
 
     if (outLen >= sizeof(buffer))
         return -1;
-    
-	firefly::kernel::console::write(buffer);
+
+    firefly::kernel::console::write(buffer);
     return 0;
 }
 

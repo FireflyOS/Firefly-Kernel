@@ -32,10 +32,10 @@ void bootloaderServicesInit() {
 
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
-    // mm::kernelPageSpace::init();
+    mm::kernelPageSpace::init();
 
     console::init();
-    console::write("Hello, world!");
+    // console::write("Hello, world!");
 }
 
 extern "C" [[noreturn]] void kernel_init() {

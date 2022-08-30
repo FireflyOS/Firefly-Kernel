@@ -5,10 +5,10 @@
 
 // TODO: Use constinit 
 Pagelist pagelist;
+BuddyManager buddy;
 
 namespace firefly::kernel::mm::Physical {
 
-static BuddyManager buddy;
 
 void init(limine_memmap_response *mmap) {
     buddy.init(mmap);

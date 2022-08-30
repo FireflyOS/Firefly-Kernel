@@ -5,6 +5,9 @@
 
 #include "firefly/compiler/clang++.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/logger.hpp"
+#include "firefly/memory-manager/virtual/virtual.hpp"
+#include "libk++/align.h"
 #include "limine-terminal-port/term.h"
 
 extern uintptr_t _binary_fonts_vgafont_bin_start[];
@@ -15,7 +18,7 @@ USED struct limine_framebuffer_request fb {
     .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0, .response = nullptr
 };
 
-constinit term_t term = {};
+term_t term;
 
 void init() {
     auto fb_response = fb.response;
@@ -43,7 +46,7 @@ void init() {
         DEFAULT_ANSI_COLOURS,         // Default terminal palette
         DEFAULT_ANSI_BRIGHT_COLOURS,  // Default terminal bright palette
         0xA0000000,                   // Background colour
-        0xFFFFFF,                     // Foreground colour
+        0xAAAAAA,                     // Foreground colour
         0,                            // Terminal margin
         0                             // Terminal margin gradient
     };
