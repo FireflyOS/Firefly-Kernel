@@ -9,7 +9,7 @@
 
 #include "firefly/compiler/clang++.hpp"
 #include "firefly/memory-manager/mm.hpp"
-#include "firefly/stivale2.hpp"
+#include "firefly/limine.hpp"
 #include "libk++/bits.h"
 
 extern uintptr_t GLOB_PAGE_ARRAY[];
@@ -44,25 +44,27 @@ struct RawPage {
         if (likely(reset_refcount))
             refcount = 0;
     }
-} ;
+};
 
 class Pagelist {
     using Index = int;
     using AddressType = uint64_t;
 
 public:
-    void init(stivale2_struct_tag_memmap *memmap_response) {
-        for (size_t i = 0; i < memmap_response->entries; i++) {
-            auto *e = &memmap_response->memmap[i];
+    void init(struct limine_memmap_response *memmap_response) {
+        for (size_t i = 0; i < memmap_response->entry_count; i++)
+        {
+            auto e = memmap_response->entries[i];
+
+            // Ensure the array size is not exceeded
+            // auto const projected_index = largest_index + (e->length / 4096);
+            // assert_truth(projected_index <= page_array_sz);
+
             for (size_t j = 0; j <= e->length; j += 4096, largest_index++) {
-                // clang-format off
-                auto const page = RawPage
-         		{
-                    .flags = (e->type != STIVALE2_MMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
+                auto const page = RawPage{
+                    .flags = (e->type != LIMINE_MEMMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
                 };
-				// firefly::kernel::info_logger << "pages: " << firefly::kernel::info_logger.hex(pages) << '\n';
                 pages[largest_index] = page;
-                // clang-format on
             }
         }
 

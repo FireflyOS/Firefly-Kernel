@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "firefly/memory-manager/mm.hpp"
-#include "firefly/stivale2.hpp"
+#include "firefly/limine.hpp"
 
 namespace firefly::kernel::core::paging {
 
@@ -26,5 +26,5 @@ enum class CacheMode : int {
 void invalidatePage(const VirtualAddress page);
 void invalidatePage(const uint64_t page);
 void map(const uint64_t virtual_addr, const uint64_t physical_addr, AccessFlags access_flags, const uint64_t *pml_ptr);
-void bootMapExtraRegion(stivale2_struct_tag_memmap *mmap);
+void bootMapExtraRegion(limine_memmap_response *mmap);
 }  // namespace firefly::kernel::core::paging

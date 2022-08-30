@@ -1,7 +1,10 @@
 #include "libk++/fmt.hpp"
 
-#include "firefly/console/console.hpp"
+#include <cstdint>
+
 #include "cstdlib/cassert.h"
+#include "firefly/console/console.hpp"
+
 
 namespace firefly::libkern::fmt {
 
@@ -108,14 +111,8 @@ int printf(const char* fmt, ...) {
 
     if (outLen >= sizeof(buffer))
         return -1;
-
-	for (int i = 0; i < outLen; i++)
-		asm volatile(
-			"outb %%al, %%dx"
-			:
-			: "d"(0xe9), "a"(buffer[i]));
-    // firefly::kernel::console::write(buffer);
-
+    
+	firefly::kernel::console::write(buffer);
     return 0;
 }
 
@@ -123,7 +120,7 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
     assert(fmt != nullptr);
     assert(size == 0 || str != nullptr);
     size_t usedLen = 0;
-    auto append = [size, &usedLen, &str] (char ch) {
+    auto append = [size, &usedLen, &str](char ch) {
         if (usedLen < size - 1)
             *str++ = ch;
         ++usedLen;
