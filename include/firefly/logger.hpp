@@ -2,6 +2,8 @@
 
 #include <stdarg.h>
 
+#include <type_traits>
+
 #include "firefly/console/console.hpp"
 #include "libk++/fmt.hpp"
 
@@ -41,7 +43,7 @@ public:
 
     // Integral data types
     template <typename T>
-    logger_impl &operator<<(T in) const {
+    logger_impl &operator<<(T in) const requires std::is_integral_v<T> {
         libkern::fmt::printf("%d", in);
         return const_cast<logger_impl &>(*this);
     }
@@ -72,5 +74,5 @@ public:
     }
 };
 
-static logger_impl info_logger;
+constinit static logger_impl info_logger;
 }  // namespace firefly::kernel
