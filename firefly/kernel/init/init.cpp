@@ -18,7 +18,7 @@ USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
 };
 
-void bootloader_services_init() {
+void bootloaderServicesInit() {
     using namespace firefly::kernel;
     const auto verify = [](auto tag) {
         if (unlikely(tag == NULL)) {
@@ -42,7 +42,7 @@ extern "C" [[noreturn]] void kernel_init() {
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::core::interrupt::init();
 
-    bootloader_services_init();
+    bootloaderServicesInit();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();
