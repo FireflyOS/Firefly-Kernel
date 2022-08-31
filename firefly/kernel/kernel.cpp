@@ -3,7 +3,6 @@
 #include <frg/array.hpp>
 
 #include "firefly/drivers/serial.hpp"
-#include "firefly/init/init.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 

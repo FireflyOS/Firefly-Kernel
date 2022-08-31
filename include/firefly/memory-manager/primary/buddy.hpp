@@ -3,16 +3,15 @@
 #include <stdint.h>
 
 #include <algorithm>
-
-#include "cstdlib/cmath.h"
-#include "firefly/stivale2.hpp"
-#include "libk++/memory.hpp"
 #include <utility>
 
 #include "cstdlib/cassert.h"
+#include "cstdlib/cmath.h"
+#include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/page.hpp"
 #include "libk++/align.h"
+#include "libk++/memory.hpp"
 
 
 struct BuddyAllocationResult {
@@ -217,14 +216,12 @@ private:
     AddressType base{};
 };
 
-class BuddyManager
-{
+class BuddyManager {
     using AddressType = BuddyAllocator::AddressType;
     using Index = uint64_t;
 
-  public:
-    void init(struct limine_memmap_response *memmap_response)
-    {
+public:
+    void init(struct limine_memmap_response *memmap_response) {
         highest_address = memmap_response->entries[memmap_response->entry_count - 1]->base + memmap_response->entries[memmap_response->entry_count - 1]->length;
 
         sort(memmap_response);
@@ -233,16 +230,13 @@ class BuddyManager
 
         Index idx{};
         uint64_t total{};
-        for (Index i = 0; i < memmap_response->entry_count; i++)
-        {
+        for (Index i = 0; i < memmap_response->entry_count; i++) {
             auto &e = memmap_response->entries[i];
             if (e->type != LIMINE_MEMMAP_USABLE || e->length <= 4096)
                 continue;
 
-            for (uint64_t j = 0; j < 64; j++)
-            {
-                if (e->length & (1ll << j))
-                {
+            for (uint64_t j = 0; j < 64; j++) {
+                if (e->length & (1ll << j)) {
                     auto top = e->base + (1ll << j);
                     auto size_bytes = top - e->base;
                     // trace(TRACE_BUDDY, "[%d] BuddyAllocator managing: 0x%lx-0x%lx [%ld]", idx, e->base, top, (1ll << j));
@@ -255,14 +249,12 @@ class BuddyManager
         top_idx = idx - 1;
 
         // Iterate over elements in the base array
-        for (Index i = 0; i < idx; i++)
-        {
+        for (Index i = 0; i < idx; i++) {
             // Sort the elements by swapping them where applicable.
             [&]() {
                 auto &original = buddies[i];
 
-                for (Index j = i + 1; j < idx; j++)
-                {
+                for (Index j = i + 1; j < idx; j++) {
                     auto &current = buddies[j];
 
                     if (current.max_order > original.max_order)
@@ -276,10 +268,11 @@ class BuddyManager
 
     // Returns the highest address in the memory map.
     // This does NOT mean it is usable memory!
-    uint64_t get_highest_address() const { return highest_address; }
+    uint64_t get_highest_address() const {
+        return highest_address;
+    }
 
-    AddressType must_alloc(uint64_t size)
-    {
+    AddressType must_alloc(uint64_t size) {
         auto ptr = this->alloc(size);
         if (!ptr)
             firefly::panic("must_alloc failed to allocate memory!");
@@ -287,23 +280,19 @@ class BuddyManager
         return ptr;
     }
 
-    AddressType alloc(uint64_t size)
-    {
+    AddressType alloc(uint64_t size) {
         BuddyAllocator::Order order = log2(size);
         Index min_idx = suitable_buddy(order);
 
         // Buddy allocators are sorted from largest to smallest order
-        for (Index i = min_idx; i > 0; i--)
-        {
+        for (Index i = min_idx; i > 0; i--) {
             auto ptr = buddies[i].alloc(size);
-            if (ptr.unpack())
-            {
+            if (ptr.unpack()) {
                 // Mark the allocated pages as such in the pagelist
                 auto npages = ptr.npages;
                 auto base = reinterpret_cast<uint64_t>(ptr.unpack());
 
-                for (int j = 0; j < npages; j++, base += 4096)
-                {
+                for (int j = 0; j < npages; j++, base += 4096) {
                     auto page = pagelist.phys_to_page(base);
                     page->refcount++;
                     page->order = ptr.order;
@@ -317,8 +306,7 @@ class BuddyManager
         return nullptr;
     }
 
-    void free(AddressType ptr)
-    {
+    void free(AddressType ptr) {
         auto page = pagelist.phys_to_page(reinterpret_cast<uint64_t>(ptr));
 
         // Not a buddy page
@@ -333,8 +321,7 @@ class BuddyManager
         auto npages = (1 << (page->order + 3)) / 4096;
         auto base = reinterpret_cast<uint64_t>(ptr);
 
-        for (auto i = 0; i < npages; i++, base += 4096)
-        {
+        for (auto i = 0; i < npages; i++, base += 4096) {
             page = pagelist.phys_to_page(base);
             assert_truth(page->refcount == 1 && "This pages refcount is not 1. This means that there was an attempt to free an actively used block of memory");
             page->reset();
@@ -343,19 +330,16 @@ class BuddyManager
         buddies[buddy_index].free(ptr, order);
     }
 
-  private:
+private:
     // Selection sort
-    inline void sort(struct limine_memmap_response *mmap)
-    {
+    inline void sort(struct limine_memmap_response *mmap) {
         // Iterate over elements in the base array
-        for (Index i = 0; i < mmap->entry_count; i++)
-        {
+        for (Index i = 0; i < mmap->entry_count; i++) {
             // Sort the elements by swapping them where applicable.
             [&]() {
                 auto &original = mmap->entries[i];
 
-                for (Index j = i + 1; j < mmap->entry_count; j++)
-                {
+                for (Index j = i + 1; j < mmap->entry_count; j++) {
                     auto &current = mmap->entries[j];
                     if (current->length > original->length)
                         std::swap(current, original);
@@ -364,11 +348,9 @@ class BuddyManager
         }
     }
 
-    inline uint64_t buddies_required(struct limine_memmap_response *mmap)
-    {
+    inline uint64_t buddies_required(struct limine_memmap_response *mmap) {
         uint64_t num_buddies_required = 0;
-        for (Index i = 0; i < mmap->entry_count; i++)
-        {
+        for (Index i = 0; i < mmap->entry_count; i++) {
             const auto &e = mmap->entries[i];
             if (e->type != LIMINE_MEMMAP_USABLE || e->length <= 4096)
                 continue;
@@ -382,12 +364,10 @@ class BuddyManager
         return num_buddies_required;
     }
 
-    inline uint64_t reserve_buddy_allocator_memory(struct limine_memmap_response *mmap)
-    {
+    inline uint64_t reserve_buddy_allocator_memory(struct limine_memmap_response *mmap) {
         const auto size = buddies_required(mmap) * sizeof(BuddyAllocator);
 
-        for (Index i = 0; i < mmap->entry_count; i++)
-        {
+        for (Index i = 0; i < mmap->entry_count; i++) {
             auto &e = mmap->entries[i];
             if (e->type != LIMINE_MEMMAP_USABLE || e->length < size)
                 continue;
@@ -403,16 +383,13 @@ class BuddyManager
         __builtin_unreachable();
     }
 
-    inline Index suitable_buddy(uint64_t suitable_order)
-    {
+    inline Index suitable_buddy(uint64_t suitable_order) {
         Index suitable_index{};
-        for (Index i = 0; i < top_idx; i++)
-        {
+        for (Index i = 0; i < top_idx; i++) {
             [&]() {
                 auto &original = buddies[i];
 
-                for (Index j = i + 1; j < top_idx; j++)
-                {
+                for (Index j = i + 1; j < top_idx; j++) {
                     auto &current = buddies[j];
 
                     if (current.max_order < original.max_order && current.max_order >= suitable_order)
@@ -423,7 +400,7 @@ class BuddyManager
         return suitable_index;
     }
 
-  private:
+private:
     uint64_t highest_address;
     BuddyAllocator *buddies;
     Index top_idx{};
