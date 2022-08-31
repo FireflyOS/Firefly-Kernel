@@ -20,6 +20,10 @@ uefi:
 	cd build; \
 	../scripts/qemu-uefi.sh
 
+info_log:
+	cd build; \
+	../scripts/qemu-bios-int-log.sh
+
 clean:
 ifeq ($(wildcard ./build),)
 	$(error No build directory to clean, please run 'make all' or 'make' first)

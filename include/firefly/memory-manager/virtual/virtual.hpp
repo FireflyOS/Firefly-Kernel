@@ -8,7 +8,6 @@
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/virtual/vspace.hpp"
-#include "firefly/stivale2.hpp"
 
 namespace firefly::kernel::mm {
 

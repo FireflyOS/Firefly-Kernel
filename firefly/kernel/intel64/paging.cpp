@@ -74,12 +74,12 @@ void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags
     invalidatePage(reinterpret_cast<VirtualAddress>(virtual_addr));
 }
 
-void bootMapExtraRegion(stivale2_struct_tag_memmap *mmap) {
+void bootMapExtraRegion(limine_memmap_response *mmap) {
     constexpr int required_size = 4;
 
-    for (uint64_t i = 0; i < mmap->entries; i++) {
-        auto *e = &mmap->memmap[i];
-        if (e->type != STIVALE2_MMAP_USABLE || e->length < MiB(required_size))
+    for (uint64_t i = 0; i < mmap->entry_count; i++) {
+        auto e = mmap->entries[i];
+        if (e->type != LIMINE_MEMMAP_USABLE || e->length < MiB(required_size))
             continue;
 
         pageAllocator.init(PhysicalAddress(e->base), MiB(required_size));

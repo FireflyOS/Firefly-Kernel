@@ -5,6 +5,6 @@ cpu = 'x86_64'
 endian = 'little'
 
 [binaries]
-c = 'clang'
-cpp = 'clang++'
+c = 'gcc'
+cpp = 'g++'
 cpp_ld = 'lld'

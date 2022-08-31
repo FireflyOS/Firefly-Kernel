@@ -9,10 +9,11 @@
 
 #include "firefly/compiler/clang++.hpp"
 #include "firefly/memory-manager/mm.hpp"
-#include "firefly/stivale2.hpp"
+#include "firefly/limine.hpp"
 #include "libk++/bits.h"
 
-static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
+extern uintptr_t GLOB_PAGE_ARRAY[];
+// static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
 
 enum class RawPageFlags : int {
     None = 0,
@@ -36,30 +37,34 @@ struct RawPage {
     bool is_buddy_page(int min_order) const {
         return order >= min_order;
     }
+
     void reset(bool reset_refcount = true) {
         flags = RawPageFlags::None;
         order = 0;
         if (likely(reset_refcount))
             refcount = 0;
     }
-} PACKED;
+};
 
 class Pagelist {
     using Index = int;
     using AddressType = uint64_t;
 
 public:
-    void init(stivale2_struct_tag_memmap *memmap_response) {
-        for (size_t i = 0; i < memmap_response->entries; i++) {
-            auto *e = &memmap_response->memmap[i];
+    void init(struct limine_memmap_response *memmap_response) {
+        for (size_t i = 0; i < memmap_response->entry_count; i++)
+        {
+            auto e = memmap_response->entries[i];
+
+            // Ensure the array size is not exceeded
+            // auto const projected_index = largest_index + (e->length / 4096);
+            // assert_truth(projected_index <= page_array_sz);
+
             for (size_t j = 0; j <= e->length; j += 4096, largest_index++) {
-                // clang-format off
-                auto const page = RawPage
-         		{
-                    .flags = (e->type != STIVALE2_MMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
+                auto const page = RawPage{
+                    .flags = (e->type != LIMINE_MEMMAP_USABLE) ? RawPageFlags::Unusable : RawPageFlags::None
                 };
                 pages[largest_index] = page;
-                // clang-format on
             }
         }
 
@@ -99,7 +104,7 @@ private:
         AddressType address;
     };
 
-    RawPage *pages = (struct RawPage *)GLOB_PAGE_ARRAY;
+    RawPage *pages = (struct RawPage *)(reinterpret_cast<uintptr_t>(GLOB_PAGE_ARRAY));
     Index largest_index{};  // largest index into the 'pages' array
 };
 

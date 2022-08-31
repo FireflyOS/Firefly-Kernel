@@ -1,11 +1,11 @@
 #pragma once
 
+#include "firefly/intel64/page_permissions.hpp"
 #include "firefly/intel64/paging.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 
-#pragma region Macro wrappers
 /* Use these macros when no custom logic is needed. It's shorter and cleaner. */
 #define VIRTUAL_SPACE_FUNC_UNMAP        \
     void unmap(T virt) const override { \
@@ -21,7 +21,6 @@
     void mapRange(T base, T len, AccessFlags flags, AddressLayout off = AddressLayout::Low) const override { \
         VirtualSpace::mapRange(base, len, flags, off);                                                       \
     }
-#pragma endregion
 
 namespace firefly::kernel::mm {
 
@@ -71,7 +70,7 @@ protected:
     }
 
     inline void loadAddressSpace() const {
-        asm("mov %0, %%cr3" ::"r"(reinterpret_cast<uintptr_t>(pml4)));
+        asm volatile("mov %0, %%cr3" ::"r"(reinterpret_cast<uintptr_t>(pml4)));
     }
 
 private:

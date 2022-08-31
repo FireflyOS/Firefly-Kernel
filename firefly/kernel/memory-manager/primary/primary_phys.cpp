@@ -3,24 +3,27 @@
 #include "firefly/memory-manager/page.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
 
+// TODO: Use constinit 
 Pagelist pagelist;
+BuddyManager buddy;
 
 namespace firefly::kernel::mm::Physical {
 
-static BuddyManager buddy;
 
-void init(stivale2_struct_tag_memmap *mmap) {
+void init(limine_memmap_response *mmap) {
     buddy.init(mmap);
     pagelist.init(mmap);
     info_logger << "pmm: Initialized" << logger::endl;
 }
 
 PhysicalAddress allocate(uint64_t size, FillMode fill) {
-    return buddy.alloc(size, fill);
+	(void)fill;
+    return buddy.alloc(size);
 }
 
 PhysicalAddress must_allocate(uint64_t size, FillMode fill) {
-	return buddy.must_alloc(size, fill);
+	(void)fill;
+	return buddy.must_alloc(size);
 }
 
 void deallocate(PhysicalAddress ptr) {

@@ -3,7 +3,6 @@
 #include <frg/array.hpp>
 
 #include "firefly/drivers/serial.hpp"
-#include "firefly/init/init.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 
@@ -30,6 +29,7 @@ void log_core_firefly_contributors() {
 }
 
 [[noreturn]] void kernel_main() {
+	log_core_firefly_contributors();
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

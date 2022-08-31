@@ -1,11 +1,10 @@
 #pragma once
 
-#include <cstdlib/cstring.h>
-
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
+#include "libk++/memory.hpp"
 
 namespace firefly::kernel::mm {
 class PageFrame {
@@ -19,11 +18,11 @@ public:
 
     public:
         void add(const T &block) {
-            *(T *)block = list;
+            if (block) {
+                memset((void *)block, 0, PAGE_SIZE);
+                *(T *)block = list;
+            }
             list = block;
-
-            // if constexpr (verbose)
-            //     info_logger << "freelist::add(): Added '" << info_logger.hex(block) << "' to the freelist\n";
         }
 
         T remove(FillMode fill) {
