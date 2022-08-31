@@ -3,7 +3,7 @@
 #include <cstdlib/cstring.h>
 #include <stddef.h>
 
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"

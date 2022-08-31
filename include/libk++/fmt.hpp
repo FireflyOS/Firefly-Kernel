@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cxxshim/cstddef>
 #include <stdarg.h>
+
+#include <cxxshim/cstddef>
 
 namespace firefly::libkern::fmt {
 int vsnprintf(char* str, size_t size, const char* fmt, va_list ap);
@@ -9,4 +10,5 @@ int printf(const char* fmt, ...);
 void itoa(size_t num, char* str, int base);
 int atoi(const char* str);
 char* strrev(char* str);
+int strncmp(const char* str1, const char* str2, size_t n);
 }  // namespace firefly::libkern::fmt

@@ -102,6 +102,14 @@ int atoi(const char* str) {
     return ret;
 }
 
+int strncmp(const char* str1, const char* str2, size_t n) {
+    for (size_t i = 0; i < n && str1; i++) {
+        if (str1[i] != str2[i])
+            return -1;
+    }
+    return 0;
+}
+
 char buffer[512];
 int printf(const char* fmt, ...) {
     va_list ap;

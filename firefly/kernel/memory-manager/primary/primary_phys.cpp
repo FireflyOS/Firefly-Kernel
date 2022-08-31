@@ -3,7 +3,7 @@
 #include "firefly/memory-manager/page.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
 
-// TODO: Use constinit 
+// TODO: Use constinit
 Pagelist pagelist;
 BuddyManager buddy;
 
@@ -17,13 +17,13 @@ void init(limine_memmap_response *mmap) {
 }
 
 PhysicalAddress allocate(uint64_t size, FillMode fill) {
-	(void)fill;
+    (void)fill;
     return buddy.alloc(size);
 }
 
 PhysicalAddress must_allocate(uint64_t size, FillMode fill) {
-	(void)fill;
-	return buddy.must_alloc(size);
+    (void)fill;
+    return buddy.must_alloc(size);
 }
 
 void deallocate(PhysicalAddress ptr) {

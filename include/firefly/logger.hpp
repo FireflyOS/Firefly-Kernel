@@ -74,5 +74,5 @@ public:
     }
 };
 
-constinit static logger_impl info_logger;
+static logger_impl info_logger;
 }  // namespace firefly::kernel

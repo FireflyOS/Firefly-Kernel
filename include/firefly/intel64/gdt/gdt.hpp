@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/intel64/gdt/tss.hpp"
 
 static constexpr int8_t GDT_MAX_ENTRIES{ 5 };

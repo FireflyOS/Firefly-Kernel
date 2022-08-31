@@ -3,9 +3,9 @@
 #include <frg/array.hpp>
 
 #include "firefly/drivers/serial.hpp"
+#include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
-
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -29,7 +29,11 @@ void log_core_firefly_contributors() {
 }
 
 [[noreturn]] void kernel_main() {
-	log_core_firefly_contributors();
+    log_core_firefly_contributors();
+
+	core::acpi::Acpi::init();
+	core::acpi::Acpi::accessor().dumpTables();
+
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

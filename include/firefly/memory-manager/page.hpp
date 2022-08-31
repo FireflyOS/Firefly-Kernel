@@ -7,7 +7,7 @@
 #include <atomic>
 #include <utility>
 
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/limine.hpp"
 #include "libk++/bits.h"

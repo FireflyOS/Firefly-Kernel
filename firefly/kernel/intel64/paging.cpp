@@ -1,6 +1,6 @@
 #include "firefly/intel64/paging.hpp"
 
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/memory-manager/primary/page_frame.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
