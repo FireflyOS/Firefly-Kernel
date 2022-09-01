@@ -48,7 +48,7 @@ c_files += files(
 	'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp'
 )
 
-cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp')
+cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp', 'libk++/cstring.cpp')
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',

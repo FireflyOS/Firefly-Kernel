@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "firefly/compiler/compiler.hpp"
-#include "libk++/fmt.hpp"
+#include "libk++/cstring.hpp"
 
 struct AcpiSdt {
     char signature[4];
@@ -25,7 +25,8 @@ struct AcpiSdt {
     }
 
     inline bool compareSignature(const char *other) const {
-        return (firefly::libkern::fmt::strncmp(signature, other, 4)) == 0;
+        using firefly::libkern::cstring::strncmp;
+        return (strncmp(signature, other, 4)) == 0;
     }
 } PACKED;
 

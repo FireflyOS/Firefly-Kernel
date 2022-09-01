@@ -1,8 +1,7 @@
 #include "firefly/trace/symbols.hpp"
 
-#include <cstdlib/cstring.h>
-
 #include "firefly/logger.hpp"
+#include "libk++/cstring.hpp"
 
 extern "C" SymbolTablePair symbol_table[];
 
@@ -10,9 +9,9 @@ SymbolTablePair SymbolTable::operator[](uint64_t addr) const noexcept {
     return lookup(addr);
 }
 
-//Parse the symbol table and find the correct address of RIP
+// Parse the symbol table and find the correct address of RIP
 SymbolTablePair SymbolTable::lookup(uint64_t addr) const noexcept {
-    //We need the largest address that is smaller than `addr` because of the jsr instruction, otherwise the addresses are off
+    // We need the largest address that is smaller than `addr` because of the jsr instruction, otherwise the addresses are off
     uint64_t corrected_address = 0;
     uint64_t index_new = 0;
 
@@ -34,16 +33,16 @@ SymbolTablePair SymbolTable::lookup(uint64_t addr) const noexcept {
     }
 }
 
-bool backtrace(uint64_t addr, [[maybe_unused]]int iteration) {
+bool backtrace(uint64_t addr, [[maybe_unused]] int iteration) {
     SymbolTable table{};
     auto const& [base, name] = table[addr];
 
 
     using firefly::kernel::info_logger;
-    info_logger << "#" << iteration << " "  << info_logger.hex(base) << " \t" << name << '\n';
+    info_logger << "#" << iteration << " " << info_logger.hex(base) << " \t" << name << '\n';
 
     /* Don't trace symbols below kernel_init */
-    if (strcmp(name, "kernel_init") == 0)
+    if (firefly::libkern::cstring::strcmp(name, "kernel_init") == 0)
         return false;
 
     return true;

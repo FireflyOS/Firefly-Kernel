@@ -4,21 +4,11 @@
 
 #include "cstdlib/cassert.h"
 #include "firefly/console/console.hpp"
-
+#include "libk++/cstring.hpp"
 
 namespace firefly::libkern::fmt {
 
-size_t strlen(const char* str) {
-    size_t n = 0;
-    while (*str++)
-        n++;
-    return n;
-}
-
-size_t strnlen(const char* str) {
-    return strlen(str) + 1;
-}
-
+using namespace cstring;
 
 char itoc(int num) {
     return '0' + num;
@@ -100,14 +90,6 @@ int atoi(const char* str) {
     }
 
     return ret;
-}
-
-int strncmp(const char* str1, const char* str2, size_t n) {
-    for (size_t i = 0; i < n && str1; i++) {
-        if (str1[i] != str2[i])
-            return -1;
-    }
-    return 0;
 }
 
 char buffer[512];

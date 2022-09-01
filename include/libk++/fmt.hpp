@@ -10,5 +10,4 @@ int printf(const char* fmt, ...);
 void itoa(size_t num, char* str, int base);
 int atoi(const char* str);
 char* strrev(char* str);
-int strncmp(const char* str1, const char* str2, size_t n);
 }  // namespace firefly::libkern::fmt
