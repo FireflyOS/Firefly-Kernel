@@ -32,7 +32,7 @@ void Acpi::init() {
     rsdp = *reinterpret_cast<AcpiRsdp*>(rsdp_response->address);
     rsdp.validateOrPanic(reinterpret_cast<uint8_t*>(rsdp_response->address));
 
-	// Initialize the RSDT or XSDT if available
+    // Initialize the RSDT or XSDT if available
     const auto& self = acpiSingleton.get();
     self->useXSDT = rsdp.revision >= 2;
     self->divisor = self->useXSDT ? 8 : 4;
@@ -49,18 +49,18 @@ void Acpi::init() {
 }
 
 void Acpi::dumpTables() const {
-	info_logger << "Using " << (useXSDT ? "xsdt" : "rsdt") << ", number of acpi tables: " << entries << '\n';
+    info_logger << "Using " << (useXSDT ? "xsdt" : "rsdt") << ", number of acpi tables: " << entries << '\n';
 
-	for (int i = 0; i < entries; i++) {
-		AcpiSdt* sdt = reinterpret_cast<AcpiSdt*>((useXSDT ? xsdt.root->tables[i] : rsdt.root->tables[i]));
+    for (int i = 0; i < entries; i++) {
+        AcpiSdt* sdt = reinterpret_cast<AcpiSdt*>((useXSDT ? xsdt.root->tables[i] : rsdt.root->tables[i]));
 
-		// The SDT descriptors are not null-terminated.
-		// They are, however always 4 characters long, so we can just iterate over them like this.
-		for (int j = 0; j < 4; j++) {
-			info_logger << sdt->signature[j];
-		}
-		info_logger << '\n';
-	}
+        // The SDT descriptors are not null-terminated.
+        // They are, however, always 4 characters long so we can just iterate over them like this
+        for (int j = 0; j < 4; j++) {
+            info_logger << sdt->signature[j];
+        }
+        info_logger << '\n';
+    }
 }
 
 AcpiTable Acpi::find(frg::string_view identifier) const {
@@ -77,5 +77,4 @@ AcpiTable Acpi::find(frg::string_view identifier) const {
     info_logger << "Couldn't find table: " << identifier.data() << '\n';
     return nullptr;
 }
-
 }  // namespace firefly::kernel::core::acpi

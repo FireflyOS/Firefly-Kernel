@@ -1,7 +1,6 @@
 #include "firefly/console/console.hpp"
 
-#include <cstdlib/cstring.h>
-#include <stddef.h>
+#include <cstddef>
 
 #include "firefly/compiler/compiler.hpp"
 #include "firefly/limine.hpp"

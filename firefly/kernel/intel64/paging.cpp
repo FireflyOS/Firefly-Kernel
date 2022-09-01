@@ -90,7 +90,7 @@ void bootMapExtraRegion(limine_memmap_response *mmap) {
 
     auto cr3{ 0ul };
     asm volatile("mov %%cr3, %0"
-                 : "=r"(cr3)::);
+                : "=r"(cr3));
 
     for (uint32_t i = 0; i < GiB(1); i += PAGE_SIZE)
         map(i + AddressLayout::PageData, i, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3));
