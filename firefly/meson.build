@@ -19,7 +19,8 @@ kernel_cxx_flags = [
     '-mcmodel=kernel',
     '-fno-exceptions',
     '-fno-rtti',
-    '-mno-3dnow'
+    '-mno-3dnow',
+	'-fno-omit-frame-pointer'
 ]
 
 kernel_c_flags = [
@@ -39,21 +40,22 @@ kernel_c_flags = [
     '-mno-sse',
     '-mno-sse2',
     '-mno-red-zone',
-    '-mcmodel=kernel'
+    '-mcmodel=kernel',
+	'-fno-omit-frame-pointer'
 ]
 
 c_files += files(
-	'kernel/console/limine-terminal-port/gterm.c', 'kernel/console/limine-terminal-port/image.c',
-	'kernel/console/limine-terminal-port/term.c', 'kernel/console/limine-terminal-port/tterm.c',
-	'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp'
+	'kernel/console/gterm.c', 'kernel/console/image.c',
+	'kernel/console/term.c'
 )
 
-cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp')
+cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp', 'libk++/cstring.cpp')
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
-    'kernel/console/console.cpp'
+    'kernel/console/console.cpp', 'kernel/intel64/acpi/acpi.cpp', 'kernel/graphics/framebuffer.cpp', 
+	'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp'
 )
 asm_files += files('kernel/intel64/gdt/gdt.asm', 'kernel/intel64/int/interrupt.asm')

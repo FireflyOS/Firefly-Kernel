@@ -3,9 +3,9 @@
 #include <frg/array.hpp>
 
 #include "firefly/drivers/serial.hpp"
+#include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
-
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -28,8 +28,19 @@ void log_core_firefly_contributors() {
     info_logger << info_logger.newline();
 }
 
+extern "C" void generate_canvas(struct gterm_t *gterm);
+
 [[noreturn]] void kernel_main() {
-	log_core_firefly_contributors();
+    log_core_firefly_contributors();
+	core::acpi::Acpi::accessor().dumpTables();
+
+	// auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
+	// info_logger << info_logger.format(
+	// 	"version: %d\n"
+	// 	"status: %d\n"
+	// 	"type: %d\n", bgrt->version, bgrt->status, bgrt->imageType
+	// );
+
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

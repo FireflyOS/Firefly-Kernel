@@ -1,6 +1,6 @@
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"

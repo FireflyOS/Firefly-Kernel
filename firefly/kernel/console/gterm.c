@@ -1,5 +1,5 @@
-#include "image.h"
-#include "gterm.h"
+#include "firefly/console/image.h"
+#include "firefly/console/gterm.h"
 #include "term.h"
 
 static uint64_t sqrt(uint64_t a_nInput)
@@ -215,7 +215,8 @@ static void loop_internal(struct gterm_t *gterm, size_t xstart, size_t xend, siz
     genloop(gterm, xstart, xend, ystart, yend, blend_internal);
 }
 
-static void generate_canvas(struct gterm_t *gterm)
+// static 
+void generate_canvas(struct gterm_t *gterm)
 {
     if (gterm->background)
     {

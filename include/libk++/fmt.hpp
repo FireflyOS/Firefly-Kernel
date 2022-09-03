@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cxxshim/cstddef>
 #include <stdarg.h>
+
+#include <cxxshim/cstddef>
 
 namespace firefly::libkern::fmt {
 int vsnprintf(char* str, size_t size, const char* fmt, va_list ap);

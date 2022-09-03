@@ -2,37 +2,36 @@
 
 #include <cstdint>
 #include <frigg/frg/manual_box.hpp>
+#include <frigg/frg/string.hpp>
 
-#include "acpi_table.hpp"
-#include "firefly/compiler/clang++.hpp"
+#include "firefly/compiler/compiler.hpp"
+#include "firefly/intel64/acpi/acpi_rsdp.hpp"
+#include "firefly/intel64/acpi/acpi_table.hpp"
+#include "firefly/intel64/acpi/tables/all.hpp"
 
 namespace firefly::kernel::core::acpi {
-
-// RSDP version 1.0
-struct RSDP {
-    char signature[8];
-    uint8_t checksum;
-    char oemid[6];
-    uint8_t revision;
-    uint32_t rsdtAddress;
-} PACKED;
- void
-// RSDP version 2+
-struct RSDPextension : RSDP {
-    uint32_t length;
-    uint64_t xsdtAddress;
-    uint8_t extendedChecksum;
-    uint8_t reserved[3];
-} PACKED;
+using AcpiTable = void*;
 
 class Acpi {
 private:
     friend class frg::manual_box<Acpi>;
     Acpi() = default;
 
-private:
-    AcpiTable<uint32_t> rsdt;
-    AcpiTable<uint64_t> xsdt;
-};
+public:
+    static void init();
+    static Acpi& accessor();
 
+    AcpiTable find(frg::string_view identifier) const;
+    void dumpTables() const;
+
+private:
+    AcpiRsdp rsdp;
+    AcpiSdt rootHeader;
+    AcpiRootTable<uint32_t> rsdt;
+    AcpiRootTable<uint64_t> xsdt;
+
+    bool useXSDT{ false };
+    int8_t divisor{ 0 };
+    int entries{ 0 };
+};
 }  // namespace firefly::kernel::core::acpi

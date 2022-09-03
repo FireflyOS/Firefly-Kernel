@@ -13,4 +13,4 @@ public:
     SymbolTablePair operator[](uint64_t) const noexcept;
 };
 
-bool backtrace(uint64_t addr, int iteration=0);
+bool backtrace(uint64_t addr, int iteration);

@@ -8,7 +8,6 @@ writer = open(PARSED, "w+")
 symbol_table_naked = """
 #include <symbols.hpp>
 
-__attribute__((section(".rodata")))
 SymbolTablePair symbol_table[] = {
 """
 
@@ -68,7 +67,7 @@ if __name__ == '__main__':
         destroy_writer()
         
         compile_sym_table()
-        system('ld.lld -o ./kernel_x86_64.elf --no-undefined -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f) ../fonts/vgafont.obj') # Relink kernel with symbol tables
+        system('ld.lld -o ./kernel_x86_64.elf -T ../linkage/linker_x86_64.ld -nostdlib -m elf_x86_64 $(find ./ -name "*.o" -type f) ../fonts/vgafont.obj') # Relink kernel with symbol tables
         writer = open(PARSED, "w+")
 
     print("[*] Wrote symbol table")

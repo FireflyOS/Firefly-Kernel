@@ -4,21 +4,11 @@
 
 #include "cstdlib/cassert.h"
 #include "firefly/console/console.hpp"
-
+#include "libk++/cstring.hpp"
 
 namespace firefly::libkern::fmt {
 
-size_t strlen(const char* str) {
-    size_t n = 0;
-    while (*str++)
-        n++;
-    return n;
-}
-
-size_t strnlen(const char* str) {
-    return strlen(str) + 1;
-}
-
+using namespace cstring;
 
 char itoc(int num) {
     return '0' + num;

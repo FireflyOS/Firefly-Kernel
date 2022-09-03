@@ -1,7 +1,7 @@
-#include <cstdlib/cstring.h>
+#include "libk++/cstring.hpp"
 
-#include <firefly/drivers/ports.hpp>
-#include <firefly/drivers/serial.hpp>
+#include "firefly/drivers/ports.hpp"
+#include "firefly/drivers/serial.hpp"
 
 namespace firefly::kernel::io {
 SerialPort::SerialPort(uint16_t port, uint32_t baud_rate)
@@ -57,7 +57,7 @@ bool SerialPort::initialize() noexcept {
 
 void SerialPort::send_chars(const char* c, int len) noexcept {
     if (len == -1) {
-        len = strlen(c);
+        len = libkern::cstring::strlen(c);
     }
 
     for (int i = 0; i < len; ++i) {
