@@ -8,7 +8,6 @@ extern "C" SymbolTablePair symbol_table[];
 SymbolTablePair SymbolTable::operator[](uint64_t addr) const noexcept {
     return lookup(addr);
 }
-
 // Parse the symbol table and find the correct address of RIP
 SymbolTablePair SymbolTable::lookup(uint64_t addr) const noexcept {
     // We need the largest address that is smaller than `addr` because of the jsr instruction, otherwise the addresses are off
@@ -27,16 +26,15 @@ SymbolTablePair SymbolTable::lookup(uint64_t addr) const noexcept {
             }
         }
 
-        if (sym_addr == 0xFFFFFFFFFFFFFFFF) {
+        if (sym_addr == 0xFFFFFFFFFFFFFFFF)
             return { corrected_address, symbol_table[index_new].name };
-        }
     }
 }
 
-bool backtrace(uint64_t addr, [[maybe_unused]] int iteration) {
+
+bool backtrace(uint64_t addr, int iteration) {
     SymbolTable table{};
     auto const& [base, name] = table[addr];
-
 
     using firefly::kernel::info_logger;
     info_logger << "#" << iteration << " " << info_logger.hex(base) << " \t" << name << '\n';

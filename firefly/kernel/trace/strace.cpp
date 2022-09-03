@@ -10,12 +10,15 @@ struct stackframe {
 
 void trace_callstack() {
     kernel::info_logger << "Stack trace:\n";
-    struct stackframe *stkf;
+
+    stackframe *stkf;
     asm("mov %%rbp, %0"
         : "=r"(stkf));
-    for (int i = 0; i < 10 && stkf; i++) {
+
+    for (int i = 0; i < 10; i++) {
         if (!backtrace(stkf->rip, i))
-            break;
+            return;
+
         stkf = stkf->frame;
     }
 }

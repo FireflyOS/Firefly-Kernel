@@ -13,7 +13,6 @@
 #include "libk++/bits.h"
 
 extern uintptr_t GLOB_PAGE_ARRAY[];
-// static constexpr uint64_t GLOB_PAGE_ARRAY = AddressLayout::PageData + MiB(512);
 
 enum class RawPageFlags : int {
     None = 0,

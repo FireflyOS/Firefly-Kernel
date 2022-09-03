@@ -5,6 +5,12 @@
 #include "firefly/compiler/compiler.hpp"
 #include "libk++/cstring.hpp"
 
+#define ACPI_LOOP_AND_LOG(info, max, str)       \
+    firefly::kernel::info_logger << info;       \
+    for (int i = 0; i < max; i++)               \
+        firefly::kernel::info_logger << str[i]; \
+    firefly::kernel::info_logger << '\n';
+
 struct AcpiSdt {
     char signature[4];
     uint32_t length;
@@ -15,6 +21,12 @@ struct AcpiSdt {
     uint32_t oemRevision;
     char creatorId[4];
     uint32_t creatorRevision;
+
+    inline void logInfo() const {
+        ACPI_LOOP_AND_LOG("Signature: ", 4, signature);
+        ACPI_LOOP_AND_LOG("OEM: ", 6, oemString);
+        ACPI_LOOP_AND_LOG("OEM-ID: ", 8, oemTableId);
+    }
 
     inline bool validate() const {
         uint8_t sum = 0;

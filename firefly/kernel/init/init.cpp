@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "firefly/console/console.hpp"
+#include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
@@ -9,7 +10,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
-__attribute__((section(".bss.bsp_stack"))) constinit uint8_t stack[PAGE_SIZE * 2] = { 0 };
+alignas(uint16_t) static uint8_t stack[PAGE_SIZE * 2] = { 0 };
 
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
@@ -31,11 +32,14 @@ void bootloaderServicesInit() {
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
 
+    core::acpi::Acpi::init();
     console::init();
-    // console::write("Hello, world!");
 }
 
-extern "C" [[noreturn]] void kernel_init() {
+extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
+    asm volatile("mov %0, %%rsp" :: "r"((uintptr_t)stack) : "memory");
+    asm volatile("mov %0, %%rbp" :: "r"(((uintptr_t)stack) + (PAGE_SIZE * 2)) : "memory");
+
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::core::interrupt::init();
 

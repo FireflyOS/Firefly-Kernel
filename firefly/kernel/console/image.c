@@ -1,5 +1,5 @@
-#include "image.h"
-#include "term.h"
+#include "firefly/console/image.h"
+#include "firefly/console/term.h"
 
 #define DIV_ROUNDUP(A, B) \
 ({ \
