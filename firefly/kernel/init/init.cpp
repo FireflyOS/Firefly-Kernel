@@ -4,7 +4,6 @@
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
-#include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
@@ -41,7 +40,6 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     asm volatile("mov %0, %%rbp" :: "r"(((uintptr_t)stack) + (PAGE_SIZE * 2)) : "memory");
 
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
-    firefly::kernel::core::interrupt::init();
 
     bootloaderServicesInit();
 
