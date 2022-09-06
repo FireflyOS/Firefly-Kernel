@@ -65,8 +65,8 @@ void init() {
 
     term_init(&term, nullptr);
 
-	// Try to load the firmware bootsplash as the terminal background.
-	// If we can't find it we default to black
+    // Try to load the firmware bootsplash as the terminal background.
+    // If we can't find it we default to black
     auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
 
     if (bgrt && bgrt->valid()) {
@@ -91,7 +91,8 @@ void init() {
 }
 
 void write(const char *str) {
-    term_print(&term, str);
+    if (likely(term.initialised))
+        term_print(&term, str);
 }
 
 }  // namespace firefly::kernel::console
