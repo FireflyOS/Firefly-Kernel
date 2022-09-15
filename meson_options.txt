@@ -1,0 +1,2 @@
+option('kasan', type: 'boolean', value: false)
+option('ubsan', type: 'boolean', value: true)

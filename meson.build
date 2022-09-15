@@ -17,6 +17,20 @@ include_dir = include_directories('include/', 'include/cxxshim/', 'include/frigg
 subdir('include/')
 subdir('firefly/') # kernel
 
+if get_option('kasan')
+		message('Enabling KASAN')
+		kernel_c_flags += '-fsanitize=kernel-address'
+		kernel_cxx_flags += '-fsanitize=kernel-address'
+		cxx_files += 'firefly/kernel/trace/sanitizer/kasan.cpp'
+endif
+
+if get_option('ubsan')
+	message('Enabling UBSAN')
+	kernel_c_flags += '-fsanitize=undefined'
+	kernel_cxx_flags += '-fsanitize=undefined'
+	cxx_files += 'firefly/kernel/trace/sanitizer/ubsan.cpp'
+endif
+
 nasm = find_program('nasm')
 asm_gen = generator(nasm, output: '@BASENAME@.o', arguments: ['-felf64', '@INPUT@', '-g', '-F', 'dwarf', '-o', '@OUTPUT@'])
 asm_obj = asm_gen.process(asm_files)

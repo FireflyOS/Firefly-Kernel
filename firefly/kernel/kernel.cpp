@@ -28,18 +28,13 @@ void log_core_firefly_contributors() {
     info_logger << info_logger.newline();
 }
 
-extern "C" void generate_canvas(struct gterm_t *gterm);
-
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
 	core::acpi::Acpi::accessor().dumpTables();
 
-	// auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
-	// info_logger << info_logger.format(
-	// 	"version: %d\n"
-	// 	"status: %d\n"
-	// 	"type: %d\n", bgrt->version, bgrt->status, bgrt->imageType
-	// );
+	// Test ubsan
+	int a[2] = {0};
+	a[4] = 1;
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();
