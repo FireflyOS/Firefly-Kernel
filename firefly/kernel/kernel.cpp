@@ -33,7 +33,6 @@ extern "C" void generate_canvas(struct gterm_t *gterm);
 
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
-    SerialLogger::log().logger_printf("TEST");
 	core::acpi::Acpi::accessor().dumpTables();
 
 	// auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));

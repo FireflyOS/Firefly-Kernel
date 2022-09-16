@@ -89,6 +89,8 @@ private:
     friend class frg::manual_box<ConsoleLogger>;
 
 public:
+    ConsoleLogger() {}
+
     static ConsoleLogger &log();
     static void init();
 
@@ -101,6 +103,7 @@ private:
     friend class frg::manual_box<SerialLogger>;
 
 public:
+    SerialLogger() {}
     static SerialLogger &log();
     static void init();
 
