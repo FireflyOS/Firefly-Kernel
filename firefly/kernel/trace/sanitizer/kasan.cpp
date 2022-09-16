@@ -7,17 +7,7 @@
 #include "libk++/bits.h"
 
 namespace firefly::kernel::kasan {
-static bool kasan_initialized{ false };
-
-[[gnu::no_sanitize_address]] void rip() {
-    const char *j = "Uninitialized KASAN check!\n";
-
-    for (int i = 0; i < 27; i++)
-        firefly::kernel::io::outb(0xe9, j[i]);
-
-    for (;;)
-        ;
-}
+std::atomic_bool kasan_initialized{ false };
 
 void init() {
     info_logger << "KASAN: Mapping kasan shadow at: " << info_logger.hex(AddressLayout::KasanShadow) << '\n';
@@ -27,26 +17,14 @@ void init() {
 }
 
 [[gnu::no_sanitize_address]] void reportFailure(uintptr_t addr, size_t size, bool write) {
-    // Hmm, so it looks like returning here breaks stuff?
-    // Oh, you know it's probably because it returns right where the kasan check was called.
-    // At least the debugger showed it was an infinite loop from __asan_load2 => reportFailure
     static int recursion;
 
-    // if (!kasan_initialized)
-    // rip();
-    // return;
-
     if (++recursion == 1) {
-        if (kasan_initialized)
-		{
+        if (kasan_initialized) {
             info_logger << (write ? "Write to " : "Read from ") << info_logger.hex(addr) << " of size " << size << '\n';
-    		panic("KASAN bug");
-		}
-        // for(;;)
-        // 	;
+            panic("KASAN bug");
+        }
     }
     recursion--;
-
-    // Crashes, investigate...
 }
 }  // namespace firefly::kernel::kasan
