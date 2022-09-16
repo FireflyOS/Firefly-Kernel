@@ -13,7 +13,7 @@ namespace firefly::kernel::mm::Physical {
 void init(limine_memmap_response *mmap) {
     buddy.init(mmap);
     pagelist.init(mmap);
-    info_logger << "pmm: Initialized" << logger::endl;
+    logger::ConsoleLogger::log() << "pmm: Initialized" << logger::endl;
 }
 
 PhysicalAddress allocate(uint64_t size, FillMode fill) {

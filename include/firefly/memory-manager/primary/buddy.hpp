@@ -50,7 +50,7 @@ public:
         max_order = target_order - 3;
 
         if constexpr (verbose)
-            firefly::kernel::info_logger << firefly::kernel::info_logger.format("min-order: %d, max-order: %d", min_order, max_order);
+            firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("min-order: %d, max-order: %d", min_order, max_order);
 
         freelist.init();
         freelist.add(base, max_order - min_order);
@@ -62,14 +62,14 @@ public:
         if constexpr (sanity_checks) {
             if (order > max_order) {
                 if constexpr (verbose)
-                    firefly::kernel::info_logger << firefly::kernel::info_logger.format("Requested order %d (%d) is too large for this buddy instance | max-order is: %d", order, size, max_order);
+                    firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("Requested order %d (%d) is too large for this buddy instance | max-order is: %d", order, size, max_order);
 
                 return BuddyAllocationResult();
             }
         }
 
         if constexpr (verbose)
-            firefly::kernel::info_logger << firefly::kernel::info_logger.format("Suitable order for allocation of size '%d' is: %d", size, order);
+            firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("Suitable order for allocation of size '%d' is: %d", size, order);
 
         AddressType block = nullptr;
         Order ord = order;
@@ -82,7 +82,7 @@ public:
 
         if (block == nullptr) {
             if constexpr (verbose)
-                firefly::kernel::info_logger << firefly::kernel::info_logger.format("Block is a nullptr (order: %d, size: %d)", order, size);
+                firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("Block is a nullptr (order: %d, size: %d)", order, size);
 
             return BuddyAllocationResult();
         }
@@ -100,7 +100,7 @@ public:
             memset(static_cast<void *>(block), fill, correct_size);
 
         if constexpr (verbose)
-            firefly::kernel::info_logger << firefly::kernel::info_logger.format("Allocated 0xlx at order %d (max: %d | min: %d) with a size of %d", block, ord, max_order, min_order, size);
+            firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("Allocated 0xlx at order %d (max: %d | min: %d) with a size of %d", block, ord, max_order, min_order, size);
 
         return BuddyAllocationResult(block, ord + 1, correct_size / PAGE_SIZE);
     }

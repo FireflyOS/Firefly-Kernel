@@ -28,6 +28,9 @@ void bootloaderServicesInit() {
 
     auto tagmem = verify(memmap.response);
 
+    firefly::kernel::logger::ConsoleLogger::init();
+    firefly::kernel::logger::SerialLogger::init();
+
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();

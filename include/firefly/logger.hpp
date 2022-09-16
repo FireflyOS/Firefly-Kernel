@@ -22,7 +22,7 @@ protected:
 
     virtual int logger_printf(const char *fmt, ...) {
         return 0;
-    };
+    }
 
 public:
     virtual ~logger_interface(){};
@@ -85,39 +85,27 @@ public:
 };
 
 class ConsoleLogger : public logger_interface {
+private:
+    friend class frg::manual_box<ConsoleLogger>;
+
 public:
-    int logger_printf(const char *fmt, ...) {
-        va_list ap;
-        va_start(ap, fmt);
-        size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
-        va_end(ap);
+    static ConsoleLogger &log();
+    static void init();
 
-        if (outLen >= sizeof(buffer))
-            return -1;
-
-        firefly::kernel::console::write(buffer);
-        return 0;
-    }
+    int logger_printf(const char *fmt, ...);
 };
 
 
 class SerialLogger : public logger_interface {
+private:
+    friend class frg::manual_box<SerialLogger>;
+
 public:
-    int logger_printf(const char *fmt, ...) {
-        io::SerialPort port = io::SerialPort(io::SerialPort::COM1, io::SerialPort::BAUD_BASE);
-        va_list ap;
-        va_start(ap, fmt);
-        size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
-        va_end(ap);
+    static SerialLogger &log();
+    static void init();
 
-        if (outLen >= sizeof(buffer))
-            return -1;
-
-        port.send_chars(buffer, -1);
-        return 0;
-    }
+    int logger_printf(const char *fmt, ...);
 };
-}  // namespace logger
 
-static logger::SerialLogger info_logger;
+}  // namespace logger
 }  // namespace firefly::kernel
