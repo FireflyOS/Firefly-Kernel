@@ -1,8 +1,10 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 enum AddressLayout : uint64_t {
+	/* KASAN shadow memory */
+	KasanShadow = 0xffffe00000000000UL,
     PageData = 0xFFFFD00000000000UL,
     High = 0xFFFF800000000000UL,
     Code = 0xFFFFFFFF80000000UL,

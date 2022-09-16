@@ -9,6 +9,7 @@
 #include "firefly/limine.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/trace/sanitizer/kasan.hpp"
 
 alignas(uint16_t) static uint8_t stack[PAGE_SIZE * 2] = { 0 };
 
@@ -34,6 +35,10 @@ void bootloaderServicesInit() {
 
     core::acpi::Acpi::init();
     console::init();
+
+#if defined(FIREFLY_KASAN)
+    kasan::init();
+#endif
 }
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {

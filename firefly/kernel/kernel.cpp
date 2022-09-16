@@ -32,10 +32,6 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
 	core::acpi::Acpi::accessor().dumpTables();
 
-	// Test ubsan
-	int a[2] = {0};
-	a[4] = 1;
-
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

@@ -20,9 +20,10 @@ subdir('firefly/') # kernel
 # Todo: Implement me!
 if get_option('kasan')
 		warning('Enabling KASAN stub (it has not been implemented)')
-		kernel_c_flags += '-fsanitize=kernel-address'
-		kernel_cxx_flags += '-fsanitize=kernel-address'
-		cxx_files += 'firefly/kernel/trace/sanitizer/kasan.cpp'
+		kasan_flags = ['-fsanitize=kernel-address',  '-D FIREFLY_KASAN', '--param=asan-globals=0']
+		# kernel_c_flags += kasan_flags
+		kernel_cxx_flags += kasan_flags
+		cxx_files += ['firefly/kernel/trace/sanitizer/kasan.cpp', 'firefly/kernel/trace/sanitizer/kasan_methods.cpp']
 endif
 
 if get_option('ubsan')
