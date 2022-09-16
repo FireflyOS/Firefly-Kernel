@@ -1,23 +1,22 @@
 #include <atomic>
 
+#include "firefly/drivers/ports.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/panic.hpp"
 #include "libk++/bits.h"
-#include "firefly/drivers/ports.hpp"
 
 namespace firefly::kernel::kasan {
 static bool kasan_initialized{ false };
 
-[[gnu::no_sanitize_address]] 
-void rip() {
-	const char *j = "Uninitialized KASAN check!\n";
-	
-	for (int i = 0; i < 27; i++)
+[[gnu::no_sanitize_address]] void rip() {
+    const char *j = "Uninitialized KASAN check!\n";
+
+    for (int i = 0; i < 27; i++)
         firefly::kernel::io::outb(0xe9, j[i]);
-	
-	for(;;)
-		;
+
+    for (;;)
+        ;
 }
 
 void init() {
@@ -28,18 +27,26 @@ void init() {
 }
 
 [[gnu::no_sanitize_address]] void reportFailure(uintptr_t addr, size_t size, bool write) {
-	// Hmm, so it looks like returning here breaks stuff?
-	// Oh, you know it's probably because it returns right where the kasan check was called.
-	// At least the debugger showed it was an infinite loop from __asan_load2 => reportFailure
-    if (!kasan_initialized)
-		rip();
-        // return;
+    // Hmm, so it looks like returning here breaks stuff?
+    // Oh, you know it's probably because it returns right where the kasan check was called.
+    // At least the debugger showed it was an infinite loop from __asan_load2 => reportFailure
+    static int recursion;
 
-    info_logger << (write ? "Write to " : "Read from ") << info_logger.hex(addr) << " of size " << size << '\n';
-    for(;;)
-    	;
+    // if (!kasan_initialized)
+    // rip();
+    // return;
+
+    if (++recursion == 1) {
+        if (kasan_initialized)
+		{
+            info_logger << (write ? "Write to " : "Read from ") << info_logger.hex(addr) << " of size " << size << '\n';
+    		panic("KASAN bug");
+		}
+        // for(;;)
+        // 	;
+    }
+    recursion--;
 
     // Crashes, investigate...
-    // panic("KASAN bug");
 }
 }  // namespace firefly::kernel::kasan
