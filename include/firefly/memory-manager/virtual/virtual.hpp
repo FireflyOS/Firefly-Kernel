@@ -38,12 +38,12 @@ class userPageSpace : VirtualSpace {
         (void)virtual_addr;
         (void)physical_addr;
         (void)flags;
-        logger::ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
+        ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
     }
 
     void unmap(T virtual_addr) const override {
         (void)virtual_addr;
-        logger::ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
+        ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
     }
 };
 

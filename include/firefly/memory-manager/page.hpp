@@ -67,8 +67,8 @@ public:
             }
         }
 
-        firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("RawPage size: %d bytes\n", sizeof(RawPage));
-        firefly::kernel::logger::ConsoleLogger::log() << firefly::kernel::logger::ConsoleLogger::log().format("Pagelist overhead: %d Bytes\n", largest_index * sizeof(RawPage));
+        firefly::kernel::ConsoleLogger::log() << firefly::kernel::ConsoleLogger::log().format("RawPage size: %d bytes\n", sizeof(RawPage));
+        firefly::kernel::ConsoleLogger::log() << firefly::kernel::ConsoleLogger::log().format("Pagelist overhead: %d Bytes\n", largest_index * sizeof(RawPage));
 
         // largest_index is incremented one too many times.
         --largest_index;

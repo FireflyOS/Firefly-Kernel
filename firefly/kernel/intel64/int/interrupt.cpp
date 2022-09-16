@@ -84,8 +84,8 @@ void init() {
 }
 
 void interrupt_handler(iframe iframe) {
-    logger::ConsoleLogger::log() << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << logger::endl;
-    logger::ConsoleLogger::log() << "RIP: " << logger::ConsoleLogger::log().hex(iframe.rip) << logger::endl;
+    ConsoleLogger::log() << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << logger::endl;
+    ConsoleLogger::log() << "RIP: " << ConsoleLogger::log().hex(iframe.rip) << logger::endl;
 
     for (;;)
         asm("cli\nhlt");

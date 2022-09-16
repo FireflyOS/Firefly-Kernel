@@ -14,7 +14,7 @@ constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel {
 void log_core_firefly_contributors() {
-    logger::ConsoleLogger::log() << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    ConsoleLogger::log() << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     frg::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -22,21 +22,22 @@ void log_core_firefly_contributors() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            logger::ConsoleLogger::log() << logger::ConsoleLogger::log().newline() << logger::ConsoleLogger::log().tab();
+            ConsoleLogger::log() << ConsoleLogger::log().newline() << ConsoleLogger::log().tab();
         }
-        logger::ConsoleLogger::log() << " " << arr[i];
+        ConsoleLogger::log() << " " << arr[i];
     }
-    logger::ConsoleLogger::log() << logger::ConsoleLogger::log().newline();
+    ConsoleLogger::log() << ConsoleLogger::log().newline();
 }
 
 extern "C" void generate_canvas(struct gterm_t *gterm);
 
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
+    SerialLogger::log().logger_printf("TEST");
 	core::acpi::Acpi::accessor().dumpTables();
 
 	// auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
-	// logger::ConsoleLogger::log() << logger::ConsoleLogger::log().format(
+	// ConsoleLogger::log() << ConsoleLogger::log().format(
 	// 	"version: %d\n"
 	// 	"status: %d\n"
 	// 	"type: %d\n", bgrt->version, bgrt->status, bgrt->imageType

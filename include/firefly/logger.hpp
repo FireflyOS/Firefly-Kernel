@@ -12,9 +12,9 @@
 #include "libk++/fmt.hpp"
 
 namespace firefly::kernel {
-
 namespace logger {
 static constexpr char endl = '\n';
+}
 
 class logger_interface {
 protected:
@@ -107,5 +107,4 @@ public:
     int logger_printf(const char *fmt, ...);
 };
 
-}  // namespace logger
 }  // namespace firefly::kernel

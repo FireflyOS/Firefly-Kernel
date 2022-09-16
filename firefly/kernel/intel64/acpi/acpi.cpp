@@ -45,11 +45,11 @@ void Acpi::init() {
     self->rootHeader = self->useXSDT ? self->xsdt.root->header : self->rsdt.root->header;
     self->entries = (self->rootHeader.length - sizeof(self->rootHeader)) / self->divisor;
 
-    logger::ConsoleLogger::log() << "Initialized: ACPI\n";
+    ConsoleLogger::log() << "Initialized: ACPI\n";
 }
 
 void Acpi::dumpTables() const {
-    logger::ConsoleLogger::log() << "Using " << (useXSDT ? "xsdt" : "rsdt") << ", number of acpi tables: " << entries << '\n';
+    ConsoleLogger::log() << "Using " << (useXSDT ? "xsdt" : "rsdt") << ", number of acpi tables: " << entries << '\n';
 
     for (int i = 0; i < entries; i++) {
         AcpiSdt* sdt = reinterpret_cast<AcpiSdt*>((useXSDT ? xsdt.root->tables[i] : rsdt.root->tables[i]));
@@ -57,9 +57,9 @@ void Acpi::dumpTables() const {
         // The SDT descriptors are not null-terminated.
         // They are, however, always 4 characters long so we can just iterate over them like this
         for (int j = 0; j < 4; j++) {
-            logger::ConsoleLogger::log() << sdt->signature[j];
+            ConsoleLogger::log() << sdt->signature[j];
         }
-        logger::ConsoleLogger::log() << '\n';
+        ConsoleLogger::log() << '\n';
     }
 }
 
@@ -74,7 +74,7 @@ AcpiTable Acpi::find(frg::string_view identifier) const {
         }
     }
 
-    logger::ConsoleLogger::log() << "Couldn't find table: " << identifier.data() << '\n';
+    ConsoleLogger::log() << "Couldn't find table: " << identifier.data() << '\n';
     return nullptr;
 }
 }  // namespace firefly::kernel::core::acpi
