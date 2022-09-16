@@ -34,6 +34,6 @@ void kernelPageSpace::init() {
 	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData);
     kPageSpaceSingleton.get()->loadAddressSpace();
 
-    info_logger << "vmm: Initialized" << logger::endl;
+    ConsoleLogger::log() << "vmm: Initialized" << logger::endl;
 }
 }  // namespace firefly::kernel::mm

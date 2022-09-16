@@ -4,6 +4,7 @@
 
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 
@@ -13,7 +14,7 @@ constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel {
 void log_core_firefly_contributors() {
-    info_logger << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    ConsoleLogger::log() << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     frg::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -21,11 +22,11 @@ void log_core_firefly_contributors() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            info_logger << info_logger.newline() << info_logger.tab();
+            ConsoleLogger::log() << ConsoleLogger::log().newline() << ConsoleLogger::log().tab();
         }
-        info_logger << " " << arr[i];
+        ConsoleLogger::log() << " " << arr[i];
     }
-    info_logger << info_logger.newline();
+    ConsoleLogger::log() << ConsoleLogger::log().newline();
 }
 
 extern "C" void generate_canvas(struct gterm_t *gterm);
@@ -35,7 +36,7 @@ extern "C" void generate_canvas(struct gterm_t *gterm);
 	core::acpi::Acpi::accessor().dumpTables();
 
 	// auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
-	// info_logger << info_logger.format(
+	// ConsoleLogger::log() << ConsoleLogger::log().format(
 	// 	"version: %d\n"
 	// 	"status: %d\n"
 	// 	"type: %d\n", bgrt->version, bgrt->status, bgrt->imageType

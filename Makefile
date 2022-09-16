@@ -20,6 +20,10 @@ uefi:
 	cd build; \
 	../scripts/qemu-uefi.sh
 
+gdb:
+	cd build; \
+	../scripts/qemu-gdb.sh
+
 info_log:
 	cd build; \
 	../scripts/qemu-bios-int-log.sh

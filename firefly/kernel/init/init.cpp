@@ -7,6 +7,7 @@
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
@@ -27,6 +28,9 @@ void bootloaderServicesInit() {
     };
 
     auto tagmem = verify(memmap.response);
+
+    ConsoleLogger::init();
+    SerialLogger::init();
 
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
