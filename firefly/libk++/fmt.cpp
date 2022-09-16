@@ -104,9 +104,10 @@ char buffer[512];
     if (outLen >= sizeof(buffer))
         return -1;
 
-    // firefly::kernel::console::write(buffer);
     for (int i = 0; i < outLen; i++)
         firefly::kernel::io::outb(0xe9, buffer[i]);
+
+    firefly::kernel::console::write(buffer);
     return 0;
 }
 
