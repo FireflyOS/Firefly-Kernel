@@ -17,8 +17,9 @@ include_dir = include_directories('include/', 'include/cxxshim/', 'include/frigg
 subdir('include/')
 subdir('firefly/') # kernel
 
+# Todo: Implement me!
 if get_option('kasan')
-		message('Enabling KASAN')
+		warning('Enabling KASAN stub (it has not been implemented)')
 		kernel_c_flags += '-fsanitize=kernel-address'
 		kernel_cxx_flags += '-fsanitize=kernel-address'
 		cxx_files += 'firefly/kernel/trace/sanitizer/kasan.cpp'
