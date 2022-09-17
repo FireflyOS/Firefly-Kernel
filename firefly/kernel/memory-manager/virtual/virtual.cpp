@@ -27,17 +27,18 @@ void kernelPageSpace::init() {
     kPageSpaceSingleton.initialize(pml4);
 
     kPageSpaceSingleton.get()->mapRange(PAGE_SIZE, buddy.get_highest_address(), AccessFlags::ReadWrite, AddressLayout::Low);
-    kPageSpaceSingleton.get()->mapRange(0, GiB(4), AccessFlags::ReadWrite, AddressLayout::High, SIZE_1GB);
+
+    if (cpu_support_onegb_pages()) {
+    	kPageSpaceSingleton.get()->mapRange(0, GiB(4), AccessFlags::ReadWrite, AddressLayout::High, SIZE_1GB);
+    	kPageSpaceSingleton.get()->map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, SIZE_1GB);
+    } else {    
+    	kPageSpaceSingleton.get()->mapRange(0, GiB(4), AccessFlags::ReadWrite, AddressLayout::High, SIZE_2MB);
+    	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData, SIZE_2MB);
+    }
 
     for (size_t i = kernel_address.response->physical_base, j = 0; i < kernel_address.response->physical_base + GiB(1); i += SIZE_4KB, j += SIZE_4KB)
 		kPageSpaceSingleton.get()->map(j + kernel_address.response->virtual_base, i, AccessFlags::ReadWrite, SIZE_4KB);
    
-    if (cpu_support_onegb_pages()) {
-    	kPageSpaceSingleton.get()->map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, SIZE_1GB);
-    } else {
-    	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData, SIZE_2MB);
-    }
-
     kPageSpaceSingleton.get()->loadAddressSpace();
 
     ConsoleLogger::log() << "vmm: Initialized" << logger::endl;
