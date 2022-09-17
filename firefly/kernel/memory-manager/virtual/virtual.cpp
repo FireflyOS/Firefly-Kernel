@@ -28,10 +28,10 @@ void kernelPageSpace::init() {
     kPageSpaceSingleton.get()->mapRange(PAGE_SIZE, buddy.get_highest_address(), AccessFlags::ReadWrite, AddressLayout::Low);
     kPageSpaceSingleton.get()->mapRange(0, GiB(4), AccessFlags::ReadWrite, AddressLayout::High);
 
-    for (size_t i = kernel_address.response->physical_base, j = 0; i < kernel_address.response->physical_base + GiB(1); i += PAGE_SIZE, j += PAGE_SIZE)
-		kPageSpaceSingleton.get()->map(j + kernel_address.response->virtual_base, i, AccessFlags::ReadWrite);
+    for (size_t i = kernel_address.response->physical_base, j = 0; i < kernel_address.response->physical_base + GiB(1); i += SIZE_4KB, j += SIZE_4KB)
+		kPageSpaceSingleton.get()->map(j + kernel_address.response->virtual_base, i, AccessFlags::ReadWrite, SIZE_4KB);
     
-	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData);
+	kPageSpaceSingleton.get()->mapRange(0, GiB(1), AccessFlags::ReadWrite, AddressLayout::PageData, SIZE_2MB);
     kPageSpaceSingleton.get()->loadAddressSpace();
 
     ConsoleLogger::log() << "vmm: Initialized" << logger::endl;
