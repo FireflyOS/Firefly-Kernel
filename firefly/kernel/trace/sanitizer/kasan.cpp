@@ -1,4 +1,4 @@
-#include <atomic>
+#include "firefly/trace/sanitizer/kasan.hpp"
 
 #include "firefly/drivers/ports.hpp"
 #include "firefly/logger.hpp"
@@ -9,44 +9,38 @@
 namespace firefly::kernel::kasan {
 static bool kasan_initialized{ false };
 
-[[gnu::no_sanitize_address]] void rip() {
-    const char *j = "Uninitialized KASAN check!\n";
-
-    for (int i = 0; i < 27; i++)
-        firefly::kernel::io::outb(0xe9, j[i]);
-
-    for (;;)
-        ;
-}
-
 void init() {
     info_logger << "KASAN: Mapping kasan shadow at: " << info_logger.hex(AddressLayout::KasanShadow) << '\n';
-    mm::kernelPageSpace::accessor().mapRange(AddressLayout::KasanShadow, GiB(1) /* TODO: Dynamically determine shadow memory size (It's 1/8th of the kernel's address space) */, firefly::kernel::mm::AccessFlags::ReadWrite);
+    mm::kernelPageSpace::accessor().mapRange(AddressLayout::KasanShadow, GiB(1) /* TODO: Dynamically determine shadow memory size (It's 1/8th the size of the heap (we don't have that yet)) */, firefly::kernel::mm::AccessFlags::ReadWrite);
     info_logger << "KASAN: Initialized\n";
     kasan_initialized = true;
 }
 
-[[gnu::no_sanitize_address]] void reportFailure(uintptr_t addr, size_t size, bool write) {
-    // Hmm, so it looks like returning here breaks stuff?
-    // Oh, you know it's probably because it returns right where the kasan check was called.
-    // At least the debugger showed it was an infinite loop from __asan_load2 => reportFailure
+[[gnu::no_sanitize_address]] void poison(KasanAddress addr) {
+    (void)addr;
+}
+
+[[gnu::no_sanitize_address]] void unpoison(KasanAddress addr) {
+    (void)addr;
+}
+
+[[gnu::no_sanitize_address]] inline bool isPoisoned(KasanAddress addr) {
+    info_logger << "Checking if " << info_logger.hex(addr) << " is poisoned\n";
+    return true;
+}
+
+[[gnu::no_sanitize_address]] void verifyAccess(KasanAddress addr, size_t size, bool write) {
+    if (!kasan_initialized)
+        return;
+
     static int recursion;
-
-    // if (!kasan_initialized)
-    // rip();
-    // return;
-
     if (++recursion == 1) {
-        if (kasan_initialized)
-		{
+        if (isPoisoned(addr)) {
             info_logger << (write ? "Write to " : "Read from ") << info_logger.hex(addr) << " of size " << size << '\n';
-    		panic("KASAN bug");
-		}
-        // for(;;)
-        // 	;
+            panic("KASAN bug");
+        }
     }
     recursion--;
-
-    // Crashes, investigate...
 }
+
 }  // namespace firefly::kernel::kasan

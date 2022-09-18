@@ -4,45 +4,45 @@
 #include "libk++/bits.h"
 
 extern "C" void __asan_loadN_noabort(void* p, size_t size) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), size, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), size, false);
 }
 
 extern "C" void __asan_storeN_noabort(void* p, int size) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), size, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), size, true);
 }
 
 extern "C" void __asan_load1_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 1, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 1, false);
 }
 extern "C" void __asan_load2_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 2, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 2, false);
 }
 extern "C" void __asan_load4_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 4, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 4, false);
 }
 extern "C" void __asan_load8_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 8, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 8, false);
 }
 extern "C" void __asan_load16_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 16, false);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 16, false);
 }
 extern "C" void __asan_store1_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 1, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 1, true);
 }
 
 extern "C" void __asan_store2_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 2, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 2, true);
 }
 
 extern "C" void __asan_store4_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 4, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 4, true);
 }
 
 extern "C" void __asan_store8_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 8, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 8, true);
 }
 extern "C" void __asan_store16_noabort(void* p) {
-    firefly::kernel::kasan::reportFailure(reinterpret_cast<uintptr_t>(p), 16, true);
+    firefly::kernel::kasan::verifyAccess(reinterpret_cast<uintptr_t>(p), 16, true);
 }
 
 extern "C" void __asan_handle_no_return() {
