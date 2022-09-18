@@ -34,10 +34,11 @@ class userPageSpace : VirtualSpace {
         initSpace(root);
     }
 
-    void map(T virtual_addr, T physical_addr, AccessFlags flags) const override {
+    void map(T virtual_addr, T physical_addr, AccessFlags flags, PageSize page_size) const override {
         (void)virtual_addr;
         (void)physical_addr;
         (void)flags;
+	(void)page_size;
         ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
     }
 

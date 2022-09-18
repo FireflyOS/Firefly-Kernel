@@ -11,7 +11,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
-alignas(uint16_t) static uint8_t stack[PAGE_SIZE * 2] = { 0 };
+alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr

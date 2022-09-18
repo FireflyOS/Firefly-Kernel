@@ -102,7 +102,7 @@ public:
         if constexpr (verbose)
             firefly::kernel::ConsoleLogger::log() << firefly::kernel::ConsoleLogger::log().format("Allocated 0xlx at order %d (max: %d | min: %d) with a size of %d", block, ord, max_order, min_order, size);
 
-        return BuddyAllocationResult(block, ord + 1, correct_size / PAGE_SIZE);
+        return BuddyAllocationResult(block, ord + 1, correct_size / PageSize::Size4K);
     }
 
     void free(AddressType block, Order order) {
@@ -145,7 +145,7 @@ private:
                     assert_truth(!"Order mismatch");
 
             if (block) {
-                memset((void *)block, 0, PAGE_SIZE);
+                memset((void *)block, 0, PageSize::Size4K);
                 *(T *)block = list[order];
             }
             list[order] = block;
