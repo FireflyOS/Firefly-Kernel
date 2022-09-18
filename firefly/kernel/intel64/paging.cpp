@@ -26,7 +26,7 @@ inline int64_t get_index(const uint64_t virtual_addr, const int idx) {
 mm::PageFrame pageAllocator{};
 bool early{ true };
 
-inline uint64_t *allocatePageTable(uint64_t size = PAGE_SIZE) {
+inline uint64_t *allocatePageTable(uint64_t size = PageSize::Size4K) {
     uint64_t *ptr{ nullptr };
 
     if (likely(!early))
@@ -40,7 +40,7 @@ inline uint64_t *allocatePageTable(uint64_t size = PAGE_SIZE) {
     return ptr;
 }
 
-void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_addr, const int access_flags, uint64_t *pml_ptr, const PageSize page_size = SIZE_4KB) {
+void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_addr, const int access_flags, uint64_t *pml_ptr, const PageSize page_size = PageSize::Size4K) {
     auto idx4 = get_index(virtual_addr, 4);
     auto idx3 = get_index(virtual_addr, 3);
     auto idx2 = get_index(virtual_addr, 2);
@@ -52,7 +52,7 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
         pml_ptr[idx4] |= access_flags;
     }
     auto pml3 = reinterpret_cast<uint64_t *>(pml_ptr[idx4] & ~(511));
-    if (page_size == SIZE_1GB) {
+    if (page_size == PageSize::Size1G) {
         pml3[idx3] = (physical_addr | access_flags | (1 << 7));
         return;
     }
@@ -62,7 +62,7 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
         pml3[idx3] |= access_flags;
     }
     auto pml2 = reinterpret_cast<uint64_t *>(pml3[idx3] & ~(511));
-    if (page_size == SIZE_2MB) {
+    if (page_size == PageSize::Size2M) {
         pml2[idx2] = (physical_addr | access_flags | (1 << 7));
         return;
     }
@@ -100,11 +100,11 @@ void bootMapExtraRegion(limine_memmap_response *mmap) {
     asm volatile("mov %%cr3, %0"
                  : "=r"(cr3));
 
-    if (cpu_support_onegb_pages()) {
-        map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), SIZE_1GB);
+    if (cpuHugePages()) {
+        map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), PageSize::Size1G);
     } else {
-        for (uint32_t i = 0; i < GiB(1); i += SIZE_2MB) {
-            map(i + AddressLayout::PageData, i, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), SIZE_2MB);
+        for (uint32_t i = 0; i < GiB(1); i += PageSize::Size2M) {
+            map(i + AddressLayout::PageData, i, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), PageSize::Size2M);
         }
     }
 

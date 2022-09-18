@@ -2,7 +2,7 @@
 
 #include "firefly/intel64/gdt/gdt.hpp"
 #include "firefly/intel64/gdt/tss.hpp"
-#include <libk++/bits.h>
+#include "libk++/bits.h"
 
 // Note: This is purposely bare-bones and lacking a
 // proper "per cpu" structure (i.e. gsbase and co).
@@ -20,8 +20,8 @@ void initializeThisCpu(uint64_t stack);
 CpuData &thisCpu();
 
 // from linux kernel source
-static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-                                unsigned int *ecx, unsigned int *edx)
+static inline void native_cpuid(uint32_t *eax, uint32_t *ebx,
+                                uint32_t *ecx, uint32_t *edx)
 {
         /* ecx is often an input as well as an output. */
         asm volatile("cpuid"
@@ -32,9 +32,8 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
             : "0" (*eax), "2" (*ecx));
 }
 
-static inline bool cpu_support_onegb_pages() {
-	unsigned eax, ebx, ecx, edx;
-	eax = 1;
+static inline bool cpuHugePages() {
+	uint32_t eax{1}, ebx{0}, ecx{0}, edx{0};
 	native_cpuid(&eax, &ebx, &ecx, &edx);
 
 	// check if bit 26 of edx is set
