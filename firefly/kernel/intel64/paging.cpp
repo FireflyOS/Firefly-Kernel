@@ -6,6 +6,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 #include "libk++/align.h"
+#include "libk++/bits.h"
 
 namespace firefly::kernel::core::paging {
 
@@ -53,7 +54,7 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
     }
     auto pml3 = reinterpret_cast<uint64_t *>(pml_ptr[idx4] & ~(511));
     if (page_size == PageSize::Size1G) {
-        pml3[idx3] = (physical_addr | access_flags | (1 << 7));
+        pml3[idx3] = (physical_addr | access_flags | BIT(7));
         return;
     }
     if (!(pml3[idx3] & 1)) {
@@ -63,7 +64,7 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
     }
     auto pml2 = reinterpret_cast<uint64_t *>(pml3[idx3] & ~(511));
     if (page_size == PageSize::Size2M) {
-        pml2[idx2] = (physical_addr | access_flags | (1 << 7));
+        pml2[idx2] = (physical_addr | access_flags | BIT(7));
         return;
     }
 
