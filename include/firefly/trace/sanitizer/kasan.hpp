@@ -6,7 +6,7 @@
 namespace firefly::kernel::kasan {
 using KasanAddress = uintptr_t;
 
-void init();
+[[gnu::no_sanitize_address]]void init();
 [[gnu::no_sanitize_address]] void poison(KasanAddress addr);
 [[gnu::no_sanitize_address]] void unpoison(KasanAddress addr);
 [[gnu::no_sanitize_address]] inline bool isPoisoned(KasanAddress addr);

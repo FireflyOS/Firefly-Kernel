@@ -1,2 +1,2 @@
 option('kasan', type: 'boolean', value: true) # Implement me!
-option('ubsan', type: 'boolean', value: true)
+option('ubsan', type: 'boolean', value: false)

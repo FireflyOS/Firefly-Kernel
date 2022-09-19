@@ -1,5 +1,8 @@
 #include "firefly/trace/sanitizer/kasan.hpp"
 
+#include <frg/init_once.hpp>
+
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/drivers/ports.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
@@ -7,7 +10,7 @@
 #include "libk++/bits.h"
 
 namespace firefly::kernel::kasan {
-static bool kasan_initialized{ false };
+frg::init_once<bool> kasan_initialized{ false };
 
 void init() {
     info_logger << "KASAN: Mapping kasan shadow at: " << info_logger.hex(AddressLayout::KasanShadow) << '\n';
