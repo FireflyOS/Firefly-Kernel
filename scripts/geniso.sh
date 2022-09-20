@@ -1,5 +1,9 @@
 #!/bin/bash
+
+ISO=FireflyOS_x86_64.iso
+
 cd ..
+rm -f $ISO
 rm -rf iso_root
 mkdir iso_root/
 
@@ -10,7 +14,7 @@ xorriso -as mkisofs -b limine-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot limine-cd-efi.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
-		iso_root -o FireflyOS_x86_64.iso
+		iso_root -o $ISO
 
 limine/limine-deploy FireflyOS_x86_64.iso
 rm -rf iso_root

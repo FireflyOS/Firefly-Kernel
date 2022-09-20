@@ -1,5 +1,6 @@
 #pragma once
 
+#include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/page_permissions.hpp"
 #include "firefly/intel64/paging.hpp"
 #include "firefly/logger.hpp"
@@ -13,13 +14,13 @@
     }
 
 #define VIRTUAL_SPACE_FUNC_MAP                                   \
-    void map(T virt, T phys, AccessFlags flags) const override { \
-        VirtualSpace::map(virt, phys, flags);                    \
+    void map(T virt, T phys, AccessFlags flags, PageSize page_size) const override { \
+        VirtualSpace::map(virt, phys, flags, page_size);                    \
     }
 
 #define VIRTUAL_SPACE_FUNC_MAP_RANGE                                                                         \
-    void mapRange(T base, T len, AccessFlags flags, AddressLayout off = AddressLayout::Low) const override { \
-        VirtualSpace::mapRange(base, len, flags, off);                                                       \
+    void mapRange(T base, T len, AccessFlags flags, AddressLayout off = AddressLayout::Low, PageSize page_size = PageSize::Size4K) const override { \
+        VirtualSpace::mapRange(base, len, flags, off, page_size);                                                       \
     }
 
 namespace firefly::kernel::mm {
@@ -40,17 +41,20 @@ public:
 protected:
     using T = uint64_t;
 
+    bool hugePages = false;
+
     inline void initSpace(PhysicalAddress root) {
         pml4 = static_cast<T *>(root);
+	hugePages = cpuHugePages();
     }
 
-    virtual void map(T virtual_addr, T physical_addr, AccessFlags flags) const {
-        core::paging::map(virtual_addr, physical_addr, flags, pml4);
+    virtual void map(T virtual_addr, T physical_addr, AccessFlags flags, PageSize page_size) const {
+        core::paging::map(virtual_addr, physical_addr, flags, pml4, page_size);
     }
 
-    virtual void mapRange(uint64_t base, uint64_t len, AccessFlags flags, AddressLayout offset = AddressLayout::Low) const {
-        for (uint64_t i = base; i < (base + len); i += PAGE_SIZE)
-            map(i + offset, i, flags);
+    virtual void mapRange(uint64_t base, uint64_t len, AccessFlags flags, AddressLayout offset = AddressLayout::Low, PageSize page_size = PageSize::Size4K) const {
+        for (uint64_t i = base; i < (base + len); i += page_size)
+            map(i + offset, i, flags, page_size);
     }
 
     virtual void unmap([[maybe_unused]] T virtual_addr) const {

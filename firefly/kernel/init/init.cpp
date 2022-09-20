@@ -6,10 +6,11 @@
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 
-alignas(uint16_t) static uint8_t stack[PAGE_SIZE * 2] = { 0 };
+alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
@@ -26,6 +27,9 @@ void bootloaderServicesInit() {
     };
 
     auto tagmem = verify(memmap.response);
+
+    ConsoleLogger::init();
+    SerialLogger::init();
 
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);

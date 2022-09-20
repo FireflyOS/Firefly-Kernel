@@ -51,7 +51,7 @@ c_files += files(
 
 cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp', 'libk++/cstring.cpp')
 cxx_files += files(
-    'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp',
+    'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp', 'kernel/logger.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',

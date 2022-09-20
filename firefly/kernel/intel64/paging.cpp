@@ -1,10 +1,12 @@
 #include "firefly/intel64/paging.hpp"
 
 #include "firefly/compiler/compiler.hpp"
+#include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/memory-manager/primary/page_frame.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
 #include "libk++/align.h"
+#include "libk++/bits.h"
 
 namespace firefly::kernel::core::paging {
 
@@ -25,7 +27,7 @@ inline int64_t get_index(const uint64_t virtual_addr, const int idx) {
 mm::PageFrame pageAllocator{};
 bool early{ true };
 
-inline uint64_t *allocatePageTable(uint64_t size = PAGE_SIZE) {
+inline uint64_t *allocatePageTable(uint64_t size = PageSize::Size4K) {
     uint64_t *ptr{ nullptr };
 
     if (likely(!early))
@@ -39,7 +41,7 @@ inline uint64_t *allocatePageTable(uint64_t size = PAGE_SIZE) {
     return ptr;
 }
 
-void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_addr, const int access_flags, uint64_t *pml_ptr) {
+void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_addr, const int access_flags, uint64_t *pml_ptr, const PageSize page_size = PageSize::Size4K) {
     auto idx4 = get_index(virtual_addr, 4);
     auto idx3 = get_index(virtual_addr, 3);
     auto idx2 = get_index(virtual_addr, 2);
@@ -51,13 +53,20 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
         pml_ptr[idx4] |= access_flags;
     }
     auto pml3 = reinterpret_cast<uint64_t *>(pml_ptr[idx4] & ~(511));
-
+    if (page_size == PageSize::Size1G) {
+        pml3[idx3] = (physical_addr | access_flags | BIT(7));
+        return;
+    }
     if (!(pml3[idx3] & 1)) {
         const auto ptr = allocatePageTable();
         pml3[idx3] = reinterpret_cast<uint64_t>(ptr);
         pml3[idx3] |= access_flags;
     }
     auto pml2 = reinterpret_cast<uint64_t *>(pml3[idx3] & ~(511));
+    if (page_size == PageSize::Size2M) {
+        pml2[idx2] = (physical_addr | access_flags | BIT(7));
+        return;
+    }
 
     if ((pml2[idx2] & 1) == 0) {
         const auto ptr = allocatePageTable();
@@ -69,8 +78,8 @@ void traverse_page_tables(const uint64_t virtual_addr, const uint64_t physical_a
     pml1[idx1] = (physical_addr | access_flags);
 }
 
-void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags, const uint64_t *pml_ptr) {
-    traverse_page_tables(virtual_addr, physical_addr, static_cast<const int>(access_flags), const_cast<uint64_t *>(pml_ptr));
+void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags, const uint64_t *pml_ptr, const PageSize page_size) {
+    traverse_page_tables(virtual_addr, physical_addr, static_cast<const int>(access_flags), const_cast<uint64_t *>(pml_ptr), page_size);
     invalidatePage(reinterpret_cast<VirtualAddress>(virtual_addr));
 }
 
@@ -90,10 +99,15 @@ void bootMapExtraRegion(limine_memmap_response *mmap) {
 
     auto cr3{ 0ul };
     asm volatile("mov %%cr3, %0"
-                : "=r"(cr3));
+                 : "=r"(cr3));
 
-    for (uint32_t i = 0; i < GiB(1); i += PAGE_SIZE)
-        map(i + AddressLayout::PageData, i, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3));
+    if (cpuHugePages()) {
+        map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), PageSize::Size1G);
+    } else {
+        for (uint32_t i = 0; i < GiB(1); i += PageSize::Size2M) {
+            map(i + AddressLayout::PageData, i, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), PageSize::Size2M);
+        }
+    }
 
     early = false;
 }
