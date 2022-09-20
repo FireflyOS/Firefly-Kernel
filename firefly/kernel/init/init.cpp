@@ -36,9 +36,10 @@ void bootloaderServicesInit() {
     core::acpi::Acpi::init();
     console::init();
 
-#if defined(FIREFLY_KASAN)
-    kasan::init();
-#endif
+	kasan::init();
+	kasan::poison(VirtualAddress(AddressLayout::High));
+	long *a = (long*)AddressLayout::High;
+	*a = 1234;
 }
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {

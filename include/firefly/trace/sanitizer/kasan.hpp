@@ -3,12 +3,20 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "firefly/memory-manager/mm.hpp"
+
 namespace firefly::kernel::kasan {
 using KasanAddress = uintptr_t;
 
-[[gnu::no_sanitize_address]]void init();
-[[gnu::no_sanitize_address]] void poison(KasanAddress addr);
-[[gnu::no_sanitize_address]] void unpoison(KasanAddress addr);
-[[gnu::no_sanitize_address]] inline bool isPoisoned(KasanAddress addr);
+/* Each byte of the shadow region encodes the status of the address it shadows */
+enum ShadowRegionStatus : int8_t {
+    // TODO: Add more region states such as a redzone for buffer overruns
+    Unpoisoned = 0,
+    Poisoned = ~0
+};
+
+[[gnu::no_sanitize_address]] void init();
+[[gnu::no_sanitize_address]] void poison(VirtualAddress addr, ShadowRegionStatus status = ShadowRegionStatus::Poisoned);
+[[gnu::no_sanitize_address]] void unpoison(VirtualAddress addr, size_t size);
 [[gnu::no_sanitize_address]] void verifyAccess(KasanAddress addr, size_t size, bool write);
 }  // namespace firefly::kernel::kasan

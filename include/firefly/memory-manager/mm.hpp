@@ -3,12 +3,13 @@
 #include <cstdint>
 
 enum AddressLayout : uint64_t {
-	/* KASAN shadow memory */
-	KasanShadow = 0xffffe00000000000UL,
-    PageData = 0xFFFFD00000000000UL,
-    High = 0xFFFF800000000000UL,
-    Code = 0xFFFFFFFF80000000UL,
-    Low = 0x0000000000000000UL
+    // clang-format off
+    PageData = 0xFFFF'D000'0000'0000UL,
+    // SlabHeap = 0xFFFF'B000'0000'0000UL,
+    High     = 0xFFFF'8000'0000'0000UL,
+    Code     = 0xFFFF'FFFF'8000'0000UL,
+    Low      = 0x0000'0000'0000'0000UL
+    // clang-format on
 };
 
 static constexpr uint32_t PAGE_SIZE = 4096;
