@@ -7,11 +7,12 @@
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
-alignas(uint16_t) static uint8_t stack[PAGE_SIZE * 2] = { 0 };
+alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
@@ -29,6 +30,9 @@ void bootloaderServicesInit() {
 
     auto tagmem = verify(memmap.response);
 
+    ConsoleLogger::init();
+    SerialLogger::init();
+
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
@@ -36,17 +40,19 @@ void bootloaderServicesInit() {
     core::acpi::Acpi::init();
     console::init();
 
-	kasan::init();
-	kasan::poison(VirtualAddress(AddressLayout::High));
-	long *a = (long*)AddressLayout::High;
-	*a = 1234;
+    kasan::init();
+
+    ConsoleLogger::log() << "Purposely triggering kasan..\n";
+    kasan::poison(VirtualAddress(AddressLayout::High + 64), 32);
+    long *a = (long *)(AddressLayout::High + 64);
+    *a = 1234;
 }
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     // clang-format off
     asm volatile("mov %0, %%rbp" :: "r"((uintptr_t)stack) : "memory");
-    asm volatile("mov %0, %%rsp" :: "r"(((uintptr_t)stack) + (PAGE_SIZE * 2)) : "memory");
-	// clang-format off
+    asm volatile("mov %0, %%rsp" :: "r"(((uintptr_t)stack) + (PageSize::Size4K * 2)) : "memory");
+    // clang-format off
 
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::core::interrupt::init();

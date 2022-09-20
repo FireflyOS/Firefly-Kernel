@@ -6,10 +6,10 @@
 #include "libk++/cstring.hpp"
 
 #define ACPI_LOOP_AND_LOG(info, max, str)       \
-    firefly::kernel::info_logger << info;       \
+    firefly::kernel::ConsoleLogger::log() << info;       \
     for (int i = 0; i < max; i++)               \
-        firefly::kernel::info_logger << str[i]; \
-    firefly::kernel::info_logger << '\n';
+        firefly::kernel::ConsoleLogger::log() << str[i]; \
+    firefly::kernel::ConsoleLogger::log() << '\n';
 
 struct AcpiSdt {
     char signature[4];

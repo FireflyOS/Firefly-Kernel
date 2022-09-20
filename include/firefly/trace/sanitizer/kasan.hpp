@@ -16,7 +16,10 @@ enum ShadowRegionStatus : int8_t {
 };
 
 [[gnu::no_sanitize_address]] void init();
-[[gnu::no_sanitize_address]] void poison(VirtualAddress addr, ShadowRegionStatus status = ShadowRegionStatus::Poisoned);
+[[gnu::no_sanitize_address]] void poison(VirtualAddress addr, size_t size, ShadowRegionStatus status = ShadowRegionStatus::Poisoned);
 [[gnu::no_sanitize_address]] void unpoison(VirtualAddress addr, size_t size);
+
+#if defined(FIREFLY_KASAN)
 [[gnu::no_sanitize_address]] void verifyAccess(KasanAddress addr, size_t size, bool write);
+#endif
 }  // namespace firefly::kernel::kasan

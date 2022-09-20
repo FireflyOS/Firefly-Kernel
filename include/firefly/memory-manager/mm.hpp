@@ -12,7 +12,12 @@ enum AddressLayout : uint64_t {
     // clang-format on
 };
 
-static constexpr uint32_t PAGE_SIZE = 4096;
+enum PageSize : uint64_t {
+	Size4K = 0x00001000,
+	Size2M = 0x00200000,
+	Size1G = 0x40000000,
+};
+
 static constexpr uint32_t PAGE_SHIFT = 12;  // Lower 12 bits of a virtual address denote the offset in the page frame
 using PhysicalAddress = void *;
 using VirtualAddress = void *;

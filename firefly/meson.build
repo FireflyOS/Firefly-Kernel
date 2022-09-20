@@ -1,10 +1,10 @@
 kernel_cxx_flags = [
-	'-std=c++20',
+    '-std=c++20',
     '-ffreestanding',
-	'-g', '-O2',
+    '-g', '-O2',
     '-I include/',
-	'-I include/cxxshim',
-	'-I include/frigg',
+    '-I include/cxxshim',
+    '-I include/frigg',
     '-ffreestanding',
     '-fno-stack-protector',
     '-fno-stack-check',
@@ -20,11 +20,11 @@ kernel_cxx_flags = [
     '-fno-exceptions',
     '-fno-rtti',
     '-mno-3dnow',
-	'-fno-omit-frame-pointer'
+    '-fno-omit-frame-pointer'
 ]
 
 kernel_c_flags = [
-	'-std=gnu11',
+    '-std=gnu11',
     '-ffreestanding', '-g',
     '-I include',
     '-ffreestanding',
@@ -41,21 +41,21 @@ kernel_c_flags = [
     '-mno-sse2',
     '-mno-red-zone',
     '-mcmodel=kernel',
-	'-fno-omit-frame-pointer'
+    '-fno-omit-frame-pointer'
 ]
 
 c_files += files(
-	'kernel/console/gterm.c', 'kernel/console/image.c',
-	'kernel/console/term.c'
+    'kernel/console/gterm.c', 'kernel/console/image.c',
+    'kernel/console/term.c'
 )
 
 cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp', 'libk++/cstring.cpp')
 cxx_files += files(
-    'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp',
+    'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp', 'kernel/logger.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
     'kernel/console/console.cpp', 'kernel/intel64/acpi/acpi.cpp', 'kernel/graphics/framebuffer.cpp', 
-	'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp'
+    'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp' , 'kernel/trace/sanitizer/kasan.cpp'
 )
 asm_files += files('kernel/intel64/gdt/gdt.asm', 'kernel/intel64/int/interrupt.asm')

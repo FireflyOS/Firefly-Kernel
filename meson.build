@@ -19,19 +19,19 @@ subdir('firefly/') # kernel
 
 # Todo: Implement me!
 if get_option('kasan')
-		message('Enabling KASAN')
-		warning('KASAN will significantly impact performance & memory usage, use only for debugging!')
-		kasan_flags = ['-fsanitize=kernel-address', '--asan-shadow-offset=0xdffff00000000000', '-D FIREFLY_KASAN', '--param=asan-globals=0']
-		# kernel_c_flags += kasan_flags
-		kernel_cxx_flags += kasan_flags
-		cxx_files += ['firefly/kernel/trace/sanitizer/kasan.cpp', 'firefly/kernel/trace/sanitizer/kasan_methods.cpp']
+        message('Enabling KASAN')
+        warning('KASAN will significantly impact performance & memory usage, only use it for debugging purposes!')
+        kasan_flags = ['-fsanitize=kernel-address', '--asan-shadow-offset=0xdffff00000000000', '-D FIREFLY_KASAN', '--param=asan-globals=0']
+        # kernel_c_flags += kasan_flags
+        kernel_cxx_flags += kasan_flags
+        cxx_files += ['firefly/kernel/trace/sanitizer/kasan_methods.cpp']
 endif
 
 if get_option('ubsan')
-	message('Enabling UBSAN')
-	kernel_c_flags += '-fsanitize=undefined'
-	kernel_cxx_flags += '-fsanitize=undefined'
-	cxx_files += 'firefly/kernel/trace/sanitizer/ubsan.cpp'
+    message('Enabling UBSAN')
+    kernel_c_flags += '-fsanitize=undefined'
+    kernel_cxx_flags += '-fsanitize=undefined'
+    cxx_files += 'firefly/kernel/trace/sanitizer/ubsan.cpp'
 endif
 
 nasm = find_program('nasm')
@@ -39,10 +39,10 @@ asm_gen = generator(nasm, output: '@BASENAME@.o', arguments: ['-felf64', '@INPUT
 asm_obj = asm_gen.process(asm_files)
 
 executable_kwargs = {
-	'cpp_args': kernel_cxx_flags,
-	'c_args': kernel_c_flags,
-	'include_directories': include_dir,
-	'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj', '-static', '-Wl,-z-max-page-size=0x1000'],
+    'cpp_args': kernel_cxx_flags,
+    'c_args': kernel_c_flags,
+    'include_directories': include_dir,
+    'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj', '-static', '-Wl,-z-max-page-size=0x1000'],
 }
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel

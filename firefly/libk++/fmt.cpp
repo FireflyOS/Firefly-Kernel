@@ -159,7 +159,10 @@ char buffer[512];
                     case 'x': {
                         uint64_t arg = va_arg(ap, uint64_t);
                         if (arg == 0)
+						{
                             append('0');
+							append('0');
+						}
                         else {
                             char res[20];
                             itoa(arg, res, 16);

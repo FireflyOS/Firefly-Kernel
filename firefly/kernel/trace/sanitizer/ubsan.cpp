@@ -92,7 +92,7 @@ struct tu_invalid_builtin_data {
 
 extern "C" {
 static void tu_print_location(const char *message, struct tu_source_location loc) {
-    firefly::kernel::info_logger << firefly::kernel::info_logger.format("tinyubsan: %s at file %s, line %d, column %d\n", message, loc.file, loc.line, loc.column);
+    firefly::kernel::ConsoleLogger::log() << firefly::kernel::ConsoleLogger::log().logger_printf("tinyubsan: %s at file %s, line %d, column %d\n", message, loc.file, loc.line, loc.column);
 }
 
 void __ubsan_handle_add_overflow(struct tu_overflow_data *data) {
