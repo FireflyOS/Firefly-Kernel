@@ -42,7 +42,7 @@ void bootloaderServicesInit() {
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     // clang-format off
-    asm volatile("mov %0, %%rsp" ::"r"(((uintptr_t)stack) + (PAGE_SIZE * 2)) : "memory");
+    asm volatile("mov %0, %%rsp" ::"r"(((uintptr_t)stack) + (PageSize::Size4K * 2)) : "memory");
     asm volatile("mov %0, %%rbp" ::"r"((uintptr_t)stack): "memory");
     // clang-format on
 

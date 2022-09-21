@@ -87,7 +87,7 @@ struct AcpiMadt {
                     break;
 
                 case MadtEntryType::x2Apic:
-                    firefly::kernel::info_logger << "x2apic\n";
+                    firefly::kernel::ConsoleLogger::log() << "x2apic\n";
                     break;
 
                 default:
