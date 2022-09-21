@@ -15,6 +15,9 @@ public:
     void enable();
     void write(uint32_t offset, uint32_t value);
     uint32_t read(uint32_t offset) const;
+    void clearErrors();
+    void setIPIDest(uint32_t ap);
+    void sendEOI();
 };
 
 void init();
