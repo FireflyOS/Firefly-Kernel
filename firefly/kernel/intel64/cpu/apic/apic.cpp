@@ -45,9 +45,9 @@ void Apic::sendEOI() {
     write(0xB0, 0);
 }
 
-// Enable the local APIC
+// Enable the APIC
 void Apic::enable() {
-    write(0xF0, read(0xF0) | BIT(8));
+    write(0xF0, read(0xF0) | BIT(8) | 0xFF);
 }
 
 void init() {
@@ -74,6 +74,7 @@ void init() {
 
     for (std::size_t i = 0; i < apics.size(); i++) {
         auto const entry = apics[i];
+	// skip apic of the BSP as we're already running on it
         if (entry->apicId == bspId) continue;
         SerialLogger::log() << "non bsp apic found, ID = " << entry->apicId << "\n";
         // send init IPI
