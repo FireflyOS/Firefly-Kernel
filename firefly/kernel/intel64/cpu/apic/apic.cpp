@@ -72,7 +72,7 @@ void init() {
 
     void* trampoline = nullptr;
     if ( trampoline == nullptr ) {
-	    trampoline = buddy.alloc(smp_trampoline_size);
+	    // ALLOC MEMORY < 1MiB HERE
 	    std::memcpy(trampoline, smp_trampoline_start, smp_trampoline_size);
     }
 
