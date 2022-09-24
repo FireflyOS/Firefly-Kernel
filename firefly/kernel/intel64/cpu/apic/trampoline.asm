@@ -6,9 +6,9 @@ global smp_trampoline_start
 smp_trampoline_start:
 cli
 cld
-mov dx, 0xE9
-mov al, 'e'
-out dx, al
+.hang:
+hlt
+jmp .hang
 
 smp_trampoline_end:
 

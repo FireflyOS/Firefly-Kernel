@@ -92,7 +92,7 @@ void init() {
         }
 
         lapic.setIPIDest(i);
-        lapic.write(LAPIC_REG_ICR0, ((size_t)trampoline / 4096) | 0x4600);
+        lapic.write(LAPIC_REG_ICR0, ((((size_t)trampoline) - AddressLayout::Code ) / 4096) | 0x4600);
 
         // wait for delivery of IPI
         while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
