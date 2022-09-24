@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#define LAPIC_REG_ICR0 0x300
+#define LAPIC_REG_ICR1 0x310
+#define LAPIC_REG_EOI  0x0B0
+
 namespace firefly::kernel::apic {
 class Apic {
 protected:

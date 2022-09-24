@@ -4,10 +4,12 @@
 
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/memory-manager/primary/buddy.hpp"
 #include "libk++/bits.h"
 
 // defined in trampoline.asm
-extern char smp_trampoline[];
+extern char smp_trampoline_start[];
+extern size_t smp_trampoline_size;
 
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
@@ -37,12 +39,12 @@ void Apic::clearErrors() {
 
 // Set destination processor for IPI
 void Apic::setIPIDest(uint32_t ap) {
-    write(0x310, (read(0x310) & 0x00ffffff) | (ap << 24));
+    write(LAPIC_REG_ICR1, (read(LAPIC_REG_ICR1) & 0x00ffffff) | (ap << 24));
 }
 
 // Send APIC EOI
 void Apic::sendEOI() {
-    write(0xB0, 0);
+    write(LAPIC_REG_EOI, 0);
 }
 
 // Enable the APIC
@@ -68,43 +70,34 @@ void init() {
     if (!io_apics.empty())
         ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
 
-    // Copy trampoline code into memory
-    // IDK Where to place it
-    std::memcpy((void*)0x8000, &smp_trampoline, 4096);
+    void* trampoline = nullptr;
+    if ( trampoline == nullptr ) {
+	    trampoline = buddy.alloc(smp_trampoline_size);
+	    std::memcpy(trampoline, smp_trampoline_start, smp_trampoline_size);
+    }
 
     for (std::size_t i = 0; i < apics.size(); i++) {
         auto const entry = apics[i];
 	// skip apic of the BSP as we're already running on it
         if (entry->apicId == bspId) continue;
-        SerialLogger::log() << "non bsp apic found, ID = " << entry->apicId << "\n";
         // send init IPI
         lapic.clearErrors();
         lapic.setIPIDest(i);
-        lapic.write(0x300, (lapic.read(0x300) & 0xfff00000) | 0x00C500);
+        lapic.write(LAPIC_REG_ICR0, 0x4500);
 
 	// wait for delivery of IPI
-        while (lapic.read(0x300) & BIT(12)) {
+        while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
             asm volatile("pause");
         }
 
 	lapic.setIPIDest(i);
-        lapic.write(0x300, (lapic.read(0x300) & 0xfff00000) | 0x008500);
+        lapic.write(LAPIC_REG_ICR0, ((size_t) trampoline / 4096) | 0x4600);
 
 	// wait for delivery of IPI
         while (lapic.read(0x300) & BIT(12)) {
             asm volatile("pause");
         }
 
-        // send startup IPI
-        for (int j = 0; j < 2; j++) {
-            lapic.clearErrors();
-	    lapic.setIPIDest(i);
-
-            lapic.write(0x300, (lapic.read(0x300) & 0xfff0f800) | 0x000608);
-            while (lapic.read(0x300) & BIT(12)) {
-                asm volatile("pause");
-            }
-        }
     }
 }
 }  // namespace firefly::kernel::apic
