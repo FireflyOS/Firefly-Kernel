@@ -5,6 +5,7 @@
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
+#include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
 
 // defined in trampoline.asm
@@ -71,33 +72,32 @@ void init() {
         ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
 
     void* trampoline = nullptr;
-    if ( trampoline == nullptr ) {
-	    // ALLOC MEMORY < 1MiB HERE
-	    std::memcpy(trampoline, smp_trampoline_start, smp_trampoline_size);
+    if (trampoline == nullptr) {
+        trampoline = mm::Physical::allocate(smp_trampoline_size);
+        std::memcpy(trampoline, smp_trampoline_start, smp_trampoline_size);
     }
 
     for (std::size_t i = 0; i < apics.size(); i++) {
         auto const entry = apics[i];
-	// skip apic of the BSP as we're already running on it
+        // skip apic of the BSP as we're already running on it
         if (entry->apicId == bspId) continue;
         // send init IPI
         lapic.clearErrors();
         lapic.setIPIDest(i);
         lapic.write(LAPIC_REG_ICR0, 0x4500);
 
-	// wait for delivery of IPI
+        // wait for delivery of IPI
         while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
             asm volatile("pause");
         }
 
-	lapic.setIPIDest(i);
-        lapic.write(LAPIC_REG_ICR0, ((size_t) trampoline / 4096) | 0x4600);
+        lapic.setIPIDest(i);
+        lapic.write(LAPIC_REG_ICR0, ((size_t)trampoline / 4096) | 0x4600);
 
-	// wait for delivery of IPI
-        while (lapic.read(0x300) & BIT(12)) {
+        // wait for delivery of IPI
+        while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
             asm volatile("pause");
         }
-
     }
 }
 }  // namespace firefly::kernel::apic
