@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
@@ -85,6 +86,7 @@ void init() {
         lapic.clearErrors();
         lapic.setIPIDest(i);
         lapic.write(LAPIC_REG_ICR0, 0x4500);
+	delay(10000000);
 
         // wait for delivery of IPI
         while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
