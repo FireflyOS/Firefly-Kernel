@@ -8,9 +8,12 @@ smp_trampoline_start:
 	cli
 	cld
 
-	.hang:
-		hlt
-		jmp .hang
+	xor ax, ax
+	mov ds, ax
+.hang:
+	hlt
+	jmp .hang
+
 
 smp_trampoline_end:
 
