@@ -1,7 +1,6 @@
 #include "firefly/intel64/cpu/cpu.hpp"
 
 #include "firefly/intel64/cpu/apic/apic.hpp"
-#include "firefly/intel64/pit/pit.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 
 // Note: This is purposely bare-bones and lacking a
@@ -15,7 +14,6 @@ void initializeThisCpu(uint64_t stack) {
     core::gdt::init(temporaryCpuInstance.gdt);
     core::tss::init(stack);
     firefly::kernel::core::interrupt::init();
-    timer::pit::init();
     apic::init();
 }
 

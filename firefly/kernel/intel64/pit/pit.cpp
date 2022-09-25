@@ -24,8 +24,6 @@ void init() {
 	io::outb(0x40, static_cast<uint8_t>(divisor));
 	io::outb(0x40, static_cast<uint8_t>(divisor >> 8));
 
-	core::interrupt::change::update(timer_handler,0,0, 0);
-
 }
 void destroy() {
 
