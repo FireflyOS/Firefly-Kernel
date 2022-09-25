@@ -22,14 +22,14 @@ struct limine_smp_request smp_request {
 
 // Write to the APIC
 void Apic::write(uint32_t offset, uint32_t value) {
-    auto reg = reinterpret_cast<size_t*>((size_t)address + offset);
-    *reinterpret_cast<uint32_t*>(reg) = value;
+    auto reg = reinterpret_cast<size_t*>(reinterpret_cast<size_t>(address) + offset);
+    *reinterpret_cast<volatile uint32_t*>(reg) = value;
 }
 
 // Read from the APIC
 uint32_t Apic::read(uint32_t offset) const {
-    auto reg = reinterpret_cast<size_t*>((size_t)address + offset);
-    return *reinterpret_cast<uint32_t*>(reg);
+    auto reg = reinterpret_cast<size_t*>(reinterpret_cast<size_t>(address) + offset);
+    return *reinterpret_cast<volatile uint32_t*>(reg);
 }
 
 // Set APIC register 280h to 0
