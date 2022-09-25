@@ -1,17 +1,13 @@
-align 4096
 bits 16
-
-section .rodata
 
 global smp_trampoline_start
 smp_trampoline_start:
 	cli
-	cld
-
-	xor ax, ax
-	mov ds, ax
 
 	lgdt [gdtr]
+	.hang:
+		hlt
+		jmp .hang
 
 gdt:
 gdt_null:

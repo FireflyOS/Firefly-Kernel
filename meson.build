@@ -25,7 +25,7 @@ executable_kwargs = {
 	'cpp_args': kernel_cxx_flags,
 	'c_args': kernel_c_flags,
 	'include_directories': include_dir,
-	'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../fonts/vgafont.obj', '-static', '-Wl,-z-max-page-size=0x1000'],
+	'link_args': ['-Wl,-T../linkage/linker_x86_64.ld', '-nostdlib', 'kernel_x86_64.elf.p/symtable.o', '../trampoline.o','../fonts/vgafont.obj', '-static', '-Wl,-z-max-page-size=0x1000'],
 }
 
 # Todo: symbol table should be a kernel module rather than re-linking the kernel
