@@ -9,9 +9,6 @@ namespace {
 	constexpr const uint64_t PIT_FREQUENCY = 1000;
 	constexpr const uint64_t PIT_HZ = 1193180;
 	size_t pit_counter = 0;
-	void timer_handler() {
-		firefly::kernel::SerialLogger::log() << "Timer\n";
-	}
 }
 
 namespace firefly::kernel {
