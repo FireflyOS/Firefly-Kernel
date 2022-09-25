@@ -2,12 +2,12 @@
 
 #include <stdint.h>
 
-#define LAPIC_REG_ICR0  0x300
-#define LAPIC_REG_ICR1  0x310
-#define LAPIC_REG_EOI   0x0B0
+#define LAPIC_REG_ICR0 0x300
+#define LAPIC_REG_ICR1 0x310
+#define LAPIC_REG_EOI 0x0B0
 #define LAPIC_REG_TIMER 0x320
 #define LAPIC_REG_TIMER_CURRENT 0x390
-#define LAPIC_REG_TIMER_DIV     0x3E0
+#define LAPIC_REG_TIMER_DIV 0x3E0
 #define LAPIC_REG_TIMER_INITIAL 0x380
 
 namespace firefly::kernel::apic {
@@ -21,7 +21,7 @@ public:
     }
 
     void setAddress(uint64_t address) {
-	    this->address = address;
+        this->address = address;
     }
 
     void enable();
