@@ -1,14 +1,16 @@
+align 4096
 bits 16
 
 section .rodata
 
 global smp_trampoline_start
 smp_trampoline_start:
-cli
-cld
-.hang:
-hlt
-jmp .hang
+	cli
+	cld
+
+	.hang:
+		hlt
+		jmp .hang
 
 smp_trampoline_end:
 
