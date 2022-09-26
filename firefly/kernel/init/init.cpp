@@ -41,11 +41,6 @@ void bootloaderServicesInit() {
     console::init();
 
     kasan::init();
-
-    ConsoleLogger::log() << "Purposely triggering kasan..\n";
-    kasan::poison(VirtualAddress(AddressLayout::High + 64), 32);
-    long *a = (long *)(AddressLayout::High + 64);
-    *a = 1234;
 }
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {

@@ -17,7 +17,6 @@ include_dir = include_directories('include/', 'include/cxxshim/', 'include/frigg
 subdir('include/')
 subdir('firefly/') # kernel
 
-# Todo: Implement me!
 if get_option('kasan')
         message('Enabling KASAN')
         warning('KASAN will significantly impact performance & memory usage, only use it for debugging purposes!')
