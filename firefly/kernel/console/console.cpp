@@ -90,8 +90,9 @@ void init() {
     }
 }
 
-void write(const char *str) {
-    term_print(&term, str);
+[[gnu::no_sanitize_address]] void write(const char *str) {
+	if (likely(term.initialised))
+    	term_print(&term, str);
 }
 
 }  // namespace firefly::kernel::console

@@ -3,5 +3,5 @@
 namespace firefly::kernel::console
 {
 	void init();
-	void write(const char *str);
+	[[gnu::no_sanitize_address]] void write(const char *str);
 } // namespace firefly::kernel::device::console

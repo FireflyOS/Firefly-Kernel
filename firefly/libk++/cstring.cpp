@@ -1,6 +1,8 @@
 #include "libk++/cstring.hpp"
 
 namespace firefly::libkern::cstring {
+
+[[gnu::no_sanitize_address]]
 size_t strlen(const char *str) {
     size_t n = 0;
     while (*str++)

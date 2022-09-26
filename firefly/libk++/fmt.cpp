@@ -4,6 +4,7 @@
 
 #include "cstdlib/cassert.h"
 #include "firefly/console/console.hpp"
+#include "firefly/drivers/ports.hpp"
 #include "libk++/cstring.hpp"
 
 namespace firefly::libkern::fmt {
@@ -93,7 +94,8 @@ int atoi(const char* str) {
 }
 
 char buffer[512];
-int printf(const char* fmt, ...) {
+
+[[gnu::no_sanitize_address]] int printf(const char* fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     size_t outLen = vsnprintf(buffer, sizeof(buffer), fmt, ap);
@@ -102,11 +104,14 @@ int printf(const char* fmt, ...) {
     if (outLen >= sizeof(buffer))
         return -1;
 
+    for (int i = 0; i < outLen; i++)
+        firefly::kernel::io::outb(0xe9, buffer[i]);
+
     firefly::kernel::console::write(buffer);
     return 0;
 }
 
-int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
+[[gnu::no_sanitize_address]] int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
     assert(fmt != nullptr);
     assert(size == 0 || str != nullptr);
     size_t usedLen = 0;
@@ -154,7 +159,10 @@ int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
                     case 'x': {
                         uint64_t arg = va_arg(ap, uint64_t);
                         if (arg == 0)
+						{
                             append('0');
+							append('0');
+						}
                         else {
                             char res[20];
                             itoa(arg, res, 16);

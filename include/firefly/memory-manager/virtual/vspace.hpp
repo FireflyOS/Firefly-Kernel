@@ -13,14 +13,14 @@
         VirtualSpace::unmap(virt);      \
     }
 
-#define VIRTUAL_SPACE_FUNC_MAP                                   \
+#define VIRTUAL_SPACE_FUNC_MAP                                                       \
     void map(T virt, T phys, AccessFlags flags, PageSize page_size) const override { \
-        VirtualSpace::map(virt, phys, flags, page_size);                    \
+        VirtualSpace::map(virt, phys, flags, page_size);                             \
     }
 
-#define VIRTUAL_SPACE_FUNC_MAP_RANGE                                                                         \
+#define VIRTUAL_SPACE_FUNC_MAP_RANGE                                                                                                                \
     void mapRange(T base, T len, AccessFlags flags, AddressLayout off = AddressLayout::Low, PageSize page_size = PageSize::Size4K) const override { \
-        VirtualSpace::mapRange(base, len, flags, off, page_size);                                                       \
+        VirtualSpace::mapRange(base, len, flags, off, page_size);                                                                                   \
     }
 
 namespace firefly::kernel::mm {
@@ -45,7 +45,7 @@ protected:
 
     inline void initSpace(PhysicalAddress root) {
         pml4 = static_cast<T *>(root);
-	hugePages = cpuHugePages();
+        hugePages = cpuHugePages();
     }
 
     virtual void map(T virtual_addr, T physical_addr, AccessFlags flags, PageSize page_size) const {

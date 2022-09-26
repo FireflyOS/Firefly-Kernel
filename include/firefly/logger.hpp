@@ -69,9 +69,9 @@ public:
         return const_cast<char *>(buffer);
     }
 
-    template <typename T>
-    const char *hex(T in) {
-        logger_printf("0x%x", in);
+    template <typename T = int8_t>
+    const char *hex(T in, bool hexPrefix = true) {
+        logger_printf(hexPrefix ? "0x%x" : "%x", in);
         return "";
     }
 
@@ -89,7 +89,8 @@ private:
     friend class frg::manual_box<ConsoleLogger>;
 
 public:
-    ConsoleLogger() {}
+    ConsoleLogger() {
+    }
 
     static ConsoleLogger &log();
     static void init();
@@ -103,7 +104,8 @@ private:
     friend class frg::manual_box<SerialLogger>;
 
 public:
-    SerialLogger() {}
+    SerialLogger() {
+    }
     static SerialLogger &log();
     static void init();
 

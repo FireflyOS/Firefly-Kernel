@@ -1,12 +1,15 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 enum AddressLayout : uint64_t {
-    PageData = 0xFFFFD00000000000UL,
-    High = 0xFFFF800000000000UL,
-    Code = 0xFFFFFFFF80000000UL,
-    Low = 0x0000000000000000UL
+    // clang-format off
+    PageData = 0xFFFF'D000'0000'0000UL,
+    // SlabHeap = 0xFFFF'B000'0000'0000UL,
+    High     = 0xFFFF'8000'0000'0000UL,
+    Code     = 0xFFFF'FFFF'8000'0000UL,
+    Low      = 0x0000'0000'0000'0000UL
+    // clang-format on
 };
 
 enum PageSize : uint64_t {
