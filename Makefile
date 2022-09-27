@@ -4,6 +4,7 @@
 #  See: https://lists.gnu.org/archive/html/help-make/2008-05/msg00047.html
 #
 all:
+	nasm -fbin firefly/kernel/intel64/cpu/spinup.asm -o firefly/kernel/intel64/cpu/trampoline.o
 ifeq ($(wildcard ./build),)
 	make -C limine/
 	meson build --cross-file meson_config.txt

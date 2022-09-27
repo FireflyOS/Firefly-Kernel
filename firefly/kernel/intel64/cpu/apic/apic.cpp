@@ -9,9 +9,8 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
 
-// defined in trampoline.asm
-extern char smp_trampoline_start[];
-extern size_t smp_trampoline_size;
+static size_t __trampoline_start = 0x2000;// asm("__trampoline_start");
+extern char __trampoline_size;
 
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
@@ -72,11 +71,7 @@ void init() {
     if (!io_apics.empty())
         ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
 
-    void* trampoline = nullptr;
-    if (trampoline == nullptr) {
-        trampoline = mm::Physical::allocate(smp_trampoline_size);
-        std::memcpy(trampoline, smp_trampoline_start, smp_trampoline_size);
-    }
+    void* trampoline = (void*) 0x2000;
 
     for (std::size_t i = 0; i < apics.size(); i++) {
         auto const entry = apics[i];
