@@ -30,6 +30,9 @@ constexpr uint8_t kasanShift = 3;
 constexpr uint8_t kasanAccessSize = 1 << kasanShift;    // 8
 constexpr uint32_t kasanHighShadowSize = (GiB(4) / 8);  // Temporary. Should be the size of the kernel heap (which does not exist yet) divided by 8.
 
+#if !defined(FIRELY_KASAN)
+[[maybe_unused]]
+#endif
 bool kasanUserAddress(VirtualAddress ptr) {
     return (reinterpret_cast<uintptr_t>(ptr) & (1ul << 63)) == 0;
 }
@@ -51,6 +54,9 @@ bool withinKasanMemory(kasan::KasanAddress addr) {
     return false;
 }
 
+#if !defined(FIRELY_KASAN)
+[[maybe_unused]]
+#endif
 void mapShadowMemory(VirtualAddress base, size_t length) {
     using namespace core::paging;
 
