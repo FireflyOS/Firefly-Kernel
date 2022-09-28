@@ -9,16 +9,8 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
 
-static size_t __trampoline_start = 0x2000;// asm("__trampoline_start");
-extern char __trampoline_size;
-
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
-
-// Contains the BSP ID
-struct limine_smp_request smp_request {
-    .id = LIMINE_SMP_REQUEST, .revision = 0, .response = nullptr
-};
 
 // Write to the APIC
 void Apic::write(uint32_t offset, uint32_t value) {
@@ -58,43 +50,16 @@ void init() {
     auto const& results = madt->enumerate();
     auto apics = results.get<0>();
     auto io_apics = results.get<1>();
-    auto const bspId = smp_request.response->bsp_lapic_id;
     auto lapic = Apic(madt->localApicAddress);
     lapic.enable();
 
     // This is an array, the size is always the hardcoded 4.
     // This'll just transfer over to the vector and provide accurate results.
     // Until then, don't treat this like there are 'apics.size()' apics
-    if (!apics.empty())
-        ConsoleLogger::log() << ConsoleLogger::log().format("Found %d local apics\n", apics.size());
+    // if (!apics.empty())
+        // ConsoleLogger::log() << ConsoleLogger::log().format("Found %d local apics\n", apics.size());
 
-    if (!io_apics.empty())
-        ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
-
-    void* trampoline = (void*) 0x2000;
-
-    for (std::size_t i = 0; i < apics.size(); i++) {
-        auto const entry = apics[i];
-        // skip apic of the BSP as we're already running on it
-        if (entry->apicId == bspId) continue;
-        // send init IPI
-        lapic.clearErrors();
-        lapic.setIPIDest(i);
-        lapic.write(LAPIC_REG_ICR0, 0x4500);
-	delay(10000000);
-
-        // wait for delivery of IPI
-        while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
-            asm volatile("pause");
-        }
-
-        lapic.setIPIDest(i);
-        lapic.write(LAPIC_REG_ICR0, ((((size_t)trampoline) - AddressLayout::Code) / 4096) | 0x4600);
-
-        // wait for delivery of IPI
-        while (lapic.read(LAPIC_REG_ICR0) & BIT(12)) {
-            asm volatile("pause");
-        }
-    }
+    // if (!io_apics.empty())
+        // ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
 }
 }  // namespace firefly::kernel::apic
