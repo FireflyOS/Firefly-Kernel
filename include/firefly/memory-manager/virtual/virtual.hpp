@@ -38,7 +38,7 @@ class userPageSpace : VirtualSpace {
         (void)virtual_addr;
         (void)physical_addr;
         (void)flags;
-	(void)page_size;
+        (void)page_size;
         ConsoleLogger::log() << "userPageSpace: map() is a stub!\n";
     }
 

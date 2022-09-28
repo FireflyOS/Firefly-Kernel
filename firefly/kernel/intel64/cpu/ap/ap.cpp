@@ -23,7 +23,7 @@ void smp_main(struct limine_smp_info* info) {
     asm volatile("mov %0, %%rsp" ::"r"(((uintptr_t)info->extra_argument) + (PageSize::Size4K * 2)) : "memory");
     asm volatile("mov %0, %%rbp" ::"r"((uintptr_t)info->extra_argument): "memory");
     // clang-format on
-    
+
     mm::kernelPageSpace::accessor().set_AP_CR3();
     initializeThisCpu(info->extra_argument);
 
