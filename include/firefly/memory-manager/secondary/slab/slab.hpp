@@ -35,7 +35,6 @@ public:
     VirtualAddress allocate() {
         slab* _slab = slabs.first();
         SerialLogger() << "Found slab at: " << SerialLogger::log().hex(_slab->address) << '\n';
-        auto offset = _slab->address;
 
         for (int i = 0; i < _slab->available_object_count; i++) {
             if (!_slab->check(i)) {
@@ -55,6 +54,7 @@ public:
     // Allow the user to allocate a range of memory ahead of time to avoid
     // frequent creation of objects which negatively impacts performance.
     void reserveRange(int range) const {
+		(void)range;
         // Here we would basically vm_backing.allocate(range)
         // See comment at the bottom of this class for more.
     }
