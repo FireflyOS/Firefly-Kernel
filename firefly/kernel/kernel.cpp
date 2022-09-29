@@ -5,7 +5,7 @@
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/logger.hpp"
-#include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/secondary/slab/slab.hpp"
 #include "firefly/panic.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -29,9 +29,27 @@ void log_core_firefly_contributors() {
     ConsoleLogger::log() << ConsoleLogger::log().newline();
 }
 
+
+#include "firefly/memory-manager/primary/primary_phys.hpp"
+
+// Todo: This needs to map, unmap, poison and offset memory.
+class Foo {
+	public:
+	void* allocate(int s) {
+		return firefly::kernel::mm::Physical::allocate(s);
+	}
+};
+
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
-	core::acpi::Acpi::accessor().dumpTables();
+    core::acpi::Acpi::accessor().dumpTables();
+
+    mm::secondary::slabCache<Foo, int> s;
+    s.initialize(4096);
+	auto a = s.allocate();
+	auto b = s.allocate();
+
+	SerialLogger() << "a: " << SerialLogger::log().hex(a) << ", b: " << SerialLogger::log().hex(b) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

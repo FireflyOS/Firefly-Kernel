@@ -56,6 +56,6 @@ cxx_files += files(
     'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
     'kernel/console/console.cpp', 'kernel/intel64/acpi/acpi.cpp', 'kernel/graphics/framebuffer.cpp', 
-    'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp' , 'kernel/trace/sanitizer/kasan.cpp'
+    'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp' , 'kernel/trace/sanitizer/kasan.cpp', 'kernel/memory-manager/secondary/slab/slab.cpp'
 )
 asm_files += files('kernel/intel64/gdt/gdt.asm', 'kernel/intel64/int/interrupt.asm')

@@ -28,10 +28,6 @@ info_log:
 	cd build; \
 	../scripts/qemu-bios-int-log.sh
 
-gdb:
-	cd build; \
-	../scripts/qemu-gdb.sh
-
 clean:
 ifeq ($(wildcard ./build),)
 	$(error No build directory to clean, please run 'make all' or 'make' first)
