@@ -32,5 +32,18 @@ public:
     void sendEOI();
 };
 
+class IOApic {
+public:
+    enum DeliveryMode {
+        EDGE = 0,
+        LEVEL = 1,
+    };
+
+    enum DestinationMode {
+        PHYSICAL = 0,
+        LOGICAL = 1
+    };
+};
+
 void init();
 }  // namespace firefly::kernel::apic
