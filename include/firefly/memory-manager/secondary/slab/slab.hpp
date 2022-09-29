@@ -95,7 +95,7 @@ private:
 
         // Bitmap operations
         inline void set(const int bit) {
-            objects[bit / blk_size] |= (1 << (bit % blk_size));
+            objects[bit / blk_size] |= BIT((bit % blk_size));
         }
 
         inline void clear(const int bit) {
@@ -103,7 +103,7 @@ private:
         }
 
         inline bool check(const int bit) const {
-            return (objects[bit / blk_size] & (1 << (bit % blk_size)));
+            return objects[bit / blk_size] & BIT((bit % blk_size));
         }
 
         static constexpr int blk_size{ sizeof(BitmapType) * 8 };
