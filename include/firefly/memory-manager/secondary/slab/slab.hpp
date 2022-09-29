@@ -33,6 +33,9 @@ public:
     }
 
     VirtualAddress allocate() {
+		// Todo:
+		// - Check if _slab is null and expand if true (maybe add some flags to enabled/disable auto resizing?)
+		// - Check the available_object_count and move slabs into used/free/partial slabs, this will speed up allocation by a lot.
         slab* _slab = slabs.first();
         SerialLogger() << "Found slab at: " << SerialLogger::log().hex(_slab->address) << '\n';
 
@@ -64,7 +67,7 @@ private:
     void shrink(SlabType type);
 
     void createSlab(frg::string_view descriptor) {
-        auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(4096));
+        auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(size));
         struct slab* _slab = (struct slab*)base;
 
         _slab->objects = (BitmapType)(base + sizeof(slab));
