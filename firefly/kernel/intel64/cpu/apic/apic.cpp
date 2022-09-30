@@ -32,12 +32,12 @@ void Apic::clearErrors() {
 
 // Set destination processor for IPI
 void Apic::setIPIDest(uint32_t ap) {
-    write(LAPIC_REG_ICR1, (read(LAPIC_REG_ICR1) & 0x00ffffff) | (ap << 24));
+    write(APIC_ICR1, (read(APIC_ICR1) & 0x00ffffff) | (ap << 24));
 }
 
 // Send APIC EOI
 void Apic::sendEOI() {
-    write(LAPIC_REG_EOI, 0);
+    write(APIC_EOI, 0);
 }
 
 // Enable the APIC
@@ -47,19 +47,7 @@ void Apic::enable() {
 
 void init() {
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
-    auto const& results = madt->enumerate();
-    auto apics = results.get<0>();
-    auto io_apics = results.get<1>();
     auto lapic = Apic(madt->localApicAddress);
     lapic.enable();
-
-    // This is an array, the size is always the hardcoded 4.
-    // This'll just transfer over to the vector and provide accurate results.
-    // Until then, don't treat this like there are 'apics.size()' apics
-    // if (!apics.empty())
-        // ConsoleLogger::log() << ConsoleLogger::log().format("Found %d local apics\n", apics.size());
-
-    // if (!io_apics.empty())
-        // ConsoleLogger::log() << ConsoleLogger::log().format("Found %d io apics\n", io_apics.size());
 }
 }  // namespace firefly::kernel::apic

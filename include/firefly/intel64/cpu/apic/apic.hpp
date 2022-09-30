@@ -2,15 +2,17 @@
 
 #include <stdint.h>
 
-#define LAPIC_REG_ICR0 0x300
-#define LAPIC_REG_ICR1 0x310
-#define LAPIC_REG_EOI 0x0B0
-#define LAPIC_REG_TIMER 0x320
-#define LAPIC_REG_TIMER_CURRENT 0x390
-#define LAPIC_REG_TIMER_DIV 0x3E0
-#define LAPIC_REG_TIMER_INITIAL 0x380
-
 namespace firefly::kernel::apic {
+
+constexpr const uint32_t APIC_LVR = 0x30;
+constexpr const uint32_t APIC_ICR0 = 0x300;
+constexpr const uint32_t APIC_ICR1 = 0x310;
+constexpr const uint32_t APIC_TIMER = 0x320;
+constexpr const uint32_t APIC_TIMER_INITIAL = 0x390;
+constexpr const uint32_t APIC_TIMER_CURRENT = 0x390;
+constexpr const uint32_t APIC_TIMER_DIVIDER = 0x3E0;
+constexpr const uint32_t APIC_EOI = 0x0B0;
+
 class Apic {
 protected:
     uint64_t address;
