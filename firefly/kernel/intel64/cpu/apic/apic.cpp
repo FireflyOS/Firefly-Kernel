@@ -49,5 +49,17 @@ void init() {
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
     auto lapic = Apic(madt->localApicAddress);
     lapic.enable();
+
+    // mask all interrupts
+    lapic.write(APIC_LVTT, APIC_MASKED);
+    lapic.write(APIC_LVTTHMR, APIC_MASKED);
+    lapic.write(APIC_LVTPC, APIC_MASKED);
+    lapic.write(APIC_LVT1, APIC_MASKED);
+    lapic.write(APIC_LVT0, APIC_MASKED);
+    lapic.write(APIC_LVTERR, APIC_MASKED);
+
+    lapic.write(APIC_TASK_PRIORITY, 0); // Accept all INTs & exceptions
+
+    lapic.sendEOI();
 }
 }  // namespace firefly::kernel::apic

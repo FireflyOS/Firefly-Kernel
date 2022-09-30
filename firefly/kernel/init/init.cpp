@@ -3,6 +3,7 @@
 
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
@@ -48,6 +49,7 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
 
     bootloaderServicesInit();
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
+    firefly::kernel::applicationProcessor::startAllCores();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();
