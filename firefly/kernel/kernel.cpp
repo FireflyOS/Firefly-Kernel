@@ -34,10 +34,16 @@ void log_core_firefly_contributors() {
 
 // Todo: This needs to map, unmap, poison and offset memory.
 class Foo {
-	public:
-	void* allocate(int s) {
-		return firefly::kernel::mm::Physical::allocate(s);
-	}
+public:
+    void *allocate(int s) {
+        return firefly::kernel::mm::Physical::allocate(s);
+    }
+};
+
+struct dummyCache {
+    int foo;
+    char bar;
+    long baz;
 };
 
 [[noreturn]] void kernel_main() {
@@ -45,11 +51,11 @@ class Foo {
     core::acpi::Acpi::accessor().dumpTables();
 
     mm::secondary::slabCache<Foo, int> s;
-    s.initialize(4096);
-	auto a = s.allocate();
-	auto b = s.allocate();
+    s.initialize(sizeof(dummyCache));
+    auto a = s.allocate();
+    auto b = s.allocate();
 
-	SerialLogger() << "a: " << SerialLogger::log().hex(a) << ", b: " << SerialLogger::log().hex(b) << '\n';
+    SerialLogger() << "a: " << SerialLogger::log().hex(a) << ", b: " << SerialLogger::log().hex(b) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

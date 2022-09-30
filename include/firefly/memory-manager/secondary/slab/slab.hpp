@@ -3,21 +3,27 @@
 #include <cstddef>
 #include <cstdint>
 #include <frg/list.hpp>
+#include <frg/queue.hpp>
 #include <frg/rbtree.hpp>
 #include <frg/string.hpp>
 
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"
+#include "firefly/memory-manager/page.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
 
+
 namespace firefly::kernel::mm::secondary {
+
+namespace {
+static constexpr bool debugSlab{ true };
+};
 
 /* vm = virtual memory */
 template <class VmBackingAllocator, typename Lock>
 class slabCache {
     struct slab;
-    using BitmapType = uint8_t*;  // TODO: Implement frg::bitset
     enum SlabType {
         Small,
         Large
@@ -27,39 +33,30 @@ public:
     slabCache() = default;
 
     void initialize(int sz, const frg::string_view& descriptor = "anonymous") {
-        createSlab(descriptor);
-        ConsoleLogger() << "root slab descriptor: " << slabs.get_root()->descriptor.data() << '\n';
+        // Todo: Ensure sz is a power of 2 and round it to the nearest power of two if it isn't.
         size = sz;
+        createSlab(descriptor);
     }
 
     VirtualAddress allocate() {
-		// Todo:
-		// - Check if _slab is null and expand if true (maybe add some flags to enabled/disable auto resizing?)
-		// - Check the available_object_count and move slabs into used/free/partial slabs, this will speed up allocation by a lot.
-        slab* _slab = slabs.first();
-        SerialLogger() << "Found slab at: " << SerialLogger::log().hex(_slab->address) << '\n';
+        // Todo:
+        // - Check if _slab is null and expand if true (maybe add some flags to enabled/disable auto resizing?)
+        // - Check the available_object_count and move slabs into used/free/partial slabs, this will speed up allocation by a lot.
+        auto _slab = slabs.first();
+        auto object = _slab->avail_page.dequeue();
 
-        for (int i = 0; i < _slab->available_object_count; i++) {
-            if (!_slab->check(i)) {
-                _slab->set(i);
-                --_slab->available_object_count;
-                return VirtualAddress(_slab->address + (i * size));
-            }
-        }
+        if constexpr (debugSlab)
+            ConsoleLogger() << "Allocating from a cache with the following descriptor: " << _slab->descriptor.data() << '\n';
 
-        return nullptr;
+        // Just a quick todo note for me - V01D
+        if (_slab->avail_page.empty())
+            panic("Detected fully allocated slab, need to implement: full, partial and free slabs.");
+
+        return VirtualAddress(object);
     }
 
     void deallocate(VirtualAddress ptr) {
         (void)ptr;
-    }
-
-    // Allow the user to allocate a range of memory ahead of time to avoid
-    // frequent creation of objects which negatively impacts performance.
-    void reserveRange(int range) const {
-		(void)range;
-        // Here we would basically vm_backing.allocate(range)
-        // See comment at the bottom of this class for more.
     }
 
 private:
@@ -67,49 +64,47 @@ private:
     void shrink(SlabType type);
 
     void createSlab(frg::string_view descriptor) {
-        auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(size));
-        struct slab* _slab = (struct slab*)base;
+        // Todo: This should probably be handled by the VmBackingAllocator class
+        size_t alloc_sz = slabTypeOf(size) == SlabType::Large ? PageSize::Size2M : PageSize::Size4K;
+        ConsoleLogger() << "alloc_sz: " << alloc_sz << ", object size: " << size << '\n';
+        ConsoleLogger() << "is large slab: " << (alloc_sz == PageSize::Size2M ? "true" : "false") << '\n';
 
-        _slab->objects = (BitmapType)(base + sizeof(slab));
-        memset(_slab->objects, 0, size);
-
-        _slab->available_object_count = 512;
-        _slab->descriptor = std::move(descriptor);
-        _slab->address = base;
-        _slab->objects = reinterpret_cast<uint8_t*>(base);
+        auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(alloc_sz));
+        struct slab* _slab = new (reinterpret_cast<void*>(base)) struct slab(descriptor, base, alloc_sz, size);
         slabs.insert(_slab);
     }
 
-    SlabType slabTypeOf(int size) {
+    SlabType slabTypeOf(int size) const {
         return size > static_cast<int>(PageSize::Size4K / 8) ? SlabType::Large : SlabType::Small;
     }
 
 private:
     struct slab {
+        struct object : frg::default_queue_hook<object> {};
+
+        slab(const frg::string_view& _descriptor, uintptr_t _address, size_t len, size_t sz)
+            : descriptor{ _descriptor }, address{ _address } {
+            // Reserve some memory for the slab structure & align it to sizeof(slab) bytes.
+            // If we don't do this we will end up overwriting the object we just created.
+            _address += sizeof(slab);
+            _address = (_address + sizeof(slab) - 1) & ~(sizeof(slab) - 1);
+
+            for (auto i = _address; i <= (_address + len); i += sz) {
+                // TODO: VmBackingAllocator should do this.
+                // Marks each 4kib page as a slab page.
+                if (i % PageSize::Size4K == 0)
+                    pagelist.phys_to_page(i)->flags = RawPageFlags::Slab;
+
+                frg::queue_result res = avail_page.enqueue(reinterpret_cast<object*>(i));
+                assert_truth(res == frg::queue_result::Okay);
+            }
+        }
+
         frg::string_view descriptor;
         int available_object_count;
-        BitmapType objects;
         uintptr_t address;
 
-        slab() = default;
-        slab(const frg::string_view& _descriptor, BitmapType bitmap_address, uintptr_t _address)
-            : descriptor{ _descriptor }, objects{ bitmap_address }, address{ _address } {
-        }
-
-        // Bitmap operations
-        inline void set(const int bit) {
-            objects[bit / blk_size] |= BIT((bit % blk_size));
-        }
-
-        inline void clear(const int bit) {
-            objects[bit / blk_size] &= ~BIT((bit % blk_size));
-        }
-
-        inline bool check(const int bit) const {
-            return objects[bit / blk_size] & BIT((bit % blk_size));
-        }
-
-        static constexpr int blk_size{ sizeof(BitmapType) * 8 };
+        frg::intrusive_queue<object> avail_page;
         frg::rbtree_hook tree_hook;
     };
 
@@ -127,5 +122,13 @@ private:
     // Add a queue/freelist of Physical::allocate()'d addresses.
     // These will be used to quickly preallocate and assign memory
     // when creating a new slab.
+    //
+    // Edit: ... ok maybe this isn't useful.
+    // We already check for large or small slabs and allocate memory accordingly.
+    // I don't see a meaningful performance gain in caching some addresses, the buddy
+    // just needs some optimization and we'll be fine. - V01D
+
+    // Todo:
+    //  Link slabCaches together via a linked list
 };
 }  // namespace firefly::kernel::mm::secondary
