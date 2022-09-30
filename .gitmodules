@@ -5,6 +5,8 @@
 [submodule "include/frigg"]
 	path = include/frigg
 	url = git@github.com:FireflyOS/frigg.git
+	branch = master
 [submodule "include/cxxshim"]
 	path = include/cxxshim
 	url = git@github.com:FireflyOS/cxxshim.git
+	branch = master
