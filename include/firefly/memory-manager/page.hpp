@@ -8,10 +8,9 @@
 #include <utility>
 
 #include "firefly/compiler/compiler.hpp"
-#include "firefly/memory-manager/mm.hpp"
 #include "firefly/limine.hpp"
+#include "firefly/memory-manager/mm.hpp"
 #include "libk++/bits.h"
-
 extern uintptr_t GLOB_PAGE_ARRAY[];
 
 enum class RawPageFlags : int {
@@ -51,8 +50,7 @@ class Pagelist {
 
 public:
     void init(struct limine_memmap_response *memmap_response) {
-        for (size_t i = 0; i < memmap_response->entry_count; i++)
-        {
+        for (size_t i = 0; i < memmap_response->entry_count; i++) {
             auto e = memmap_response->entries[i];
 
             // Ensure the array size is not exceeded
