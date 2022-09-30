@@ -1,6 +1,9 @@
 #include <cstddef>
+#include <frg/macros.hpp>
 
+#include "cstdlib/cassert.h"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/panic.hpp"
 
 /*
     All kinds of stubs for functions that prevented a successful linking process reside here.
@@ -19,5 +22,12 @@ void free_mem(void *ptr, [[maybe_unused]] size_t size) {
 }
 
 void __stack_chk_fail(void) {
+}
+
+void FRG_INTF(log)(const char *cstring) {
+}
+
+void FRG_INTF(panic)(const char *cstring) {
+	firefly::panic(cstring);
 }
 }
