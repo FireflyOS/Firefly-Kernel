@@ -58,7 +58,7 @@ void init() {
     lapic.write(APIC_LVT0, APIC_MASKED);
     lapic.write(APIC_LVTERR, APIC_MASKED);
 
-    lapic.write(APIC_TASK_PRIORITY, 0); // Accept all INTs & exceptions
+    lapic.write(APIC_TASK_PRIORITY, 0);  // Accept all INTs & exceptions
 
     lapic.sendEOI();
 }

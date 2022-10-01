@@ -1,7 +1,7 @@
 #include "firefly/intel64/cpu/cpu.hpp"
 
-#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
+#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 
 // Note: This is purposely bare-bones and lacking a
