@@ -60,15 +60,19 @@ struct dummyCache {
     core::acpi::Acpi::accessor().dumpTables();
 
     mm::slabCache<Foo, Bar> s;
-    s.initialize(sizeof(dummyCache));
+    s.initialize(1024);
 
-    for (int i = 0; i < 259; i++)
+
+    auto a = s.allocate();
+    auto b = s.allocate();
+
+    ConsoleLogger() << "a: " << ConsoleLogger::log().hex(a) << ", b: " << ConsoleLogger::log().hex(b) << '\n';
+
+	s.deallocate(b);
+	ConsoleLogger() << "deallocated b, now reallocating b: " << ConsoleLogger::log().hex(s.allocate()) << '\n';
+    
+	for (int i = 0; i < 259; i++)
         SerialLogger() << "[" << i << "] ptr: " << SerialLogger::log().hex(s.allocate()) << "\n";
-
-    // auto a = s.allocate();
-    // auto b = s.allocate();
-
-    // ConsoleLogger() << "a: " << ConsoleLogger::log().hex(a) << ", b: " << ConsoleLogger::log().hex(b) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();
