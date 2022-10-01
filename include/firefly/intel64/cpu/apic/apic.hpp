@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include "firefly/intel64/acpi/acpi.hpp"
+
+#define IOAPIC_DEST(x) (((x)&0xFF)<<56)
 
 namespace firefly::kernel::apic {
 
@@ -24,6 +27,17 @@ constexpr const uint32_t APIC_SPURIOUS = 0xF0;
 
 constexpr const uint32_t APIC_MASKED = 0x10000;
 
+constexpr const uint32_t IOAPIC_MASKED = BIT(16);
+constexpr const uint32_t IOAPIC_LEVEL = BIT(15);
+constexpr const uint32_t IOAPIC_INTPOL = BIT(13);
+constexpr const uint32_t IOAPIC_DESTMODE = BIT(11);
+constexpr const uint32_t IOAPIC_DELMODE_FIX = ((0)<<8);
+
+constexpr const uint32_t IOAPIC_REDTBL_BASE = 0x10;
+constexpr const uint32_t IOAPIC_REDTBL0 = 0x10;
+constexpr const uint32_t IOAPIC_REDTBL1 = 0x12;
+
+
 class Apic {
 protected:
     uint64_t address;
@@ -32,6 +46,8 @@ public:
     Apic(uint64_t address) {
         this->address = address;
     }
+
+    static void init();
 
     void setAddress(uint64_t address) {
         this->address = address;
@@ -48,12 +64,26 @@ public:
 
 class IOApic {
 private:
-	uint64_t address;
-public:
+    uint64_t address;
 
-	IOApic(uint64_t address) {
-		this->address = address;
-	}
+public:
+    IOApic(uint64_t address) {
+        this->address = address;
+    }
+
+    // TODO: Proper IOApic code
+    static void initAll() {
+	    using core::acpi::Acpi;
+	    auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
+	    auto const ioapics = madt->enumerate().get<1>();
+	    for (uint32_t i = 0; i < ioapics.size(); i++) {
+		    auto ioapic = IOApic(ioapics[i]->ioApicAddress);
+		    ioapic.init();
+		    ioapic.enableIRQ(0);
+		    ioapic.enableIRQ(1);
+	    }
+    }
+
     enum DeliveryMode {
         Edge = 0,
         Level = 1,
@@ -61,19 +91,19 @@ public:
 
     enum DestinationMode {
         Physical = 0,
-	Logical = 1
+        Logical = 1
     };
 
-    void write(uint32_t offset, uint32_t value) {
-	    
-    }
+    void write(uint32_t offset, uint32_t value);
+    uint32_t read(uint32_t offset) const;
+    void init();
+    void enableIRQ(uint8_t irq);
 };
 
 enum ApicTimerMode {
-	OneShot  = 0,
-	Periodic = 1,
-	TscDeadline = 2
+    OneShot = 0,
+    Periodic = 1,
+    TscDeadline = 2
 };
 
-void init();
 }  // namespace firefly::kernel::apic

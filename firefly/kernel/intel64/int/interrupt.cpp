@@ -95,7 +95,7 @@ void interrupt_handler(iframe iframe) {
 }
 
 void irq_handler(iframe iframe) {
-	SerialLogger::log() << "IRQ";
+    SerialLogger::log() << "IRQ";
 }
 
 // Todo: Do we need this?

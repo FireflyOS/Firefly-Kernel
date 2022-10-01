@@ -15,7 +15,7 @@ void initializeThisCpu(uint64_t stack) {
     core::gdt::init(temporaryCpuInstance.gdt);
     core::tss::init(stack);
     firefly::kernel::core::interrupt::init();
-    apic::init();
+    apic::Apic::init();
 }
 
 CpuData &thisCpu() {
