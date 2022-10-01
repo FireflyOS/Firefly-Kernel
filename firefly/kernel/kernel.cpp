@@ -32,11 +32,20 @@ void log_core_firefly_contributors() {
 
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 
-// Todo: This needs to map, unmap, poison and offset memory.
+// Dummy VmBackingAllocator
 class Foo {
 public:
     void *allocate(int s) {
         return firefly::kernel::mm::Physical::allocate(s);
+    }
+};
+
+// Dummy locking mechanism
+class Bar {
+public:
+    void lock() {
+    }
+    void unlock() {
     }
 };
 
@@ -50,12 +59,16 @@ struct dummyCache {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    mm::secondary::slabCache<Foo, int> s;
+    mm::slabCache<Foo, Bar> s;
     s.initialize(sizeof(dummyCache));
-    auto a = s.allocate();
-    auto b = s.allocate();
 
-    SerialLogger() << "a: " << SerialLogger::log().hex(a) << ", b: " << SerialLogger::log().hex(b) << '\n';
+    for (int i = 0; i < 259; i++)
+        SerialLogger() << "[" << i << "] ptr: " << SerialLogger::log().hex(s.allocate()) << "\n";
+
+    // auto a = s.allocate();
+    // auto b = s.allocate();
+
+    // ConsoleLogger() << "a: " << ConsoleLogger::log().hex(a) << ", b: " << ConsoleLogger::log().hex(b) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

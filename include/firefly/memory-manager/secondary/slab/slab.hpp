@@ -7,14 +7,14 @@
 #include <frg/rbtree.hpp>
 #include <frg/string.hpp>
 
+#include "firefly/intel64/cache.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/page.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "libk++/bits.h"
 
-
-namespace firefly::kernel::mm::secondary {
+namespace firefly::kernel::mm {
 
 namespace {
 static constexpr bool debugSlab{ true };
@@ -30,48 +30,95 @@ class slabCache {
     };
 
 public:
-    slabCache() = default;
-
     void initialize(int sz, const frg::string_view& descriptor = "anonymous") {
         // Todo: Ensure sz is a power of 2 and round it to the nearest power of two if it isn't.
         size = sz;
+        slab_type = slabTypeOf(sz);
         createSlab(descriptor);
+
+        ConsoleLogger() << "base: " << ConsoleLogger::log().hex(free_slabs.get_root()->base_address) << "\n";
     }
 
     VirtualAddress allocate() {
-        // Todo:
-        // - Check if _slab is null and expand if true (maybe add some flags to enabled/disable auto resizing?)
-        // - Check the available_object_count and move slabs into used/free/partial slabs, this will speed up allocation by a lot.
-        auto _slab = slabs.first();
-        auto object = _slab->avail_page.dequeue();
+        lock.lock();
 
-        if constexpr (debugSlab)
-            ConsoleLogger() << "Allocating from a cache with the following descriptor: " << _slab->descriptor.data() << '\n';
+        slab* _slab = partial_slabs.first();
+        VirtualAddress object;
 
-        // Just a quick todo note for me - V01D
-        if (_slab->avail_page.empty())
-            panic("Detected fully allocated slab, need to implement: full, partial and free slabs.");
+        auto do_dequeue = [&]() {
+            return (object = reinterpret_cast<VirtualAddress>(_slab->object_queue.dequeue()));
+        };
 
-        return VirtualAddress(object);
+        // Check if we can allocate an object from the partial slab
+        if (!_slab) {
+            _slab = free_slabs.first();
+
+            if (unlikely(!_slab)) {
+                panic("TODO: Slab cache is OOM. Implement grow()");
+                // grow();
+                // allocate();
+            }
+
+            // Move a free slab into the partial slab
+            free_slabs.remove(_slab);
+            partial_slabs.insert(_slab);
+            do_dequeue();
+
+            if constexpr (debugSlab)
+                assert_truth(object != nullptr && "This should NOT happen, something went really wrong");
+
+            goto end;
+        }
+
+        // Perform the allocation
+        do_dequeue();
+
+        // Check if this slab is full and move it
+        // into the full slab tree if applicable
+        if (!object || _slab->object_queue.size() == 0) {
+            // Fix slab state
+            partial_slabs.remove(_slab);
+            full_slabs.insert(_slab);
+
+            // Retry allocation
+            lock.unlock();
+            allocate();
+        }
+
+    end:
+        lock.unlock();
+        return object;
     }
 
     void deallocate(VirtualAddress ptr) {
         (void)ptr;
     }
 
-private:
-    void grow(SlabType type);
-    void shrink(SlabType type);
+public:
+    // Caches are connected to each other via an intrusive doubly linked list
+    frg::default_list_hook<slabCache> node;
 
-    void createSlab(frg::string_view descriptor) {
+private:
+    void grow();
+    void shrink();
+
+    void createSlab(const frg::string_view& descriptor) {
         // Todo: This should probably be handled by the VmBackingAllocator class
-        size_t alloc_sz = slabTypeOf(size) == SlabType::Large ? PageSize::Size2M : PageSize::Size4K;
-        ConsoleLogger() << "alloc_sz: " << alloc_sz << ", object size: " << size << '\n';
-        ConsoleLogger() << "is large slab: " << (alloc_sz == PageSize::Size2M ? "true" : "false") << '\n';
+        size_t alloc_sz = slab_type == SlabType::Large ? PageSize::Size2M : PageSize::Size4K;
+
+        if constexpr (debugSlab) {
+            ConsoleLogger() << "Start of slab creation\n";
+            ConsoleLogger() << "slab descriptor='" << descriptor.data() << "'\n";
+            ConsoleLogger() << "Creating new slab with an allocation of size '" << alloc_sz << "', object size is: " << size << '\n';
+            ConsoleLogger() << "is large slab: " << (alloc_sz == PageSize::Size2M ? "true" : "false") << '\n';
+        }
 
         auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(alloc_sz));
-        struct slab* _slab = new (reinterpret_cast<void*>(base)) struct slab(descriptor, base, alloc_sz, size);
-        slabs.insert(_slab);
+        slab* _slab = new (reinterpret_cast<void*>(base)) struct slab(descriptor, base, alloc_sz, size);
+        free_slabs.insert(_slab);
+
+        if constexpr (debugSlab)
+            ConsoleLogger() << "slab can hold " << _slab->max_objects << " objects\nEnd of slab creation\n";
     }
 
     SlabType slabTypeOf(int size) const {
@@ -79,56 +126,51 @@ private:
     }
 
 private:
+    // Todo: Go through this struct after finishing the slab and weed out unused members to make the struct smaller
     struct slab {
         struct object : frg::default_queue_hook<object> {};
 
-        slab(const frg::string_view& _descriptor, uintptr_t _address, size_t len, size_t sz)
-            : descriptor{ _descriptor }, address{ _address } {
+        slab(const frg::string_view& _descriptor, uintptr_t address, size_t len, size_t sz)
+            : descriptor{ _descriptor }, base_address{ address } {
             // Reserve some memory for the slab structure & align it to sizeof(slab) bytes.
             // If we don't do this we will end up overwriting the object we just created.
-            _address += sizeof(slab);
-            _address = (_address + sizeof(slab) - 1) & ~(sizeof(slab) - 1);
+            address += sizeof(slab);
+            address = (address + sizeof(slab) - 1) & ~(sizeof(slab) - 1);
 
-            for (auto i = _address; i <= (_address + len); i += sz) {
+            for (auto i = address; i <= (address + len); i += sz) {
                 // TODO: VmBackingAllocator should do this.
                 // Marks each 4kib page as a slab page.
                 if (i % PageSize::Size4K == 0)
                     pagelist.phys_to_page(i)->flags = RawPageFlags::Slab;
 
-                frg::queue_result res = avail_page.enqueue(reinterpret_cast<object*>(i));
+                frg::queue_result res = object_queue.enqueue(reinterpret_cast<object*>(i));
                 assert_truth(res == frg::queue_result::Okay);
             }
+
+            max_objects = object_queue.size() - 1;
         }
 
         frg::string_view descriptor;
-        int available_object_count;
-        uintptr_t address;
+        uintptr_t base_address;
+        int max_objects;
 
-        frg::intrusive_queue<object> avail_page;
+        frg::intrusive_queue<object> object_queue;
         frg::rbtree_hook tree_hook;
     };
 
     struct comparator {
         bool operator()(const slab& a, const slab& b) {
-            return a.address < b.address;
+            return a.base_address < b.base_address;
         }
     };
 
     int size;
     Lock lock;
+    SlabType slab_type;
     VmBackingAllocator vm_backing;
-    frg::rbtree<slab, &slab::tree_hook, comparator> slabs;  // TODO: Add {used, free, partial} slabs.
 
-    // Add a queue/freelist of Physical::allocate()'d addresses.
-    // These will be used to quickly preallocate and assign memory
-    // when creating a new slab.
-    //
-    // Edit: ... ok maybe this isn't useful.
-    // We already check for large or small slabs and allocate memory accordingly.
-    // I don't see a meaningful performance gain in caching some addresses, the buddy
-    // just needs some optimization and we'll be fine. - V01D
-
-    // Todo:
-    //  Link slabCaches together via a linked list
+    alignas(CACHE_LINE_SIZE)
+        frg::rbtree<slab, &slab::tree_hook, comparator> full_slabs,
+        free_slabs, partial_slabs;
 };
-}  // namespace firefly::kernel::mm::secondary
+}  // namespace firefly::kernel::mm
