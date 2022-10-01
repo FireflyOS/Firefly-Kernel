@@ -41,10 +41,12 @@ struct __attribute__((packed)) iframe {
 
 extern "C" {
 void interrupt_handler(iframe iframe);
+void irq_handler(iframe iframe);
 void exception_handler([[maybe_unused]] iframe iframe);
 void interrupt_wrapper();
 void exception_wrapper();
 void assign_cpu_exceptions();
+void assign_irq_handlers();
 }
 
 static idt_gate idt[256];
@@ -78,6 +80,7 @@ struct __attribute__((packed)) idt_reg {
 
 void init() {
     assign_cpu_exceptions();
+    assign_irq_handlers();
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
@@ -89,6 +92,10 @@ void interrupt_handler(iframe iframe) {
 
     for (;;)
         asm("cli\nhlt");
+}
+
+void irq_handler(iframe iframe) {
+	SerialLogger::log() << "IRQ";
 }
 
 // Todo: Do we need this?

@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "firefly/drivers/ports.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/limine.hpp"
@@ -42,13 +43,27 @@ void Apic::sendEOI() {
 
 // Enable the APIC
 void Apic::enable() {
-    write(0xF0, read(0xF0) | BIT(8) | 0xFF);
+    write(APIC_SPURIOUS, read(APIC_SPURIOUS) | BIT(8) | 0xFF);
+}
+
+// Enable IRQ in LVT,
+// also addes base of vector so there are
+// no problems with the CPU exceptions (irq #1 -> LVT_BASE + 1, not int 1)
+void Apic::enableIRQ(uint8_t irq) {
+    write(APIC_SPURIOUS, read(APIC_SPURIOUS) | (LVT_BASE + irq));
+}
+
+// call this to make sure PIC is disabled completely
+// We want to use IOAPIC + LAPIC!
+static void disable_pic() {
+    io::outb(0xA1, 0xFF);
+    io::outb(0x21, 0xFF);
 }
 
 void init() {
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
     auto lapic = Apic(madt->localApicAddress);
-    lapic.enable();
+    disable_pic();
 
     // mask all interrupts
     lapic.write(APIC_LVTT, APIC_MASKED);
@@ -61,5 +76,12 @@ void init() {
     lapic.write(APIC_TASK_PRIORITY, 0);  // Accept all INTs & exceptions
 
     lapic.sendEOI();
+
+    lapic.enable();
+    lapic.enableIRQ(0);
+    lapic.enableIRQ(1);
+    lapic.enableIRQ(2);
+    lapic.enableIRQ(3);
+    lapic.enableIRQ(4);
 }
 }  // namespace firefly::kernel::apic

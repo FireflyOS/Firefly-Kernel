@@ -13,14 +13,13 @@
 
 
 namespace firefly::kernel::applicationProcessor {
-// Contains the BSP ID
 volatile struct limine_smp_request smp_request {
     .id = LIMINE_SMP_REQUEST, .revision = 0, .response = nullptr
 };
 
 void smp_main(struct limine_smp_info* info) {
     // clang-format off
-    asm volatile("mov %0, %%rsp" ::"r"(((uintptr_t)info->extra_argument) + (PageSize::Size4K * 2)) : "memory");
+    asm volatile("mov %0, %%rsp" ::"r"((uintptr_t)info->extra_argument) : "memory");
     asm volatile("mov %0, %%rbp" ::"r"((uintptr_t)info->extra_argument): "memory");
     // clang-format on
 
@@ -35,7 +34,7 @@ void startAllCores() {
 
     for (uint64_t i = 0; i < smp->cpu_count; i++) {
         auto cpu = smp->cpus[i];
-        cpu->extra_argument = reinterpret_cast<uint64_t>(mm::Physical::allocate(PageSize::Size4K * 2));
+        cpu->extra_argument = reinterpret_cast<uint64_t>(mm::Physical::allocate(PageSize::Size4K * 4));
         cpu->goto_address = &smp_main;
     }
 }
