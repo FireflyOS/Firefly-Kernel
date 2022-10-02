@@ -1,11 +1,13 @@
 #include "firefly/kernel.hpp"
 
 #include <frg/array.hpp>
+#include <frg/vector.hpp>
 
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/logger.hpp"
-#include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/allocator.hpp"
+#include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -31,7 +33,23 @@ void log_core_firefly_contributors() {
 
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
-	core::acpi::Acpi::accessor().dumpTables();
+    core::acpi::Acpi::accessor().dumpTables();
+
+    mm::kernelHeap::init();
+
+    // Testing the heap with a vector
+    frg::vector<int, Allocator> vec;
+    vec.push(1);
+    vec.push(2);
+    vec.push(3);
+    ConsoleLogger() << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
+
+    // Testing the heap with allocations
+    auto ptr = mm::heap->allocate(sizeof(int));
+    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+
+    auto ptr2 = mm::heap->allocate(sizeof(int));
+    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

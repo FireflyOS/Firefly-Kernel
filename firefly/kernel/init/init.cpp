@@ -57,3 +57,4 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     firefly::kernel::kernel_main();
     __builtin_unreachable();
 }
+

@@ -162,6 +162,7 @@ private:
                 return nullptr;
 
             list[order] = *(T *)list[order];
+            list[order] = nullptr;
             return element;
         }
 
