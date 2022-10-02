@@ -144,9 +144,6 @@ private:
                 if (order < min_order || order > largest_allowed_order)
                     assert_truth(!"Order mismatch");
 
-            // if ((reinterpret_cast<uintptr_t>(list[order]) >> 43) & 0xffff != 0)
-            // 	return;
-
             if (block) {
                 memset((void *)block, 0, PageSize::Size4K);
                 *(T *)block = list[order];
