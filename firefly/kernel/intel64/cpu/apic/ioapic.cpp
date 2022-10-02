@@ -32,6 +32,15 @@ void IOApic::init() {
 }
 
 void IOApic::enableIRQ(uint8_t irq) {
+    RedirectionEntry redEnt = {};
+
+    redEnt.vector = LVT_BASE + irq;
+    // redEnt.destination = cpu id here;
+    redEnt.delvMode = IOAPIC_DELMODE_FIXED;
+    redEnt.destMode = DestinationMode::Physical;
+
+    write((IOAPIC_REDTBL_BASE + irq * 2), redEnt.lowerDword);
+    write((IOAPIC_REDTBL_BASE + irq * 2 + 1), redEnt.upperDword);
 }
 
 void IOApic::initAll() {
@@ -44,7 +53,6 @@ void IOApic::initAll() {
     auto ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
     ioapic.init();
     ioapic.enableIRQ(0);
-    ioapic.enableIRQ(1);
     // }
 }
 

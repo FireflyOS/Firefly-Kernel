@@ -27,7 +27,7 @@ void smp_main(struct limine_smp_info* info) {
     mm::kernelPageSpace::accessor().set_AP_CR3();
     initializeThisCpu(info->extra_argument);
 
-    asm volatile("cli; hlt");
+    asm volatile("hlt");
 }
 
 void startAllCores() {

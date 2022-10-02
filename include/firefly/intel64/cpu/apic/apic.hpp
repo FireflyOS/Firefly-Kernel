@@ -36,7 +36,7 @@ constexpr const uint64_t IOAPIC_MASKED = BIT(16);
 constexpr const uint64_t IOAPIC_LEVEL = BIT(15);
 constexpr const uint64_t IOAPIC_INTPOL = BIT(13);
 constexpr const uint64_t IOAPIC_DESTMODE = BIT(11);
-constexpr const uint64_t IOAPIC_DELMODE_FIX = ((0) << 8);
+constexpr const uint64_t IOAPIC_DELMODE_FIXED = ((0) << 8);
 
 constexpr const uint64_t IOAPIC_REDTBL_BASE = 0x10;
 constexpr const uint64_t IOAPIC_REDTBL0 = 0x10;
