@@ -3,6 +3,9 @@
 #include <stdint.h>
 
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/memory-manager/mm.hpp"
+#include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/memory-manager/virtual/vspace.hpp"
 
 namespace firefly::kernel::apic {
 
@@ -69,35 +72,23 @@ public:
 
 class IOApic {
 private:
-    uint64_t address;
-    uint32_t ID;
-    uint32_t ioApicVersion;
+    uint32_t address;
+    uint8_t ID;
+    uint8_t ioApicVersion;
     uint64_t globalInterruptBase;
 
 public:
-    IOApic(uint32_t physAddress, uint64_t globalInterruptBase) {
+    IOApic(uint32_t physAddress, uint8_t id, uint64_t globalInterruptBase) {
         // TODO: Virtual address maybe??
         // not even sure if this is working
         this->address = physAddress;
-
         this->globalInterruptBase = globalInterruptBase;
 
         this->ID = (read(IOAPIC_ID) >> 24) & 0xF0;
         this->ioApicVersion = read(IOAPIC_VER);
     }
 
-    // TODO: Proper IOApic code
-    static void initAll() {
-        using core::acpi::Acpi;
-        auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
-        auto const ioapics = madt->enumerate().get<1>();
-        for (uint32_t i = 0; i < ioapics.size(); i++) {
-            auto ioapic = IOApic(ioapics[i]->ioApicAddress, ioapics[i]->globalInterruptBase);
-            ioapic.init();
-            ioapic.enableIRQ(0);
-            ioapic.enableIRQ(1);
-        }
-    }
+    static void initAll();
 
     enum DeliveryMode {
         Edge = 0,
