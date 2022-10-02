@@ -13,6 +13,12 @@
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
 
+frg::manual_box<Apic> apicSingleton;
+
+Apic& Apic::accessor() {
+    return *apicSingleton;
+}
+
 // Write to the APIC
 void Apic::write(uint32_t offset, uint32_t value) {
     auto reg = reinterpret_cast<size_t*>(reinterpret_cast<size_t>(address) + offset);
@@ -53,6 +59,10 @@ void Apic::enableIRQ(uint8_t irq) {
     write(APIC_SPURIOUS, read(APIC_SPURIOUS) | (LVT_BASE + irq));
 }
 
+uint32_t Apic::apicId() {
+    return read(APIC_ID);
+}
+
 // call this to make sure PIC is disabled completely
 // We want to use IOAPIC + LAPIC!
 static void disable_pic() {
@@ -61,27 +71,23 @@ static void disable_pic() {
 }
 
 void Apic::init() {
-    auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
-    auto lapic = Apic(madt->localApicAddress);
+    if (!apicSingleton.valid()) apicSingleton.initialize();
+    auto lapic = apicSingleton.get();
     disable_pic();
 
     // mask all interrupts
-    lapic.write(APIC_LVTT, APIC_MASKED);
-    lapic.write(APIC_LVTTHMR, APIC_MASKED);
-    lapic.write(APIC_LVTPC, APIC_MASKED);
-    lapic.write(APIC_LVT1, APIC_MASKED);
-    lapic.write(APIC_LVT0, APIC_MASKED);
-    lapic.write(APIC_LVTERR, APIC_MASKED);
+    lapic->write(APIC_LVTT, APIC_MASKED);
+    lapic->write(APIC_LVTTHMR, APIC_MASKED);
+    lapic->write(APIC_LVTPC, APIC_MASKED);
+    lapic->write(APIC_LVT1, APIC_MASKED);
+    lapic->write(APIC_LVT0, APIC_MASKED);
+    lapic->write(APIC_LVTERR, APIC_MASKED);
 
-    lapic.write(APIC_TASK_PRIORITY, 0);  // Accept all INTs & exceptions
+    lapic->write(APIC_TASK_PRIORITY, 0);  // Accept all INTs & exceptions
 
-    lapic.sendEOI();
+    lapic->sendEOI();
 
-    lapic.enable();
-    lapic.enableIRQ(0);
-    lapic.enableIRQ(1);
-    lapic.enableIRQ(2);
-    lapic.enableIRQ(3);
-    lapic.enableIRQ(4);
+    lapic->enable();
+    asm volatile("sti");
 }
 }  // namespace firefly::kernel::apic

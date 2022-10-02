@@ -6,11 +6,13 @@
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/memory-manager/virtual/vspace.hpp"
+#include "frg/manual_box.hpp"
 
 namespace firefly::kernel::apic {
 
 constexpr const uint8_t LVT_BASE = 0x20;
 
+constexpr const uint32_t APIC_ID = 0x20;
 constexpr const uint32_t APIC_LVR = 0x30;
 constexpr const uint32_t APIC_TASK_PRIORITY = 0x80;
 constexpr const uint32_t APIC_ICR0 = 0x300;
@@ -46,19 +48,30 @@ consteval const uint64_t IOAPIC_DEST(uint64_t dest) {
     return (((dest)&0xFF) << 56);
 }
 
+// When using this class, keep in mind that the only core to access the lapic is the core the lapic belongs to!
 class Apic {
+private:
+    friend class frg::manual_box<Apic>;
+
 protected:
     uint64_t address;
 
 public:
-    Apic(uint64_t address) {
-        this->address = address;
+    Apic() {
+        using core::acpi::Acpi;
+        auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
+        this->address = madt->localApicAddress;
     }
 
     static void init();
 
-    void setAddress(uint64_t address) {
-        this->address = address;
+    // Access the Local APIC
+    // You can ONLY access your own
+    // APIC, so this is valid
+    static Apic& accessor();
+
+    void setAddress(uint64_t newAddress) {
+        this->address = newAddress;
     }
 
     void enable();
@@ -68,6 +81,8 @@ public:
     void clearErrors();
     void setIPIDest(uint32_t ap);
     void sendEOI();
+
+    uint32_t apicId();
 };
 
 class IOApic {

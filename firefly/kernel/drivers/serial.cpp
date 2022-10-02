@@ -1,9 +1,13 @@
-#include "libk++/cstring.hpp"
-
-#include "firefly/drivers/ports.hpp"
 #include "firefly/drivers/serial.hpp"
 
+#include <frg/spinlock.hpp>
+
+#include "firefly/drivers/ports.hpp"
+#include "libk++/cstring.hpp"
+
 namespace firefly::kernel::io {
+static frg::ticket_spinlock serial_lock = frg::ticket_spinlock();
+
 SerialPort::SerialPort(uint16_t port, uint32_t baud_rate)
     : port(port), baud_divisor{ static_cast<uint16_t>(BAUD_BASE / baud_rate) } {
 }
@@ -56,6 +60,7 @@ bool SerialPort::initialize() noexcept {
 }
 
 void SerialPort::send_chars(const char* c, int len) noexcept {
+    serial_lock.lock();
     if (len == -1) {
         len = libkern::cstring::strlen(c);
     }
@@ -64,10 +69,11 @@ void SerialPort::send_chars(const char* c, int len) noexcept {
         send_char(c[i]);
     }
     send_char('\0');
+    serial_lock.unlock();
 }
 
 void SerialPort::read_string(char* buffer, int len) const noexcept {
-    char current_char = '1'; // anything that's not '\0'
+    char current_char = '1';  // anything that's not '\0'
     int read_count = 0;
     while (read_count < len && ((!current_char) == '\0')) {
         current_char = read_char();

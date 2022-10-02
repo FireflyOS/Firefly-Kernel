@@ -1,3 +1,4 @@
+#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/trace/symbols.hpp"
 
@@ -133,7 +134,7 @@ void interrupt_handler(iframe iframe) {
 }
 
 void irq_handler(iframe iframe) {
-    SerialLogger::log() << "IRQ";
+    SerialLogger::log() << "IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
 }
 
 // Todo: Do we need this?
