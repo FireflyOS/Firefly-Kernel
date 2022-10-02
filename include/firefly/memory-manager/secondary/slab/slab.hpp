@@ -128,6 +128,8 @@ public:
     }
 
     void deallocate(VirtualAddress ptr) {
+		lock.lock();
+
         // Slabs are always aligned on 4kib boundaries.
         // A 4kib aligned address has it's lowest 12 bits cleared, that's what we're doing here.
         constexpr const int shift = PAGE_SHIFT;
@@ -155,6 +157,8 @@ public:
             slabs[previous_state].remove(_slab);
             slabs[SlabState::partial].insert(_slab);
         }
+
+		lock.unlock();
     }
 
 private:

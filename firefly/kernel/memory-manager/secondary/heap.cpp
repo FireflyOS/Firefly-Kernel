@@ -13,8 +13,10 @@ namespace firefly::kernel::mm {
 BuddyAllocator vm_buddy;
 
 // Todo:
-// The slab allocator needs to resize itself (i.e. add or remove(free) slabs).
+// - The slab allocator needs to resize itself (i.e. add or remove(free) slabs).
 // (Useful when the system is low on memory)
+//
+// - Integrate kasan into this.
 struct VmBackingAllocator {
     VirtualAddress allocate(int size) {
         auto ptr = vm_buddy.alloc(size).unpack();
