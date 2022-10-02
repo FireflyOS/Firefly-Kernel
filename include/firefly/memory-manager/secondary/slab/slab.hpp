@@ -41,7 +41,7 @@ class slabCache {
         return (n > 0) && ((n & (n - 1)) == 0);
     }
 
-    // Compute the next highest power of 2 of 32-bit v
+    // Compute the next highest power of 2 of 32-bit 'n'
     constexpr int alignToSecondPower(int n) {
         n--;
         n |= n >> 1;
@@ -151,10 +151,6 @@ public:
         }
     }
 
-public:
-    // Caches are connected to each other via an intrusive doubly linked list
-    frg::default_list_hook<slabCache> node;
-
 private:
     void grow();
     void shrink();
@@ -202,7 +198,7 @@ private:
                 // TODO: VmBackingAllocator should do this.
                 // Marks each 4kib page as a slab page.
                 if (i % PageSize::Size4K == 0) {
-                    auto const& page = pagelist.phys_to_page(i);
+                    auto const& page = pagelist.phys_to_page(i - AddressLayout::SlabHeap);
                     page->flags = RawPageFlags::Slab;
                     page->slab_size = sz;
                 }
@@ -213,7 +209,6 @@ private:
 
             slab_state = SlabState::free;
             max_objects = object_queue.size() - 1;
-            ConsoleLogger() << "Max objects=" << max_objects << '\n';
         }
 
         frg::string_view descriptor;

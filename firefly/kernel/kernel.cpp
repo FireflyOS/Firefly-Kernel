@@ -1,10 +1,12 @@
 #include "firefly/kernel.hpp"
 
 #include <frg/array.hpp>
+#include <frg/vector.hpp>
 
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/logger.hpp"
+#include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
 
@@ -29,48 +31,29 @@ void log_core_firefly_contributors() {
     ConsoleLogger::log() << ConsoleLogger::log().newline();
 }
 
-
-#include "firefly/memory-manager/primary/primary_phys.hpp"
-
-// Dummy VmBackingAllocator
-class Foo {
-public:
-    void *allocate(int s) {
-        return firefly::kernel::mm::Physical::allocate(s);
-    }
-};
-
-
-// Dummy locking mechanism
-class Bar {
-public:
-    void lock() {
-    }
-    void unlock() {
-    }
-};
-
-struct dummyCache {
-    int foo;
-    char bar;
-    long baz;
-};
-
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-	// Test heap
     mm::kernelHeap::init();
 
-	// Allocate 4 bytes
-	auto ptr = mm::heap->allocate(4);
-	ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+    // Testing the heap with a vector
+    frg::vector<int, Allocator> vec;
+    vec.push(1);
+    vec.push(2);
+    vec.push(3);
+    ConsoleLogger() << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
 
-	// Deallocate and allocate 4 bytes again (should print the same address)
-	mm::heap->deallocate(ptr);
-	ptr = mm::heap->allocate(4);
-	ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+    // Testing the heap with allocations
+    // Allocate 4 bytes
+    auto ptr = mm::heap->allocate(4);
+    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+
+    // Deallocate and allocate 4 bytes again (should print the same address)
+    ConsoleLogger() << "Deallocating ptr and allocating memory...\n";
+    mm::heap->deallocate(ptr);
+    ptr = mm::heap->allocate(4);
+    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

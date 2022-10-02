@@ -8,8 +8,7 @@ namespace firefly::kernel::mm {
 class kernelHeap {
 private:
     friend class frg::manual_box<kernelHeap>;
-    kernelHeap() {
-    }
+    kernelHeap() = default;
 
 public:
     static void init();

@@ -5,7 +5,7 @@
 enum AddressLayout : uint64_t {
     // clang-format off
     PageData = 0xFFFF'D000'0000'0000UL,
-    // SlabHeap = 0xFFFF'B000'0000'0000UL,
+    SlabHeap = 0xFFFF'E000'0000'0000UL,
     High     = 0xFFFF'8000'0000'0000UL,
     Code     = 0xFFFF'FFFF'8000'0000UL,
     Low      = 0x0000'0000'0000'0000UL
