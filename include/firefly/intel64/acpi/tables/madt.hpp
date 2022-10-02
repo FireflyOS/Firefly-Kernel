@@ -84,7 +84,6 @@ struct AcpiMadt {
 
                 case MadtEntryType::ioApic:
                     io_apics[ioapic_idx++] = reinterpret_cast<MadtEntryIoApic *>(madt_entries_start);
-                    firefly::kernel::SerialLogger::log() << "ioapic\n";
                     break;
 
                 case MadtEntryType::x2Apic:

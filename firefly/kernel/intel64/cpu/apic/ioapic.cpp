@@ -15,14 +15,14 @@ namespace firefly::kernel::apic {
 using core::acpi::Acpi;
 // Write to the IOAPIC
 void IOApic::write(uint8_t offset, uint32_t value) {
-    auto reg = reinterpret_cast<uint32_t*>(address + offset);
-    *reinterpret_cast<volatile uint32_t*>(reg) = value;
+    *reinterpret_cast<volatile uint32_t*>(address) = offset;
+    *reinterpret_cast<volatile uint32_t*>(address + 0x10) = value;
 }
 
 // Read from the IOAPIC
 uint32_t IOApic::read(uint8_t offset) const {
-    auto reg = reinterpret_cast<uint32_t*>(address + offset);
-    return *reinterpret_cast<volatile uint32_t*>(reg);
+    *reinterpret_cast<volatile uint32_t*>(address) = offset;
+    return *reinterpret_cast<volatile uint32_t*>(address + 0x10);
 }
 
 void IOApic::init() {
