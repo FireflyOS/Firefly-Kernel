@@ -53,6 +53,9 @@ void IOApic::initAll() {
     auto ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
     ioapic.init();
     ioapic.enableIRQ(0);
+    ioapic.enableIRQ(1);
+    ioapic.enableIRQ(2);
+    ioapic.enableIRQ(3);
     // }
 }
 
