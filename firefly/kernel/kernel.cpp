@@ -5,7 +5,7 @@
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/logger.hpp"
-#include "firefly/memory-manager/secondary/slab/slab.hpp"
+#include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -40,6 +40,7 @@ public:
     }
 };
 
+
 // Dummy locking mechanism
 class Bar {
 public:
@@ -59,20 +60,17 @@ struct dummyCache {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    mm::slabCache<Foo, Bar> s;
-    s.initialize(1024);
+	// Test heap
+    mm::kernelHeap::init();
 
+	// Allocate 4 bytes
+	auto ptr = mm::heap->allocate(4);
+	ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
 
-    auto a = s.allocate();
-    auto b = s.allocate();
-
-    ConsoleLogger() << "a: " << ConsoleLogger::log().hex(a) << ", b: " << ConsoleLogger::log().hex(b) << '\n';
-
-	s.deallocate(b);
-	ConsoleLogger() << "deallocated b, now reallocating b: " << ConsoleLogger::log().hex(s.allocate()) << '\n';
-    
-	for (int i = 0; i < 259; i++)
-        SerialLogger() << "[" << i << "] ptr: " << SerialLogger::log().hex(s.allocate()) << "\n";
+	// Deallocate and allocate 4 bytes again (should print the same address)
+	mm::heap->deallocate(ptr);
+	ptr = mm::heap->allocate(4);
+	ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

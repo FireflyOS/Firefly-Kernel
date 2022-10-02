@@ -53,6 +53,11 @@ class slabCache {
     }
 
 public:
+    slabCache() = default;
+    slabCache(int sz, const frg::string_view& descriptor = "anonymous") {
+        initialize(sz, std::move(descriptor));
+    }
+
     void initialize(int sz, const frg::string_view& descriptor = "anonymous") {
         if (!powerOfTwo(size))
             size = alignToSecondPower(size);
@@ -74,7 +79,7 @@ public:
 
         // Check if we can allocate an object from the partial slab
         if (!_slab) {
-            _slab = slabs[SlabState::free].first();  // free_slabs.first();
+            _slab = slabs[SlabState::free].first();
 
             if (unlikely(!_slab)) {
                 panic("TODO: Slab cache is OOM. Implement grow()");
@@ -119,11 +124,10 @@ public:
     void deallocate(VirtualAddress ptr) {
         // Slabs are always aligned on 4kib boundaries.
         // A 4kib aligned address has it's lowest 12 bits cleared, that's what we're doing here.
-        constexpr const int shift = 12;
+        constexpr const int shift = PAGE_SHIFT;
         slab* _slab = reinterpret_cast<slab*>((reinterpret_cast<uintptr_t>(ptr) >> shift) << shift);
 
         if constexpr (sanityCheckSlab) {
-            ConsoleLogger() << "Queue.size: " << (_slab->object_queue.size() - 1) << ", max_obj: " << _slab->max_objects << '\n';
             assert_truth(_slab->object_queue.size() - 1 < static_cast<size_t>(_slab->max_objects) && "Tried to free non-allocated address");
             assert_truth(_slab->slab_state != SlabState::free && "Tried to free non-allocated address");
         }
@@ -197,8 +201,11 @@ private:
             for (auto i = address; i <= (address + len); i += sz) {
                 // TODO: VmBackingAllocator should do this.
                 // Marks each 4kib page as a slab page.
-                if (i % PageSize::Size4K == 0)
-                    pagelist.phys_to_page(i)->flags = RawPageFlags::Slab;
+                if (i % PageSize::Size4K == 0) {
+                    auto const& page = pagelist.phys_to_page(i);
+                    page->flags = RawPageFlags::Slab;
+                    page->slab_size = sz;
+                }
 
                 frg::queue_result res = object_queue.enqueue(reinterpret_cast<object*>(i));
                 assert_truth(res == frg::queue_result::Okay);
