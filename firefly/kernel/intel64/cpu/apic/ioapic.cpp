@@ -54,8 +54,7 @@ void IOApic::initAll() {
     ioapic.init();
     ioapic.enableIRQ(0);
     ioapic.enableIRQ(1);
-    ioapic.enableIRQ(2);
-    ioapic.enableIRQ(3);
+    // TODO: Figure out why IRQ#2 gets called
     // }
 }
 
