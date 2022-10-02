@@ -35,32 +35,6 @@ void bootloaderServicesInit() {
 
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
-
-	// SerialLogger() << "Ok\n";
-	// // auto ptr = reinterpret_cast<uintptr_t>(mm::Physical::allocate());
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-	// SerialLogger() << SerialLogger::log().hex(reinterpret_cast<uintptr_t>(mm::Physical::allocate())) << '\n';
-
-	// for(;;)
-	// 	;
-	
     mm::kernelPageSpace::init();
 
     core::acpi::Acpi::init();
