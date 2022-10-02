@@ -12,17 +12,6 @@
 
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
-// Write to the IOAPIC
-void IOApic::write(uint32_t offset, uint32_t value) {
-    auto reg = reinterpret_cast<size_t*>(reinterpret_cast<size_t>(address) + offset);
-    *reinterpret_cast<volatile uint32_t*>(reg) = value;
-}
-
-// Read from the IOAPIC
-uint32_t IOApic::read(uint32_t offset) const {
-    auto reg = reinterpret_cast<size_t*>(reinterpret_cast<size_t>(address) + offset);
-    return *reinterpret_cast<volatile uint32_t*>(reg);
-}
 
 // Write to the APIC
 void Apic::write(uint32_t offset, uint32_t value) {

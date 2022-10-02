@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "firefly/drivers/ports.hpp"
+#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
@@ -37,6 +38,8 @@ void startAllCores() {
         cpu->extra_argument = reinterpret_cast<uint64_t>(mm::Physical::allocate(PageSize::Size4K * 4));
         cpu->goto_address = &smp_main;
     }
+
+    apic::IOApic::initAll();
 }
 
 }  // namespace firefly::kernel::applicationProcessor

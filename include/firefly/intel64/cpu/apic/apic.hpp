@@ -1,9 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+
 #include "firefly/intel64/acpi/acpi.hpp"
 
-#define IOAPIC_DEST(x) (((x)&0xFF)<<56)
 
 namespace firefly::kernel::apic {
 
@@ -27,16 +27,20 @@ constexpr const uint32_t APIC_SPURIOUS = 0xF0;
 
 constexpr const uint32_t APIC_MASKED = 0x10000;
 
-constexpr const uint32_t IOAPIC_MASKED = BIT(16);
-constexpr const uint32_t IOAPIC_LEVEL = BIT(15);
-constexpr const uint32_t IOAPIC_INTPOL = BIT(13);
-constexpr const uint32_t IOAPIC_DESTMODE = BIT(11);
-constexpr const uint32_t IOAPIC_DELMODE_FIX = ((0)<<8);
+constexpr const uint64_t IOAPIC_MASKED = BIT(16);
+constexpr const uint64_t IOAPIC_LEVEL = BIT(15);
+constexpr const uint64_t IOAPIC_INTPOL = BIT(13);
+constexpr const uint64_t IOAPIC_DESTMODE = BIT(11);
+constexpr const uint64_t IOAPIC_DELMODE_FIX = ((0) << 8);
 
-constexpr const uint32_t IOAPIC_REDTBL_BASE = 0x10;
-constexpr const uint32_t IOAPIC_REDTBL0 = 0x10;
-constexpr const uint32_t IOAPIC_REDTBL1 = 0x12;
+constexpr const uint64_t IOAPIC_REDTBL_BASE = 0x10;
+constexpr const uint64_t IOAPIC_REDTBL0 = 0x10;
+constexpr const uint64_t IOAPIC_REDTBL1 = 0x12;
 
+#define OLD_IOAPIC_DEST(x) (((x)&0xFF) << 56)
+consteval const uint64_t IOAPIC_DEST(uint64_t dest) {
+	return (((dest) & 0xFF) << 56);
+}
 
 class Apic {
 protected:
@@ -73,15 +77,15 @@ public:
 
     // TODO: Proper IOApic code
     static void initAll() {
-	    using core::acpi::Acpi;
-	    auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
-	    auto const ioapics = madt->enumerate().get<1>();
-	    for (uint32_t i = 0; i < ioapics.size(); i++) {
-		    auto ioapic = IOApic(ioapics[i]->ioApicAddress);
-		    ioapic.init();
-		    ioapic.enableIRQ(0);
-		    ioapic.enableIRQ(1);
-	    }
+        using core::acpi::Acpi;
+        auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
+        auto const ioapics = madt->enumerate().get<1>();
+        for (uint32_t i = 0; i < ioapics.size(); i++) {
+            auto ioapic = IOApic(ioapics[i]->ioApicAddress);
+            ioapic.init();
+            ioapic.enableIRQ(0);
+            ioapic.enableIRQ(1);
+        }
     }
 
     enum DeliveryMode {
