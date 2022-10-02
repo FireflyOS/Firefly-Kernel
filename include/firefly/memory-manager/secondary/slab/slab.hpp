@@ -25,6 +25,7 @@ static constexpr bool sanityCheckSlab{ true };
 /* vm = virtual memory */
 template <class VmBackingAllocator, typename Lock>
 class slabCache {
+    static constexpr int object_size{ 8 };  // sizeof(slab::object) aka sizeof(frg::intrusive_queue<T>::hook) aka sizeof(pointer)
     struct slab;
     enum SlabType {
         Small,
@@ -59,6 +60,11 @@ public:
     }
 
     void initialize(int sz, const frg::string_view& descriptor = "anonymous") {
+        // Minimum allocation size has to be the size of a 'struct object', otherwise the
+        // intrusive queue will end up in trouble since it's given too little memory.
+        if (sz < object_size)
+            sz = object_size;
+
         if (!powerOfTwo(size))
             size = alignToSecondPower(size);
 

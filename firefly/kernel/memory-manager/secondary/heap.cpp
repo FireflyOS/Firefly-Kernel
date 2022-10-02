@@ -10,10 +10,6 @@
 
 namespace firefly::kernel::mm {
 
-namespace {
-static constexpr bool sanityCheckVmBackingAllocator{ false };
-}
-
 BuddyAllocator vm_buddy;
 
 // Todo:
@@ -23,9 +19,8 @@ struct VmBackingAllocator {
     VirtualAddress allocate(int size) {
         auto ptr = vm_buddy.alloc(size).unpack();
 
-        if constexpr (sanityCheckVmBackingAllocator)
-            if (ptr == nullptr)
-                panic("vm_buddy returned a null-pointer, this should never happen!");
+        if (ptr == nullptr)
+            panic("vm_buddy returned a null-pointer, heap is OOM.");
 
         return VirtualAddress(ptr);
     }
@@ -38,8 +33,11 @@ struct LockingMechanism {
     }
 };
 
+
+// Allocatable sizes: 8, 16, 32 64, 128, 256, 512, 1024, 2048, 4096.
+// Allocation requests for sizes lower than the minimum, 8, will be served with the minimum size (8).
 using cacheType = slabCache<VmBackingAllocator, LockingMechanism>;
-frg::array<cacheType, 12> kernelAllocatorCaches = {};
+frg::array<cacheType, 9> kernelAllocatorCaches = {};
 
 constinit frg::manual_box<kernelHeap> heap;
 
@@ -54,7 +52,7 @@ void kernelHeap::init() {
     vm_buddy.init(reinterpret_cast<uint64_t*>(AddressLayout::SlabHeap), BuddyAllocator::largest_allowed_order);
 
     heap.initialize();
-    for (size_t i = 0, j = 1; i < kernelAllocatorCaches.size(); i++, j++)
+    for (size_t i = 0, j = 3; i < kernelAllocatorCaches.size(); i++, j++)
         kernelAllocatorCaches[i].initialize(1 << j, "heap");
 }
 

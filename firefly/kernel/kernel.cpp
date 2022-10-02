@@ -45,15 +45,11 @@ void log_core_firefly_contributors() {
     ConsoleLogger() << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
 
     // Testing the heap with allocations
-    // Allocate 4 bytes
-    auto ptr = mm::heap->allocate(4);
+    auto ptr = mm::heap->allocate(sizeof(int));
     ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
 
-    // Deallocate and allocate 4 bytes again (should print the same address)
-    ConsoleLogger() << "Deallocating ptr and allocating memory...\n";
-    mm::heap->deallocate(ptr);
-    ptr = mm::heap->allocate(4);
-    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+    auto ptr2 = mm::heap->allocate(sizeof(int));
+    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();
