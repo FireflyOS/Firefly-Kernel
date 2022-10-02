@@ -129,6 +129,21 @@ void interrupt_handler(iframe iframe) {
     ConsoleLogger::log() << "RIP: " << ConsoleLogger::log().hex(iframe.rip) << logger::endl;
     SerialLogger::log() << "RIP: " << SerialLogger::log().hex(iframe.rip) << logger::endl;
 
+	SerialLogger() << "Rax: " << SerialLogger::log().hex(iframe.rax) << '\n'
+				   << "Rbx: " << SerialLogger::log().hex(iframe.rbx) << '\n'
+				   << "Rcx: " << SerialLogger::log().hex(iframe.rcx) << '\n'
+				   << "Rdx: " << SerialLogger::log().hex(iframe.rdx) << '\n'
+				   << "Rdi: " << SerialLogger::log().hex(iframe.rdi) << '\n'
+				   << "Rsi: " << SerialLogger::log().hex(iframe.rsi) << '\n'
+				   << "R8: " << SerialLogger::log().hex(iframe.r8) << '\n'
+				   << "R9: " << SerialLogger::log().hex(iframe.r9) << '\n'
+				   << "R10: " << SerialLogger::log().hex(iframe.r10) << '\n'
+				   << "R11: " << SerialLogger::log().hex(iframe.r11) << '\n'
+				   << "R12: " << SerialLogger::log().hex(iframe.r12) << '\n'
+				   << "R13: " << SerialLogger::log().hex(iframe.r13) << '\n'
+				   << "R14: " << SerialLogger::log().hex(iframe.r14) << '\n'
+				   << "R15: " << SerialLogger::log().hex(iframe.r15) << '\n';
+
     for (;;)
         asm("cli\nhlt");
 }

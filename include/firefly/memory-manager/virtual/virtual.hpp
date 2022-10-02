@@ -6,7 +6,6 @@
 #include <frigg/frg/manual_box.hpp>
 
 #include "firefly/logger.hpp"
-#include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/virtual/vspace.hpp"
 
 namespace firefly::kernel::mm {

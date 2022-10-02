@@ -1,7 +1,6 @@
 #include "firefly/console/console.hpp"
 
 #include <cstddef>
-#include <frg/spinlock.hpp>
 
 #include "firefly/compiler/compiler.hpp"
 #include "firefly/console/term.h"
@@ -13,10 +12,6 @@
 #include "libk++/align.h"
 
 extern uintptr_t _binary_fonts_vgafont_bin_start[];
-
-namespace {
-frg::ticket_spinlock console_lock = frg::ticket_spinlock();
-}
 
 namespace firefly::kernel::console {
 
@@ -70,8 +65,8 @@ void init() {
 
     term_init(&term, nullptr);
 
-    // Try to load the firmware bootsplash as the terminal background.
-    // If we can't find it we default to black
+	// Try to load the firmware bootsplash as the terminal background.
+	// If we can't find it we default to black
     auto const bgrt = reinterpret_cast<AcpiBgrt *>(core::acpi::Acpi::accessor().find("BGRT"));
 
     if (bgrt && bgrt->valid()) {
@@ -96,10 +91,8 @@ void init() {
 }
 
 [[gnu::no_sanitize_address]] void write(const char *str) {
-	console_lock.lock();
 	if (likely(term.initialised))
     	term_print(&term, str);
-	console_lock.unlock();
 }
 
 }  // namespace firefly::kernel::console

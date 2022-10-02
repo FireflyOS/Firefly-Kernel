@@ -32,7 +32,10 @@ void log_core_firefly_contributors() {
 }
 
 [[noreturn]] void kernel_main() {
+<<<<<<< HEAD
+	core::acpi::Acpi::accessor().dumpTables();
 
+=======
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
@@ -52,6 +55,7 @@ void log_core_firefly_contributors() {
     auto ptr2 = mm::heap->allocate(sizeof(int));
     ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
 
+>>>>>>> origin/master
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

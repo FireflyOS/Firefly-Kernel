@@ -27,6 +27,6 @@ PhysicalAddress must_allocate(uint64_t size, FillMode fill) {
 }
 
 void deallocate(PhysicalAddress ptr) {
-    buddy.free(static_cast<BuddyAllocator::AddressType>(ptr));
+    buddy.free(static_cast<uint64_t*>(ptr));
 }
 }  // namespace firefly::kernel::mm::Physical

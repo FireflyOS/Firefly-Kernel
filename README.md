@@ -1,5 +1,5 @@
 # Firefly-Kernel
-Kernel for FireflyOS which can be booted on UEFI and BIOS
+Kernel for FireflyOS which can be booted on UEFI and BIOS. ([Screenshots](Screenshots.md))
 
 ## A note to the reader:
 Are you interested in writing a kernel but lack a "study buddy" or don't know where to get started?
@@ -10,8 +10,6 @@ Our goal is to build an operating system where everyone can participate and lear
  
 Join us on Discord if you'd like to talk: https://discord.gg/sfsdhXs8wA (Channel: #cursed-firefly-dev)
 
-## x64 demo:
-![Firefly OS](docs/x64-progress.png)
 
 ### Clone the repo 
  * `git clone https://github.com/FireflyOS/Firefly-Kernel --recursive`

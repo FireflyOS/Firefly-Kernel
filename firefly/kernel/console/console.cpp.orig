@@ -95,11 +95,17 @@ void init() {
     }
 }
 
+<<<<<<< HEAD
+void write(const char *str) {
+    console_lock.lock();
+    if (likely(term.initialised))
+        term_print(&term, str);
+    console_lock.unlock();
+=======
 [[gnu::no_sanitize_address]] void write(const char *str) {
-	console_lock.lock();
 	if (likely(term.initialised))
     	term_print(&term, str);
-	console_lock.unlock();
+>>>>>>> origin/master
 }
 
 }  // namespace firefly::kernel::console
