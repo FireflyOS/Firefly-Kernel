@@ -4,7 +4,6 @@
 
 #include "firefly/intel64/acpi/acpi.hpp"
 
-
 namespace firefly::kernel::apic {
 
 constexpr const uint8_t LVT_BASE = 0x20;
@@ -27,6 +26,9 @@ constexpr const uint32_t APIC_SPURIOUS = 0xF0;
 
 constexpr const uint32_t APIC_MASKED = 0x10000;
 
+constexpr const uint8_t IOAPIC_ID = 0x00;
+constexpr const uint8_t IOAPIC_VER = 0x01;
+
 constexpr const uint64_t IOAPIC_MASKED = BIT(16);
 constexpr const uint64_t IOAPIC_LEVEL = BIT(15);
 constexpr const uint64_t IOAPIC_INTPOL = BIT(13);
@@ -37,9 +39,8 @@ constexpr const uint64_t IOAPIC_REDTBL_BASE = 0x10;
 constexpr const uint64_t IOAPIC_REDTBL0 = 0x10;
 constexpr const uint64_t IOAPIC_REDTBL1 = 0x12;
 
-#define OLD_IOAPIC_DEST(x) (((x)&0xFF) << 56)
 consteval const uint64_t IOAPIC_DEST(uint64_t dest) {
-	return (((dest) & 0xFF) << 56);
+    return (((dest)&0xFF) << 56);
 }
 
 class Apic {
@@ -69,10 +70,20 @@ public:
 class IOApic {
 private:
     uint64_t address;
+    uint32_t ID;
+    uint32_t ioApicVersion;
+    uint64_t globalInterruptBase;
 
 public:
-    IOApic(uint64_t address) {
-        this->address = address;
+    IOApic(uint32_t physAddress, uint64_t globalInterruptBase) {
+        // TODO: Virtual address maybe??
+        // not even sure if this is working
+        this->address = physAddress;
+
+        this->globalInterruptBase = globalInterruptBase;
+
+        this->ID = (read(IOAPIC_ID) >> 24) & 0xF0;
+        this->ioApicVersion = read(IOAPIC_VER);
     }
 
     // TODO: Proper IOApic code
@@ -81,7 +92,7 @@ public:
         auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
         auto const ioapics = madt->enumerate().get<1>();
         for (uint32_t i = 0; i < ioapics.size(); i++) {
-            auto ioapic = IOApic(ioapics[i]->ioApicAddress);
+            auto ioapic = IOApic(ioapics[i]->ioApicAddress, ioapics[i]->globalInterruptBase);
             ioapic.init();
             ioapic.enableIRQ(0);
             ioapic.enableIRQ(1);
@@ -98,8 +109,29 @@ public:
         Logical = 1
     };
 
-    void write(uint32_t offset, uint32_t value);
-    uint32_t read(uint32_t offset) const;
+    union RedirectionEntry {
+        struct
+        {
+            uint64_t vector : 8;
+            uint64_t delvMode : 3;
+            uint64_t destMode : 1;
+            uint64_t delvStatus : 1;
+            uint64_t pinPolarity : 1;
+            uint64_t remoteIRR : 1;
+            uint64_t triggerMode : 1;
+            uint64_t mask : 1;
+            uint64_t reserved : 39;
+            uint64_t destination : 8;
+        };
+        struct
+        {
+            uint32_t lowerDword;
+            uint32_t upperDword;
+        };
+    };
+
+    void write(uint8_t offset, uint32_t value);
+    uint32_t read(uint8_t offset) const;
     void init();
     void enableIRQ(uint8_t irq);
 };

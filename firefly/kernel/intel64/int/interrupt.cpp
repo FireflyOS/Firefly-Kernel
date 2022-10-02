@@ -51,6 +51,41 @@ void assign_irq_handlers();
 
 static idt_gate idt[256];
 
+static const char* exceptions[] = {
+    "Divide by Zero",
+    "Debug",
+    "NMI",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device not available",
+    "Double Fault",
+    "",
+    "Invalid TSS",
+    "Segment not present",
+    "Stack Segment fault",
+    "GPF",
+    "Page Fault",
+    "",
+    "x87 Floating point exception",
+    "Alignment check",
+    "Machine check",
+    "SIMD Floating point exception",
+    "Virtualization Exception",
+    "Control protection exception",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "Hypervisor injection exception",
+    "VMM Communication exception",
+    "Security exception",
+    ""
+};
+
 namespace change {
 extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
@@ -71,7 +106,7 @@ struct __attribute__((packed)) idt_reg {
     /**
      *                  base address of idt
      */
-    idt_gate *base;
+    idt_gate* base;
 } idtr = {
     .limit = (sizeof(struct idt_gate) * 256) - 1,
     .base = idt
@@ -87,7 +122,9 @@ void init() {
 }
 
 void interrupt_handler(iframe iframe) {
-    ConsoleLogger::log() << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << logger::endl;
+    ConsoleLogger::log() << "Exception: " << exceptions[iframe.int_no] << logger::endl;  // this should be safe as the interrupt handler may only be called by int 0x0-0x1F
+    ConsoleLogger::log() << "Int#: " << iframe.int_no << logger::endl;
+    ConsoleLogger::log() << "Error code: " << iframe.err << logger::endl;
     ConsoleLogger::log() << "RIP: " << ConsoleLogger::log().hex(iframe.rip) << logger::endl;
 
     for (;;)
