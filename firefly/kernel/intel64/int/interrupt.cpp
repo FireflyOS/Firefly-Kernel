@@ -1,3 +1,7 @@
+#include "firefly/intel64/int/interrupt.hpp"
+
+#include <cstdint>
+
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/panic.hpp"
@@ -115,9 +119,15 @@ struct __attribute__((packed)) idt_reg {
 };
 
 
+static void test_int_handler() {
+    SerialLogger::log() << "We got IRQ #1!!!\n";
+}
+
 void init() {
     assign_cpu_exceptions();
     assign_irq_handlers();
+
+    registerIRQHandler(test_int_handler, 1);
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
@@ -145,14 +155,24 @@ void interrupt_handler(iframe iframe) {
                    << "R14: " << SerialLogger::log().hex(iframe.r14) << '\n'
                    << "R15: " << SerialLogger::log().hex(iframe.r15) << '\n';
 
-    panic("Interrupt");
-
     for (;;)
         asm("cli\nhlt");
 }
 
+// TODO: maybe use a frg style array or even a vec?
+static void (*irqHandlers[24])() = { 0 };
+
+void registerIRQHandler(void (*handler)(), uint8_t irq) {
+    irqHandlers[irq] = handler;
+}
+
 void irq_handler(iframe iframe) {
-    SerialLogger::log() << "IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
+    uint8_t irq = iframe.int_no - apic::LVT_BASE;
+    if (irqHandlers[irq] != nullptr) {
+        irqHandlers[irq]();
+    } else {
+        SerialLogger::log() << "Unhandled IRQ received #" << iframe.int_no - apic::LVT_BASE << "\n";
+    }
     apic::Apic::accessor().sendEOI();
 }
 
