@@ -36,8 +36,6 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    mm::kernelHeap::init();
-
     // Testing the heap with a vector
     frg::vector<int, Allocator> vec;
     vec.push(1);

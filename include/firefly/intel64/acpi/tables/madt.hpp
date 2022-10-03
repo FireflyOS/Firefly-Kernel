@@ -1,11 +1,13 @@
 #pragma once
 
 #include <frg/array.hpp>
+#include <frg/vector.hpp>
 #include <frg/tuple.hpp>
 
 #include "firefly/compiler/compiler.hpp"
 #include "firefly/intel64/acpi/acpi_table.hpp"
 #include "firefly/logger.hpp"
+#include "firefly/memory-manager/allocator.hpp"
 #include "libk++/bits.h"
 
 USED const frg::array<const char *, 6> madtInterruptDevices = {
@@ -63,11 +65,10 @@ struct AcpiMadt {
     // Find and return a tuple<array> of every apic and io apic device reported by the MADT.
     // Todo: We need to use a vector for this, but we have no slab (yet).
     // For now we'll just hardcode '4', so a max of 4 cpus are supported.
-    using T = frg::tuple<frg::array<MadtEntryApic *, 4>, frg::array<MadtEntryIoApic *, 4>>;
+    using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator>, frg::vector<MadtEntryIoApic *, Allocator>>;
     inline T enumerate() const {
-        frg::array<MadtEntryApic *, 4> apics{};
-        frg::array<MadtEntryIoApic *, 4> io_apics{};
-        int ioapic_idx{ 0 }, apic_idx{ 0 };  // Again, this will be replaced by a vector
+        frg::vector<MadtEntryApic *, Allocator> apics{};
+        frg::vector<MadtEntryIoApic *, Allocator> io_apics{};
 
         // Madt entries range from  'madt_entries_start' to 'madt_entries_end'
         auto madt_entries_start = (uint8_t *)entries;
@@ -79,15 +80,15 @@ struct AcpiMadt {
 
             switch (hdr->entryType) {
                 case MadtEntryType::lApic:
-                    apics[apic_idx++] = reinterpret_cast<MadtEntryApic *>(madt_entries_start);
+		    apics.push(reinterpret_cast<MadtEntryApic*>(madt_entries_start));
                     break;
 
                 case MadtEntryType::ioApic:
-                    io_apics[ioapic_idx++] = reinterpret_cast<MadtEntryIoApic *>(madt_entries_start);
+		    io_apics.push(reinterpret_cast<MadtEntryIoApic*>(madt_entries_start));
                     break;
 
                 case MadtEntryType::x2Apic:
-                    firefly::kernel::ConsoleLogger::log() << "x2apic\n";
+                    firefly::kernel::SerialLogger::log() << "x2apic\n";
                     break;
 
                 default:

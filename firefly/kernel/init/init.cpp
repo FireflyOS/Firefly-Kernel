@@ -9,6 +9,7 @@
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
@@ -36,6 +37,7 @@ void bootloaderServicesInit() {
     core::paging::bootMapExtraRegion(tagmem);
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
+    mm::kernelHeap::init();
 
     core::acpi::Acpi::init();
     console::init();
