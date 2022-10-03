@@ -63,7 +63,7 @@ struct AcpiMadt {
     char entries[];
 
     // Find and return a tuple<vector> of every apic and io apic device reported by the MADT.
-    using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator>, frg::vector<MadtEntryIoApic *, Allocator>>;
+    using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator>*, frg::vector<MadtEntryIoApic *, Allocator>*>;
     inline T enumerate() const {
         frg::vector<MadtEntryApic *, Allocator> apics;
         frg::vector<MadtEntryIoApic *, Allocator> io_apics;
@@ -98,6 +98,6 @@ struct AcpiMadt {
         }
 
 	firefly::kernel::ConsoleLogger::log().logger_printf("Found %d APIC(s) and %d IOAPIC(s)\n", apics.size(), io_apics.size());
-        return { apics, io_apics };
+        return { &apics, &io_apics };
     }
 } PACKED;

@@ -25,12 +25,6 @@ uint32_t IOApic::read(uint8_t offset) const {
     return *reinterpret_cast<volatile uint32_t*>(address + 0x10);
 }
 
-void IOApic::init() {
-    SerialLogger::log() << "Initialising IOAPIC" << logger::endl;
-    SerialLogger::log() << "\tID: " << SerialLogger::log().hex(this->ID) << logger::endl;
-    SerialLogger::log() << "\tVER: " << SerialLogger::log().hex(this->ioApicVersion) << logger::endl;
-}
-
 void IOApic::enableIRQ(uint8_t irq) {
     RedirectionEntry redEnt = {};
 
@@ -47,14 +41,14 @@ void IOApic::initAll() {
     using core::acpi::Acpi;
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
     auto const result = madt->enumerate();
-    // for (uint32_t i = 0; i < ioapics.size(); i++) {
-        // auto entry = ioapics[i];
-        // auto ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
-        // ioapic.init();
-        // ioapic.enableIRQ(0);
-        // ioapic.enableIRQ(1);
+    auto const ioapics = result.get<1>();
+    for (size_t i = 0; i < ioapics->size(); i++) {
+        auto entry = ioapics->data()[i];
+        IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
+        ioapic.enableIRQ(0);
+        ioapic.enableIRQ(1);
         // TODO: Figure out why IRQ#2 gets called
-    // }
+    }
 }
 
 
