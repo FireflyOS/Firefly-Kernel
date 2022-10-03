@@ -22,6 +22,23 @@ static constexpr bool debugSlab{ false };
 static constexpr bool sanityCheckSlab{ true };
 };  // namespace
 
+struct slabHelper {
+    static constexpr bool powerOfTwo(int n) {
+        return (n > 0) && ((n & (n - 1)) == 0);
+    }
+
+    // Compute the next highest power of 2 of 32-bit 'n'
+    static constexpr int alignToSecondPower(int n) {
+        n--;
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        return ++n;
+    }
+};
+
 /* vm = virtual memory */
 template <class VmBackingAllocator, typename Lock>
 class slabCache {
@@ -38,21 +55,6 @@ class slabCache {
         free
     };
 
-    constexpr bool powerOfTwo(int n) const {
-        return (n > 0) && ((n & (n - 1)) == 0);
-    }
-
-    // Compute the next highest power of 2 of 32-bit 'n'
-    constexpr int alignToSecondPower(int n) {
-        n--;
-        n |= n >> 1;
-        n |= n >> 2;
-        n |= n >> 4;
-        n |= n >> 8;
-        n |= n >> 16;
-        return ++n;
-    }
-
 public:
     slabCache() = default;
     slabCache(int sz, const frg::string_view& descriptor = "anonymous") {
@@ -65,8 +67,8 @@ public:
         if (sz < object_size)
             sz = object_size;
 
-        if (!powerOfTwo(size))
-            size = alignToSecondPower(size);
+        if (!slabHelper::powerOfTwo(size))
+            size = slabHelper::alignToSecondPower(size);
 
         size = sz;
         slab_type = slabTypeOf(sz);
@@ -128,7 +130,7 @@ public:
     }
 
     void deallocate(VirtualAddress ptr) {
-		lock.lock();
+        lock.lock();
 
         // Slabs are always aligned on 4kib boundaries.
         // A 4kib aligned address has it's lowest 12 bits cleared, that's what we're doing here.
@@ -158,7 +160,7 @@ public:
             slabs[SlabState::partial].insert(_slab);
         }
 
-		lock.unlock();
+        lock.unlock();
     }
 
 private:
