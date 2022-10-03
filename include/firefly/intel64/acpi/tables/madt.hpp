@@ -1,8 +1,8 @@
 #pragma once
 
 #include <frg/array.hpp>
-#include <frg/vector.hpp>
 #include <frg/tuple.hpp>
+#include <frg/vector.hpp>
 
 #include "firefly/compiler/compiler.hpp"
 #include "firefly/intel64/acpi/acpi_table.hpp"
@@ -62,13 +62,11 @@ struct AcpiMadt {
                       // that an os knows if it should disable it. We do it unconditionally.
     char entries[];
 
-    // Find and return a tuple<array> of every apic and io apic device reported by the MADT.
-    // Todo: We need to use a vector for this, but we have no slab (yet).
-    // For now we'll just hardcode '4', so a max of 4 cpus are supported.
+    // Find and return a tuple<vector> of every apic and io apic device reported by the MADT.
     using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator>, frg::vector<MadtEntryIoApic *, Allocator>>;
     inline T enumerate() const {
-        frg::vector<MadtEntryApic *, Allocator> apics{};
-        frg::vector<MadtEntryIoApic *, Allocator> io_apics{};
+        frg::vector<MadtEntryApic *, Allocator> apics;
+        frg::vector<MadtEntryIoApic *, Allocator> io_apics;
 
         // Madt entries range from  'madt_entries_start' to 'madt_entries_end'
         auto madt_entries_start = (uint8_t *)entries;
@@ -80,11 +78,11 @@ struct AcpiMadt {
 
             switch (hdr->entryType) {
                 case MadtEntryType::lApic:
-		    apics.push(reinterpret_cast<MadtEntryApic*>(madt_entries_start));
+                    apics.push(reinterpret_cast<MadtEntryApic *>(madt_entries_start));
                     break;
 
                 case MadtEntryType::ioApic:
-		    io_apics.push(reinterpret_cast<MadtEntryIoApic*>(madt_entries_start));
+                    io_apics.push(reinterpret_cast<MadtEntryIoApic *>(madt_entries_start));
                     break;
 
                 case MadtEntryType::x2Apic:
@@ -99,6 +97,7 @@ struct AcpiMadt {
             madt_entries_start += hdr->recordLen;
         }
 
+	firefly::kernel::ConsoleLogger::log().logger_printf("Found %d APIC(s) and %d IOAPIC(s)\n", apics.size(), io_apics.size());
         return { apics, io_apics };
     }
 } PACKED;

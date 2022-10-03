@@ -46,15 +46,14 @@ void IOApic::enableIRQ(uint8_t irq) {
 void IOApic::initAll() {
     using core::acpi::Acpi;
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
-    auto const ioapics = madt->enumerate().get<1>();
+    auto const result = madt->enumerate();
     // for (uint32_t i = 0; i < ioapics.size(); i++) {
-    // auto const entry = ioapics[i];
-    auto const entry = ioapics[0];
-    auto ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
-    ioapic.init();
-    ioapic.enableIRQ(0);
-    ioapic.enableIRQ(1);
-    // TODO: Figure out why IRQ#2 gets called
+        // auto entry = ioapics[i];
+        // auto ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
+        // ioapic.init();
+        // ioapic.enableIRQ(0);
+        // ioapic.enableIRQ(1);
+        // TODO: Figure out why IRQ#2 gets called
     // }
 }
 
