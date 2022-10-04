@@ -3,6 +3,7 @@
 #include <frg/array.hpp>
 #include <frg/vector.hpp>
 
+#include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/logger.hpp"
@@ -28,11 +29,10 @@ void log_core_firefly_contributors() {
         }
         ConsoleLogger::log() << " " << arr[i];
     }
-    ConsoleLogger::log() << "\n\n"; 
+    ConsoleLogger::log() << "\n\n";
 }
 
 [[noreturn]] void kernel_main() {
-
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
@@ -50,6 +50,7 @@ void log_core_firefly_contributors() {
     auto ptr2 = mm::heap->allocate(sizeof(int));
     ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
 
+    firefly::drivers::ps2::init();
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

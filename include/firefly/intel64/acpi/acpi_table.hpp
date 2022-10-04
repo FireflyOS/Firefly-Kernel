@@ -5,9 +5,9 @@
 #include "firefly/compiler/compiler.hpp"
 #include "libk++/cstring.hpp"
 
-#define ACPI_LOOP_AND_LOG(info, max, str)       \
+#define ACPI_LOOP_AND_LOG(info, max, str)                \
     firefly::kernel::ConsoleLogger::log() << info;       \
-    for (int i = 0; i < max; i++)               \
+    for (int i = 0; i < max; i++)                        \
         firefly::kernel::ConsoleLogger::log() << str[i]; \
     firefly::kernel::ConsoleLogger::log() << '\n';
 
@@ -40,6 +40,15 @@ struct AcpiSdt {
         using firefly::libkern::cstring::strncmp;
         return (strncmp(signature, other, 4)) == 0;
     }
+} PACKED;
+
+struct AcpiAddress {
+    uint8_t addressSpaceID;  // 0 - System Memory
+                             // 1 - System I/O
+    uint8_t registerBitWidth;
+    uint8_t registerBitOffset;
+    uint8_t reserved;
+    uint64_t address;
 } PACKED;
 
 template <typename T>

@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include "firefly/console/console.hpp"
-#include "firefly/drivers/ps2.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
@@ -12,6 +11,7 @@
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/timer/hpet.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
 alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
@@ -55,8 +55,7 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     bootloaderServicesInit();
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::applicationProcessor::startAllCores();
-
-    firefly::drivers::ps2::init();
+    firefly::kernel::timer::HPET::init();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();
