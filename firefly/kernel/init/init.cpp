@@ -9,8 +9,11 @@
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/stack.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
+
+constinit frg::manual_box<kernelStack> kStack;
 
 alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 
@@ -44,9 +47,16 @@ void bootloaderServicesInit() {
 }
 
 extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
+    kStack.initialize();
+    Stack::stack stk{
+        .rbp = reinterpret_cast<uintptr_t>(stack),
+        .rsp = reinterpret_cast<uintptr_t>(stack + (PageSize::Size4K * 2))
+    };
+    kStack->add(stk);
+
     // clang-format off
-    asm volatile("mov %0, %%rbp" :: "r"((uintptr_t)stack) : "memory");
-    asm volatile("mov %0, %%rsp" :: "r"(((uintptr_t)stack) + (PageSize::Size4K * 2)) : "memory");
+    asm volatile("mov %0, %%rbp" :: "r"(stk.rbp) : "memory");
+    asm volatile("mov %0, %%rsp" :: "r"(stk.rsp) : "memory");
     // clang-format off
 
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
