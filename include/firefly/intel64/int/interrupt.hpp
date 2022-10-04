@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace firefly::kernel::core::interrupt {
 void init();
 

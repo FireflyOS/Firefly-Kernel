@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "firefly/drivers/ports.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/panic.hpp"
@@ -118,16 +119,9 @@ struct __attribute__((packed)) idt_reg {
     .base = idt
 };
 
-
-static void test_int_handler() {
-    SerialLogger::log() << "We got IRQ #1!!!\n";
-}
-
 void init() {
     assign_cpu_exceptions();
     assign_irq_handlers();
-
-    registerIRQHandler(test_int_handler, 1);
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
@@ -159,7 +153,7 @@ void interrupt_handler(iframe iframe) {
         asm("cli\nhlt");
 }
 
-// TODO: maybe use a frg style array or even a vec?
+// TODO: maybe use a frg style array?
 static void (*irqHandlers[24])() = { 0 };
 
 void registerIRQHandler(void (*handler)(), uint8_t irq) {
@@ -176,13 +170,4 @@ void irq_handler(iframe iframe) {
     apic::Apic::accessor().sendEOI();
 }
 
-// Todo: Do we need this?
-void exception_handler([[maybe_unused]] iframe iframe) {
-    // printf("An external interrupt has occured\n CS: 0x%x\n", iframe.cs);
-    // printf("EIP: %X\n", iframe.rip);
-    // printf("ESP: %X\n", iframe.rsp);
-
-    for (;;)
-        asm("cli\nhlt");
-}
 }  // namespace firefly::kernel::core::interrupt
