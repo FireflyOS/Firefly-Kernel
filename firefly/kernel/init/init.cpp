@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "firefly/console/console.hpp"
+#include "firefly/drivers/ps2.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
@@ -55,7 +56,8 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::applicationProcessor::startAllCores();
 
+    firefly::drivers::ps2::init();
+
     firefly::kernel::kernel_main();
     __builtin_unreachable();
 }
-
