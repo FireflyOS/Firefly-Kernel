@@ -160,6 +160,10 @@ void registerIRQHandler(void (*handler)(), uint8_t irq) {
     irqHandlers[irq] = handler;
 }
 
+void unregisterIRQHandler(uint8_t irq) {
+    irqHandlers[irq] = nullptr;
+}
+
 void irq_handler(iframe iframe) {
     uint8_t irq = iframe.int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {

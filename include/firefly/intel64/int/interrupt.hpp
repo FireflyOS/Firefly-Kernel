@@ -12,6 +12,7 @@ void test_int();
 // No need to call update() as we just write it to a table with handlers
 // for the actual interrupt handler
 void registerIRQHandler(void (*handler)(), uint8_t irq);
+void unregisterIRQHandler(uint8_t irq);
 
 namespace change {
 extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index);
