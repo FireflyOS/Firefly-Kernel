@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <frg/manual_box.hpp>
 
 namespace firefly::kernel::timer {
 constexpr const uint64_t GENERAL_CAPS_REG = 0x0;
@@ -22,7 +23,11 @@ constexpr const uint64_t TIMER2_FSB_INT_ROUTE_REG = 0x150;
 
 
 class HPET {
+private:
+    friend class frg::manual_box<HPET>;
+
 public:
+    static HPET& accessor();
     static void init();
     static void deinit();
 };

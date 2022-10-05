@@ -5,13 +5,13 @@
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
+#include "firefly/intel64/hpet/hpet.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
-#include "firefly/timer/hpet.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
 alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
