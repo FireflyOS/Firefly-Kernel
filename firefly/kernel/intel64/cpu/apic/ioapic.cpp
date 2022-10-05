@@ -25,6 +25,21 @@ uint32_t IOApic::read(uint8_t offset) const {
     return *reinterpret_cast<volatile uint32_t*>(address + 0x10);
 }
 
+// Check for MADT source override
+// or return one-to-one GSI
+uint8_t IOApic::getGSI(uint8_t irq) {
+    auto const result = madt->enumerate();
+    auto const sourceOverrides = result.get<2>();
+    for (size_t i = 0; i < sourceOverrides->size(); i++) {
+        auto const entry = sourceOverrides->data()[i];
+        if (entry->source == irq) {
+            return entry->gsi;
+        }
+    }
+    return irq;
+}
+
+// map IRQ to BSP (for now)
 void IOApic::enableIRQ(uint8_t irq) {
     RedirectionEntry redEnt = {};
 
@@ -44,10 +59,9 @@ void IOApic::initAll() {
     auto const ioapics = result.get<1>();
     for (size_t i = 0; i < ioapics->size(); i++) {
         auto entry = ioapics->data()[i];
-        IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
-        ioapic.enableIRQ(0);
+        IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase, madt);
+        SerialLogger::log() << ioapic.getGSI(2);
         ioapic.enableIRQ(1);
-        // TODO: Figure out why IRQ#2 gets called
     }
 }
 

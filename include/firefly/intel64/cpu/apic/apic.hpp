@@ -92,9 +92,11 @@ private:
     uint8_t ioApicVersion;
     uint64_t globalInterruptBase;
 
+    AcpiMadt* madt;
+
 public:
-    IOApic(uint32_t physAddress, uint8_t id, uint64_t globalInterruptBase) {
-        // TODO: Virtual address maybe??
+    IOApic(uint32_t physAddress, uint8_t id, uint64_t globalInterruptBase, AcpiMadt* madt) {
+        this->madt = madt;
         this->address = physAddress;
         this->globalInterruptBase = globalInterruptBase;
 
@@ -138,6 +140,7 @@ public:
     void write(uint8_t offset, uint32_t value);
     uint32_t read(uint8_t offset) const;
     void enableIRQ(uint8_t irq);
+    uint8_t getGSI(uint8_t irq);
 };
 
 enum ApicTimerMode {
