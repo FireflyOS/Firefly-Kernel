@@ -54,13 +54,8 @@ struct MadtEntryIoApic : MadtHeader {
 struct MadtSourceOverride : MadtHeader {
     uint8_t bus;     // constant, meaning ISA
     uint8_t source;  // Bus relative IRQ
-    uint64_t gsi;    // what GSI this will issue
-    struct flags {
-        // https://osg.tuhh.de/Lehre/SS21/V_BSB/doc/acpi.pdf#page=198
-        uint16_t polarity : 2;
-        uint16_t triggerMode : 2;
-        uint16_t reserved : 12;
-    };
+    uint32_t gsi;    // what GSI this will issue
+    uint16_t flags;
 } PACKED;
 
 /*
@@ -77,10 +72,11 @@ struct AcpiMadt {
 
     // Find and return a tuple<vector> of every apic and io apic device reported by the MADT.
     using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator> *, frg::vector<MadtEntryIoApic *, Allocator> *>;
-    inline T enumerate() const {
+    inline T enumerate() {
         frg::vector<MadtEntryApic *, Allocator> apics;
         frg::vector<MadtEntryIoApic *, Allocator> io_apics;
         frg::vector<MadtSourceOverride *, Allocator> source_overrides;
+        source_overrides.resize(1);
 
         // Madt entries range from  'madt_entries_start' to 'madt_entries_end'
         auto madt_entries_start = (uint8_t *)entries;
@@ -99,12 +95,12 @@ struct AcpiMadt {
                     io_apics.push(reinterpret_cast<MadtEntryIoApic *>(madt_entries_start));
                     break;
 
-                case MadtEntryType::x2Apic:
-                    firefly::kernel::SerialLogger::log() << "x2apic\n";
-                    break;
-
                 case MadtEntryType::sourceOverride:
                     source_overrides.push(reinterpret_cast<MadtSourceOverride *>(madt_entries_start));
+                    break;
+
+                case MadtEntryType::x2Apic:
+                    firefly::kernel::SerialLogger::log() << "x2apic\n";
                     break;
 
                 default:

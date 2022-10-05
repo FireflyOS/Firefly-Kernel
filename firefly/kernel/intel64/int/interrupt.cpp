@@ -148,7 +148,7 @@ void interrupt_handler(iframe iframe) {
                    << "R13: " << SerialLogger::log().hex(iframe.r13) << '\n'
                    << "R14: " << SerialLogger::log().hex(iframe.r14) << '\n'
                    << "R15: " << SerialLogger::log().hex(iframe.r15) << '\n';
-
+    panic("Interrupt");
     for (;;)
         asm("cli\nhlt");
 }
