@@ -13,6 +13,11 @@ struct Allocator {
         return heap->deallocate(ptr);
     }
 
+    void deallocate(VirtualAddress ptr, [[maybe_unused]] long unsigned int sz) const {
+        using namespace firefly::kernel::mm;
+        return heap->deallocate(ptr);
+    }
+
     void free(VirtualAddress ptr) const {
         deallocate(ptr);
     }

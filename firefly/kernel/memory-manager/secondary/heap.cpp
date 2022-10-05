@@ -59,7 +59,10 @@ void kernelHeap::init() {
 }
 
 VirtualAddress kernelHeap::allocate(size_t size) const {
-    assert_truth(size >= 2 && size <= 4096 && "Invalid allocation size");
+    assert_truth(size >= 2 && size <= 4096 && "In valid allocation size");
+
+    if (!slabHelper::powerOfTwo(size))
+        size = slabHelper::alignToSecondPower(size);
 
     auto& cache = kernelAllocatorCaches[log2(size) - 1];
     return cache.allocate();
