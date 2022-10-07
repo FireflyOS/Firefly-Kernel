@@ -37,19 +37,16 @@ void log_core_firefly_contributors() {
 
     mm::kernelHeap::init();
 
-    // Testing the heap with a vector
-    frg::vector<int, Allocator> vec;
-    vec.push(1);
-    vec.push(2);
-    vec.push(3);
-    ConsoleLogger() << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
+	// log logLine;
+	logLine << "hi\n" << fmt::endl;
+    // struct __write {
+    //     void operator()(const char *s) {
+    //         console::write(s);
+    //     }
+    // };
 
-    // Testing the heap with allocations
-    auto ptr = mm::heap->allocate(sizeof(int));
-    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
-
-    auto ptr2 = mm::heap->allocate(sizeof(int));
-    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
+    // firefly::ostream<__write> stream;
+    // stream << "Number: " << 123 << ", hex: " << fmt::hex << 123 << fmt::endl;
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

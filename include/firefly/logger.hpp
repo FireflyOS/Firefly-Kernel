@@ -59,14 +59,14 @@ public:
     }
 
     const char *format(const char *fmt, ...) {
-        va_list ap;
-        va_start(ap, fmt);
-        size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
-        va_end(ap);
-        if (outLen >= sizeof(buffer))
-            return nullptr;
+        // va_list ap;
+        // va_start(ap, fmt);
+        // size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
+        // va_end(ap);
+        // if (outLen >= sizeof(buffer))
+        //     return nullptr;
 
-        return const_cast<char *>(buffer);
+        return const_cast<char *>("");
     }
 
     template <typename T = int8_t>
@@ -113,3 +113,106 @@ public:
 };
 
 }  // namespace firefly::kernel
+
+#include "libk++/fmt.hpp"
+
+namespace firefly {
+
+namespace fmt_options {
+struct __endl {};
+
+struct __hex {
+    int base;
+};
+
+struct __dec {
+    int base;
+};
+
+struct __bin {
+    int base;
+};
+
+struct __oct {
+    int base;
+};
+}  // namespace fmt_options
+
+namespace fmt {
+constexpr fmt_options::__endl endl;
+constexpr fmt_options::__bin bin{ 2 };
+constexpr fmt_options::__oct oct{ 8 };
+constexpr fmt_options::__dec dec{ 10 };
+constexpr fmt_options::__hex hex{ 16 };
+}  // namespace fmt
+
+namespace __writer {
+struct fb {
+    void operator()(const char *s) {
+        kernel::console::write(s);
+    }
+};
+
+struct serial {
+    void operator()(const char *s) {
+        using namespace kernel;
+        io::SerialPort port = io::SerialPort(io::SerialPort::COM1, io::SerialPort::BAUD_BASE);
+        port.send_chars(s, -1);
+    }
+};
+};  // namespace __writer
+
+template <typename F>
+class ostream : format {
+private:
+    template <typename T>
+    void vprintf(T in) {
+        do_format(in);
+    }
+
+public:
+	constexpr ostream() = default;
+
+    template <typename T>
+    ostream &operator<<(T arg) {
+        vprintf<T>(arg);
+        return *this;
+    }
+
+    ostream &operator<<(fmt_options::__endl) {
+        flush();
+        return *this;
+    }
+
+    // Special case:
+    // Handles the base of a number using fmt_options::__{dec, hex, etc}
+    template <typename NumberBase>
+    ostream &operator<<(NumberBase nb) requires std::is_class_v<NumberBase> {
+        base = static_cast<format_base>(nb.base);
+        return *this;
+    }
+
+    inline void flush() {
+        writeCallback(buffer);
+        writer_position = 0;
+    }
+
+private:
+    F writeCallback;
+};
+
+class log : public ostream<__writer::fb> {
+    constexpr log() = default;
+};
+class dbg : public ostream<__writer::serial> {
+    constexpr dbg() {
+    }
+};
+
+extern constinit log logLine;
+extern constinit dbg debugLine;
+
+// extern constinit frg::manual_box<log> logLine;
+// extern constinit frg::manual_box<dbg> debugLine;
+
+}  // namespace firefly
