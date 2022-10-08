@@ -33,7 +33,8 @@ constexpr uint32_t kasanHighShadowSize = (GiB(4) / 8);  // Temporary. Should be 
 #if !defined(FIRELY_KASAN)
 [[maybe_unused]]
 #endif
-bool kasanUserAddress(VirtualAddress ptr) {
+bool
+kasanUserAddress(VirtualAddress ptr) {
     return (reinterpret_cast<uintptr_t>(ptr) & (1ul << 63)) == 0;
 }
 
@@ -57,12 +58,14 @@ bool withinKasanMemory(kasan::KasanAddress addr) {
 #if !defined(FIRELY_KASAN)
 [[maybe_unused]]
 #endif
-void mapShadowMemory(VirtualAddress base, size_t length) {
+void
+mapShadowMemory(VirtualAddress base, size_t length) {
     using namespace core::paging;
 
     auto shadow = uint64_t(toShadow(base));
     if constexpr (verboseKasan) {
-        ConsoleLogger::log() << "KASAN: Mapping kasan shadow " << ConsoleLogger::log().hex(base) << " at " << ConsoleLogger::log().hex(shadow) << '\n';
+        firefly::logLine << "KASAN: Mapping kasan shadow " << firefly::fmt::hex << reinterpret_cast<uintptr_t>(base) << " at " << firefly::fmt::hex << shadow << '\n'
+                         << firefly::fmt::endl;
     }
 
     // TODO: Is this the right way to go about this..?
@@ -83,10 +86,12 @@ void init() {
     // NOTE: We're using AddressLayout::High as a test here. It should just shadow memory such as the heap or any buffers.
     mapShadowMemory(VirtualAddress(AddressLayout::High), kasanHighShadowSize);
     unpoison(VirtualAddress(AddressLayout::High), kasanHighShadowSize);
-    ConsoleLogger::log() << "KASAN: Initialized\n";
+    logLine << "KASAN: Initialized\n"
+            << fmt::endl;
     kasan_initialized = true;
 #else
-    ConsoleLogger::log() << "KASAN is disabled\n";
+    logLine << "KASAN is disabled\n"
+            << fmt::endl;
 #endif
 }
 
@@ -130,31 +135,36 @@ void init() {
 
     // Dump 'len' bytes of shadow memory and highlight all bytes in a range from shadow_bytes_{start,end}.
     const auto dumpShadowMemory = [=](KasanAddress base, size_t len, auto shadow_bytes_start, auto shadow_bytes_end) {
-        ConsoleLogger::log() << ConsoleLogger::log().hex(fromShadow(base)) << ": ";
+        logLine << fmt::hex << reinterpret_cast<uintptr_t>(fromShadow(base)) << ": ";
         for (size_t i = 0; i < len; i++) {
-            ConsoleLogger::log() << ((base + i) >= shadow_bytes_start && (base + i) <= shadow_bytes_end ? color_red : color_reset)
-                                 << ConsoleLogger::log().hex(*reinterpret_cast<int8_t *>(base + i) & 0xff, false) << ' ';
+            logLine << ((base + i) >= shadow_bytes_start && (base + i) <= shadow_bytes_end ? color_red : color_reset)
+                    << fmt::hex << (*reinterpret_cast<int8_t *>(base + i) & 0xff) << ' ';
         }
 
-        ConsoleLogger::log() << color_reset << '\n';
+        logLine << color_reset << '\n'
+                << fmt::endl;
     };
 
     static int recursion;
     if (++recursion == 1) {
         if (isPoisoned(addr, size)) {
-            ConsoleLogger::log() << "\n==== " << color_red << "Kasan detected a memory access violation" << color_reset << " ====\n"
-                                 << (write ? "Write to " : "Read from ") << "poisoned address " << ConsoleLogger::log().hex(addr) << " of size " << size << '\n';
+            logLine << "\n==== " << color_red << "Kasan detected a memory access violation" << color_reset << " ====\n"
+                    << (write ? "Write to " : "Read from ") << "poisoned address " << fmt::hex << addr << " of size " << size << '\n'
+                    << fmt::endl;
 
-            ConsoleLogger::log() << "Memory state around the buggy address:\n";
+            logLine << "Memory state around the buggy address:\n"
+                    << fmt::endl;
 
             // Shadow memory at the address `start => end` is the poisoned memory.
             auto shadow = uint64_t(toShadow(VirtualAddress(addr)));
             const KasanAddress shadow_bytes_start = shadow;
             const KasanAddress shadow_bytes_end = shadow + (size >> kasanShift);
             if constexpr (debugKasan)
-                ConsoleLogger::log() << "KASAN-DBG: shadow_start=" << ConsoleLogger::log().hex(shadow_bytes_start) << ", shadow_end=" << ConsoleLogger::log().hex(shadow_bytes_end) << '\n';
+                logLine << "KASAN-DBG: shadow_start=" << fmt::hex << shadow_bytes_start << ", shadow_end=" << fmt::hex << shadow_bytes_end << '\n'
+                        << fmt::endl;
 
-            ConsoleLogger::log() << '\n';
+            logLine << '\n'
+                    << fmt::endl;
             bool had_to_break = false;
             for (int i = 0; i < 3; i++) {
                 if ((AddressLayout::High + (kasanDumpSize * i)) >= addr) {
@@ -165,7 +175,8 @@ void init() {
                 dumpShadowMemory(KasanAddress(toShadow(VirtualAddress(AddressLayout::High + (kasanDumpSize * i)))), kasanDumpSize, shadow_bytes_start, shadow_bytes_end);
             }
             if (!had_to_break)
-                ConsoleLogger::log() << "<Omitting " << (addr - AddressLayout::High) / kasanDumpSize << " shadow frame(s)>\n";
+                logLine << "<Omitting " << (addr - AddressLayout::High) / kasanDumpSize << " shadow frame(s)>\n"
+                        << fmt::endl;
 
             dumpShadowMemory(shadow, kasanDumpSize, shadow_bytes_start, shadow_bytes_end);
             panic("kasan access violation");

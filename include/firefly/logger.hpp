@@ -3,139 +3,23 @@
 #include <stdarg.h>
 
 #include <cstddef>
-#include <cstring>
-#include <type_traits>
 
 #include "firefly/console/console.hpp"
 #include "firefly/drivers/serial.hpp"
-#include "frg/manual_box.hpp"
-#include "libk++/fmt.hpp"
-
-namespace firefly::kernel {
-namespace logger {
-static constexpr char endl = '\n';
-}
-
-class logger_interface {
-protected:
-    char buffer[512];
-
-    virtual int logger_printf(const char *fmt, ...) {
-        return 0;
-    }
-
-public:
-    virtual ~logger_interface(){};
-
-    void operator delete([[maybe_unused]] void *ptr) {
-    }
-
-    template <typename... VarArgs>
-    logger_interface &operator<<(VarArgs... args) {
-        ((*this << args), ...);
-        return const_cast<logger_interface &>(*this);
-    }
-
-    logger_interface &operator<<(const char *cstring) {
-        logger_printf("%s", cstring);
-        return const_cast<logger_interface &>(*this);
-    }
-
-    logger_interface &operator<<(char *cstring) {
-        logger_printf("%s", cstring);
-        return const_cast<logger_interface &>(*this);
-    }
-
-    logger_interface &operator<<(char chr) {
-        logger_printf("%c", chr);
-        return const_cast<logger_interface &>(*this);
-    }
-
-    // Integral data types
-    template <typename T>
-    logger_interface &operator<<(T in) requires std::is_integral_v<T> {
-        logger_printf("%d", in);
-        return const_cast<logger_interface &>(*this);
-    }
-
-    const char *format(const char *fmt, ...) {
-        // va_list ap;
-        // va_start(ap, fmt);
-        // size_t outLen = libkern::fmt::vsnprintf(buffer, sizeof(buffer), fmt, ap);
-        // va_end(ap);
-        // if (outLen >= sizeof(buffer))
-        //     return nullptr;
-
-        return const_cast<char *>("");
-    }
-
-    template <typename T = int8_t>
-    const char *hex(T in, bool hexPrefix = true) {
-        logger_printf(hexPrefix ? "0x%x" : "%x", in);
-        return "";
-    }
-
-    constexpr char newline() const {
-        return logger::endl;
-    }
-
-    constexpr char tab() const {
-        return '\t';
-    }
-};
-
-class ConsoleLogger : public logger_interface {
-private:
-    friend class frg::manual_box<ConsoleLogger>;
-
-public:
-    ConsoleLogger() {
-    }
-
-    static ConsoleLogger &log();
-    static void init();
-
-    int logger_printf(const char *fmt, ...);
-};
-
-
-class SerialLogger : public logger_interface {
-private:
-    friend class frg::manual_box<SerialLogger>;
-
-public:
-    SerialLogger() {
-    }
-    static SerialLogger &log();
-    static void init();
-
-    int logger_printf(const char *fmt, ...);
-};
-
-}  // namespace firefly::kernel
-
 #include "libk++/fmt.hpp"
 
 namespace firefly {
 
 namespace fmt_options {
 struct __endl {};
-
-struct __hex {
+struct __base {
     int base;
 };
 
-struct __dec {
-    int base;
-};
-
-struct __bin {
-    int base;
-};
-
-struct __oct {
-    int base;
-};
+struct __hex : __base {};
+struct __dec : __base {};
+struct __bin : __base {};
+struct __oct : __base {};
 }  // namespace fmt_options
 
 namespace fmt {
@@ -171,8 +55,6 @@ private:
     }
 
 public:
-	constexpr ostream() = default;
-
     template <typename T>
     ostream &operator<<(T arg) {
         vprintf<T>(arg);
@@ -194,25 +76,25 @@ public:
 
     inline void flush() {
         writeCallback(buffer);
+        empty_buffer();
         writer_position = 0;
+    }
+
+
+private:
+    inline void empty_buffer() {
+        for (size_t i = 0; i < writer_position; i++)
+            buffer[i] = 0;
     }
 
 private:
     F writeCallback;
 };
 
-class log : public ostream<__writer::fb> {
-    constexpr log() = default;
-};
-class dbg : public ostream<__writer::serial> {
-    constexpr dbg() {
-    }
-};
+class log : public ostream<__writer::fb> {};
+class dbg : public ostream<__writer::serial> {};
 
-extern constinit log logLine;
-extern constinit dbg debugLine;
-
-// extern constinit frg::manual_box<log> logLine;
-// extern constinit frg::manual_box<dbg> debugLine;
+extern log logLine;
+extern dbg debugLine;
 
 }  // namespace firefly

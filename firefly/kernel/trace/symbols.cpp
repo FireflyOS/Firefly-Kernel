@@ -36,8 +36,8 @@ bool backtrace(uint64_t addr, int iteration) {
     SymbolTable table{};
     auto const& [base, name] = table[addr];
 
-    using firefly::kernel::ConsoleLogger;
-    ConsoleLogger::log() << "#" << iteration << " " << ConsoleLogger::log().hex(base) << " \t" << name << '\n';
+    firefly::logLine << "#" << iteration << " " << firefly::fmt::hex << base << " \t" << name << '\n'
+                     << firefly::fmt::endl;
 
     /* Don't trace symbols below kernel_init */
     if (firefly::libkern::cstring::strcmp(name, "kernel_init") == 0)

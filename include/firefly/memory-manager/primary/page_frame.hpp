@@ -40,7 +40,7 @@ public:
     void init(PhysicalAddress base, size_t length) {
         freelist.add(nullptr);
         addRange(reinterpret_cast<uint64_t>(base), length);
-        ConsoleLogger::log() << "page-allocator: Initialized " << logger::endl;
+        logLine << "page-allocator: Initialized " << fmt::endl;
     }
 
     PhysicalAddress allocate(FillMode fill = FillMode::ZERO) {
@@ -66,7 +66,8 @@ public:
         auto top = base + pages * PageSize::Size4K;
 
         if constexpr (verbose)
-            ConsoleLogger::log() << ConsoleLogger::log().format("base: 0x%x | top: 0x%x | pages: %d\n", base, top, pages);
+            logLine << "base: " << fmt::hex << base << " | top: " << top << " | pages: " << pages << "\n"
+                    << fmt::endl;
 
         for (auto i = 0ul; i < (len / PageSize::Size4K); i++) {
             for (auto i = 0ul; i <= pages; i++) {
