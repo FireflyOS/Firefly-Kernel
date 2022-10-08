@@ -7,7 +7,8 @@ namespace firefly {
 
 [[gnu::used]] [[noreturn]] static void
 panic(const char *msg) {
-    kernel::ConsoleLogger::log() << "\n**** Kernel panic ****\nReason: " << msg << "\n";
+    logLine << "\n**** Kernel panic ****\nReason: " << msg << "\n"
+            << fmt::endl;
     trace::trace_callstack();
 
     while (1)
@@ -16,7 +17,8 @@ panic(const char *msg) {
 
 [[gnu::used]] [[noreturn]] static void
 assertion_failure_panic(const char *msg) {
-    kernel::ConsoleLogger::log() << "\n**** Kernel panic ****\nAssertion failed: `" << msg << "`\n";
+    logLine << "\n**** Kernel panic ****\nAssertion failed: `" << msg << "\n"
+            << fmt::endl;
     trace::trace_callstack();
 
     while (1)
