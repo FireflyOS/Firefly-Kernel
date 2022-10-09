@@ -17,7 +17,7 @@ constexpr const char *VERSION_STRING = "0.0";
 
 namespace firefly::kernel {
 void log_core_firefly_contributors() {
-    ConsoleLogger::log() << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
+    logLine << "FireflyOS\nVersion: " << VERSION_STRING << "\nContributors:";
 
     frg::array<const char *, 3> arr = {
         "Lime\t  ", "JohnkaS", "V01D-NULL"
@@ -25,11 +25,13 @@ void log_core_firefly_contributors() {
 
     for (size_t i = 0; i < arr.max_size(); i++) {
         if (i % 2 == 0) {
-            ConsoleLogger::log() << ConsoleLogger::log().newline() << ConsoleLogger::log().tab();
+            logLine << '\n'
+                    << '\t';
         }
-        ConsoleLogger::log() << " " << arr[i];
+        logLine << " " << arr[i];
     }
-    ConsoleLogger::log() << "\n\n";
+    logLine << '\n'
+            << fmt::endl;
 }
 
 [[noreturn]] void kernel_main() {
@@ -41,16 +43,18 @@ void log_core_firefly_contributors() {
     vec.push(1);
     vec.push(2);
     vec.push(3);
-    ConsoleLogger() << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
+    logLine << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
 
     // Testing the heap with allocations
     auto ptr = mm::heap->allocate(sizeof(int));
-    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+    // logLine << "ptr=" << fmt::hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
 
     auto ptr2 = mm::heap->allocate(sizeof(int));
-    ConsoleLogger() << "ptr=" << ConsoleLogger::log().hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
+    // logLine << "ptr=" << fmt::hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
 
     firefly::drivers::ps2::init();
+    mm::kernelHeap::init();
+
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

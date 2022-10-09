@@ -128,27 +128,28 @@ void init() {
 }
 
 void interrupt_handler(iframe iframe) {
-    ConsoleLogger::log() << "Exception: " << exceptions[iframe.int_no] << logger::endl;  // this should be safe as the interrupt handler may only be called by int 0x0-0x1F
-    ConsoleLogger::log() << "Int#: " << iframe.int_no << logger::endl;
-    ConsoleLogger::log() << "Error code: " << iframe.err << logger::endl;
-    ConsoleLogger::log() << "RIP: " << ConsoleLogger::log().hex(iframe.rip) << logger::endl;
-    SerialLogger::log() << "RIP: " << SerialLogger::log().hex(iframe.rip) << logger::endl;
+    logLine << "Exception: " << exceptions[iframe.int_no] << fmt::endl;
+    logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
+    logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
-    SerialLogger() << "Rax: " << SerialLogger::log().hex(iframe.rax) << '\n'
-                   << "Rbx: " << SerialLogger::log().hex(iframe.rbx) << '\n'
-                   << "Rcx: " << SerialLogger::log().hex(iframe.rcx) << '\n'
-                   << "Rdx: " << SerialLogger::log().hex(iframe.rdx) << '\n'
-                   << "Rdi: " << SerialLogger::log().hex(iframe.rdi) << '\n'
-                   << "Rsi: " << SerialLogger::log().hex(iframe.rsi) << '\n'
-                   << "R8: " << SerialLogger::log().hex(iframe.r8) << '\n'
-                   << "R9: " << SerialLogger::log().hex(iframe.r9) << '\n'
-                   << "R10: " << SerialLogger::log().hex(iframe.r10) << '\n'
-                   << "R11: " << SerialLogger::log().hex(iframe.r11) << '\n'
-                   << "R12: " << SerialLogger::log().hex(iframe.r12) << '\n'
-                   << "R13: " << SerialLogger::log().hex(iframe.r13) << '\n'
-                   << "R14: " << SerialLogger::log().hex(iframe.r14) << '\n'
-                   << "R15: " << SerialLogger::log().hex(iframe.r15) << '\n';
-    panic("Interrupt");
+    debugLine << "Rax: " << fmt::hex << iframe.rax << '\n'
+              << "Rbx: " << fmt::hex << iframe.rbx << '\n'
+              << "Rcx: " << fmt::hex << iframe.rcx << '\n'
+              << "Rdx: " << fmt::hex << iframe.rdx << '\n'
+              << "Rdi: " << fmt::hex << iframe.rdi << '\n'
+              << "Rsi: " << fmt::hex << iframe.rsi << '\n'
+              << "R8: " << fmt::hex << iframe.r8 << '\n'
+              << "R9: " << fmt::hex << iframe.r9 << '\n'
+              << "R10: " << fmt::hex << iframe.r10 << '\n'
+              << "R11: " << fmt::hex << iframe.r11 << '\n'
+              << "R12: " << fmt::hex << iframe.r12 << '\n'
+              << "R13: " << fmt::hex << iframe.r13 << '\n'
+              << "R14: " << fmt::hex << iframe.r14 << '\n'
+              << "R15: " << fmt::hex << iframe.r15 << '\n'
+              << fmt::endl;
+
+    panic("interrupt");
+
     for (;;)
         asm("cli\nhlt");
 }
@@ -169,7 +170,7 @@ void irq_handler(iframe iframe) {
     if (irqHandlers[irq] != nullptr) {
         irqHandlers[irq]();
     } else {
-        SerialLogger::log() << "Unhandled IRQ received #" << iframe.int_no - apic::LVT_BASE << "\n";
+        debugLine << "Unhandled IRQ received! IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
     }
     apic::Apic::accessor().sendEOI();
 }

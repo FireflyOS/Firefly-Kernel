@@ -3,202 +3,86 @@
 #include <cstdint>
 
 #include "cstdlib/cassert.h"
-#include "firefly/console/console.hpp"
-#include "firefly/drivers/ports.hpp"
-#include "libk++/cstring.hpp"
 
-namespace firefly::libkern::fmt {
+namespace firefly {
 
-using namespace cstring;
-
-char itoc(int num) {
+char format::itoc(int num) {
     return '0' + num;
 }
 
-char itoh(int num, bool upper) {
+char format::itoh(int num, bool upper) {
     if (upper)
         return num - 10 + 'A';
     return num - 10 + 'a';
 }
 
-char* strrev(char* src) {
-    static char temp;
+char* format::reverse(char* s) {
+    char temp;
     int src_string_index = 0;
-    int last_char = strlen(src) - 1;
+    int last_char = len(s) - 1;
 
     for (; src_string_index < last_char; src_string_index++) {
-        temp = src[src_string_index];  // Save current character
-        src[src_string_index] =
-            src[last_char];     // Swap out the current char with the last char
-        src[last_char] = temp;  // Swap out last character with the current character
+        temp = s[src_string_index];  // Save current character
+        s[src_string_index] =
+            s[last_char];     // Swap out the current char with the last char
+        s[last_char] = temp;  // Swap out last character with the current character
         last_char--;
     }
 
-    src[strlen(src) - 1 + 1] = '\0';
+    s[len(s) - 1 + 1] = '\0';
 
-    return src;
+    return s;
 }
 
-void itoa(size_t num, char* str, int base) {
+void format::itoa(size_t num, char* s, int base) {
     size_t buffer_sz = 20;
     size_t counter = 0;
     size_t digit = 0;
 
     while (num != 0 && counter < buffer_sz) {
         digit = (num % base);
-        if (digit > 9) {
-            str[counter++] = itoh(digit, false);
-        } else {
-            str[counter++] = itoc(digit);
-        }
+        if (digit > 9)
+            s[counter++] = itoh(digit, false);
+        else
+            s[counter++] = itoc(digit);
+
         num /= base;
     }
 
-    str[counter] = '\0';
-    strrev(str);
+    s[counter] = '\0';
+    reverse(s);
 }
 
-void itoa(size_t num, char* str, int base, bool upper) {
-    size_t buffer_sz = 20;
-    size_t counter = 0;
-    size_t digit = 0;
+size_t format::len(const char* s) {
+    size_t n = 0;
 
-    if (!upper) {
-        itoa(num, str, base);
-        return;
-    } else {
-        while (num != 0 && counter < buffer_sz - 1) {
-            digit = (num % base);
-            if (digit > 9) {
-                str[counter++] = itoh(digit, true);
-            } else {
-                str[counter++] = itoc(digit);
-            }
-            num /= base;
-        }
+    while (*s++)
+        n++;
+
+    return n;
+}
+
+void format::do_format(char in) {
+    appendToBuffer(in);
+}
+
+void format::do_format(char* in) {
+    appendToBuffer(in);
+}
+
+void format::do_format(const char* in) {
+    appendToBuffer(in);
+}
+
+void format::appendToBuffer(char c) {
+    assert_truth(writer_position < BUFF_LEN && "Prevented buffer overflow");
+    buffer[writer_position++] = c;
+}
+
+void format::appendToBuffer(const char* s) {
+    while (*s != '\0') {
+        assert_truth(writer_position < BUFF_LEN && "Prevented buffer overflow");
+        buffer[writer_position++] = *s++;
     }
-
-    str[counter] = '\0';
-    strrev(str);
 }
-
-int atoi(const char* str) {
-    int ret = 0;
-    int i;
-
-    for (i = 0; str[i]; i++) {
-        ret = ret * 10 + str[i] - '0';
-    }
-
-    return ret;
-}
-
-char buffer[512];
-
-[[gnu::no_sanitize_address]] int printf(const char* fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    size_t outLen = vsnprintf(buffer, sizeof(buffer), fmt, ap);
-    va_end(ap);
-
-    if (outLen >= sizeof(buffer))
-        return -1;
-
-    for (int i = 0; i < outLen; i++)
-        firefly::kernel::io::outb(0xe9, buffer[i]);
-
-    firefly::kernel::console::write(buffer);
-    return 0;
-}
-
-[[gnu::no_sanitize_address]] int vsnprintf(char* str, size_t size, const char* fmt, va_list ap) {
-    assert(fmt != nullptr);
-    assert(size == 0 || str != nullptr);
-    size_t usedLen = 0;
-    auto append = [size, &usedLen, &str](char ch) {
-        if (usedLen < size - 1)
-            *str++ = ch;
-        ++usedLen;
-    };
-
-    while (*fmt != '\0') {
-        switch (*fmt) {
-            case '%': {
-                switch (*++fmt) {
-                    case 'c': {
-                        auto arg = va_arg(ap, int);
-                        append(arg);
-                        break;
-                    }
-
-                    case 's': {
-                        auto arg = va_arg(ap, char*);
-                        size_t len = strlen(arg);
-                        for (size_t j = 0; j < len; j++)
-                            append(arg[j]);
-
-                        break;
-                    }
-
-                    case 'i':
-                    case 'd': {
-                        uint64_t arg = va_arg(ap, uint64_t);
-                        if (arg == 0)
-                            append('0');
-                        else {
-                            char res[20];
-                            itoa(arg, res, 10);
-
-                            size_t len = strlen(res);
-                            for (size_t j = 0; j < len; j++)
-                                append(res[j]);
-                        }
-                        break;
-                    }
-
-                    case 'x': {
-                        uint64_t arg = va_arg(ap, uint64_t);
-                        if (arg == 0) {
-                            append('0');
-                        } else {
-                            char res[20];
-                            itoa(arg, res, 16);
-
-                            size_t len = strlen(res);
-                            for (size_t j = 0; j < len; j++)
-                                append(res[j]);
-                        }
-                        break;
-                    }
-
-                    case 'X': {
-                        uint64_t arg = va_arg(ap, uint64_t);
-                        char res[20];
-                        if (arg == 0)
-                            append('0');
-                        else {
-                            itoa(arg, res, 16, true);
-
-                            size_t len = strlen(res);
-                            for (size_t j = 0; j < len; j++)
-                                append(res[j]);
-                        }
-                        break;
-                    }
-                }
-
-                break;
-            }
-
-            default:
-                append(*fmt);
-                break;
-        }
-        ++fmt;
-    }
-    if (size != 0 && str)
-        *str = '\0';
-
-    return usedLen;
-}
-}  // namespace firefly::libkern::fmt
+};  // namespace firefly

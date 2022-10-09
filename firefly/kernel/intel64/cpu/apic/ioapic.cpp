@@ -60,7 +60,7 @@ void IOApic::initAll() {
     for (size_t i = 0; i < ioapics->size(); i++) {
         auto entry = ioapics->data()[i];
         IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase, madt);
-        SerialLogger::log() << ioapic.getGSI(2);
+        debugLine << ioapic.getGSI(2);
         ioapic.enableIRQ(1);
     }
 }

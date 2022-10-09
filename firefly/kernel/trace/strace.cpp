@@ -9,7 +9,8 @@ struct stackframe {
 };
 
 void trace_callstack() {
-    kernel::ConsoleLogger::log() << "Stack trace:\n";
+    logLine << "Stack trace:\n"
+            << fmt::endl;
 
     stackframe *stkf;
     asm("mov %%rbp, %0"

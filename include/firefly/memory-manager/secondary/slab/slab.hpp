@@ -143,8 +143,9 @@ public:
         }
 
         if constexpr (debugSlab) {
-            ConsoleLogger() << "Slab is located at: " << ConsoleLogger::log().hex(_slab) << '\n';
-            ConsoleLogger() << "Descriptor: " << _slab->descriptor.data() << ", state: " << (int)_slab->slab_state << '\n';
+            logLine << "Slab is located at: " << fmt::hex << _slab << '\n';
+            logLine << "Descriptor: " << _slab->descriptor.data() << ", state: " << fmt::dec << (int)_slab->slab_state << '\n'
+                    << fmt::endl;
         }
 
         // This object is most likely still in the cache, so we enqueue it at the head.
@@ -171,10 +172,11 @@ private:
         size_t alloc_sz = slab_type == SlabType::Large ? PageSize::Size2M : PageSize::Size4K;
 
         if constexpr (debugSlab) {
-            ConsoleLogger() << "Start of slab creation\n";
-            ConsoleLogger() << "slab descriptor='" << descriptor.data() << "'\n";
-            ConsoleLogger() << "Creating new slab with an allocation of size '" << alloc_sz << "', object size is: " << size << '\n';
-            ConsoleLogger() << "is large slab: " << (alloc_sz == PageSize::Size2M ? "true" : "false") << '\n';
+            logLine << "Start of slab creation\n";
+            logLine << "slab descriptor='" << descriptor.data() << "'\n";
+            logLine << "Creating new slab with an allocation of size '" << alloc_sz << "', object size is: " << size << '\n';
+            logLine << "is large slab: " << (alloc_sz == PageSize::Size2M ? "true" : "false") << '\n'
+                    << fmt::endl;
         }
 
         auto base = reinterpret_cast<uintptr_t>(vm_backing.allocate(alloc_sz));
@@ -182,7 +184,8 @@ private:
         slabs[SlabState::free].insert(_slab);
 
         if constexpr (debugSlab)
-            ConsoleLogger() << "slab can hold " << _slab->max_objects << " objects\nEnd of slab creation\n";
+            logLine << "slab can hold " << _slab->max_objects << " objects\nEnd of slab creation\n"
+                    << fmt::endl;
     }
 
     SlabType slabTypeOf(int size) const {
@@ -201,7 +204,8 @@ private:
             //
             // Reserve some memory for the slab structure & align it to sizeof(slab) bytes.
             // If we don't do this we will end up overwriting the object we just created.
-            ConsoleLogger() << "base addr of slab=" << ConsoleLogger::log().hex(address) << '\n';
+            logLine << "base addr of slab=" << fmt::hex << address << '\n'
+                    << fmt::endl;
             address += sizeof(slab);
             address = (address + sizeof(slab) - 1) & ~(sizeof(slab) - 1);
             base_address = address;

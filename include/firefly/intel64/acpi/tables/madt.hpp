@@ -9,6 +9,7 @@
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/allocator.hpp"
 #include "libk++/bits.h"
+#include "libk++/fmt.hpp"
 
 USED const frg::array<const char *, 6> madtInterruptDevices = {
     "local apic",
@@ -99,7 +100,7 @@ struct AcpiMadt {
                     break;
 
                 case MadtEntryType::x2Apic:
-                    firefly::kernel::SerialLogger::log() << "x2apic\n";
+                    firefly::debugLine << "x2apic\n";
                     break;
 
                 default:
@@ -110,8 +111,9 @@ struct AcpiMadt {
             madt_entries_start += hdr->recordLen;
         }
 
-        firefly::kernel::ConsoleLogger::log().logger_printf("Found %d APIC(s) and %d IOAPIC(s)\n", apics.size(), io_apics.size());
-        firefly::kernel::ConsoleLogger::log().logger_printf("Found %d source overrides\n", source_overrides.size());
+        firefly::logLine << "Found " << apics.size() << " APIC(s) and " << io_apics.size() << " IOAPIC(s)\n"
+                         << firefly::fmt::endl;
+        firefly::logLine << "Found " << source_overrides.size() << " source overrides\n";
         return { &apics, &io_apics, &source_overrides };
     }
 } PACKED;
