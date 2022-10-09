@@ -31,8 +31,8 @@ uint8_t IOApic::getGSI(uint8_t irq) {
     auto const result = madt->enumerate();
     auto const sourceOverrides = result.get<2>();
     for (size_t i = 0; i < sourceOverrides->size(); i++) {
-        auto const entry = sourceOverrides->data()[i];
-        if (entry->source == irq) {
+        auto entry = sourceOverrides->data()[i];
+        if (entry != nullptr && entry->source == irq) {
             return entry->gsi;
         }
     }

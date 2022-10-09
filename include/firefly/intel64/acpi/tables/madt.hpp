@@ -76,7 +76,6 @@ struct AcpiMadt {
         frg::vector<MadtEntryApic *, Allocator> apics;
         frg::vector<MadtEntryIoApic *, Allocator> io_apics;
         frg::vector<MadtSourceOverride *, Allocator> source_overrides;
-        source_overrides.resize(1);
 
         // Madt entries range from  'madt_entries_start' to 'madt_entries_end'
         auto madt_entries_start = (uint8_t *)entries;
