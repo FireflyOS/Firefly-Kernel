@@ -128,11 +128,12 @@ void init() {
 }
 
 void interrupt_handler(iframe iframe) {
-    logLine << "Exception: " << exceptions[iframe.int_no] << fmt::endl;
+    logLine << "Exception: " << exceptions[iframe.int_no] << "\n" << fmt::endl;
     logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
     logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
-    debugLine << "Rax: " << fmt::hex << iframe.rax << '\n'
+    debugLine << "Rip: " << fmt::hex << iframe.rip << '\n'
+	      << "Rax: " << fmt::hex << iframe.rax << '\n'
               << "Rbx: " << fmt::hex << iframe.rbx << '\n'
               << "Rcx: " << fmt::hex << iframe.rcx << '\n'
               << "Rdx: " << fmt::hex << iframe.rdx << '\n'
