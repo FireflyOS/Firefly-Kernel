@@ -30,8 +30,8 @@ uint32_t IOApic::read(uint8_t offset) const {
 uint8_t IOApic::getGSI(uint8_t irq) {
     auto const result = madt->enumerate();
     auto const sourceOverrides = result.get<2>();
-    for (size_t i = 0; i < sourceOverrides->size(); i++) {
-        auto entry = sourceOverrides->data()[i];
+    for (size_t i = 0; i < 6; i++) {
+        auto entry = sourceOverrides[i];
         if (entry != nullptr && entry->source == irq) {
             return entry->gsi;
         }
@@ -42,14 +42,17 @@ uint8_t IOApic::getGSI(uint8_t irq) {
 // map IRQ to BSP (for now)
 void IOApic::enableIRQ(uint8_t irq) {
     RedirectionEntry redEnt = {};
+    uint64_t gsi = getGSI(irq);
+    logLine << "IRQ #" << irq << " ==> GSI #" << gsi << "\n"
+            << fmt::endl;
 
-    redEnt.vector = LVT_BASE + irq;
+    redEnt.vector = LVT_BASE + gsi;
     // redEnt.destination = cpu id here;
     redEnt.delvMode = IOAPIC_DELMODE_FIXED;
     redEnt.destMode = DestinationMode::Physical;
 
-    write((IOAPIC_REDTBL_BASE + irq * 2), redEnt.lowerDword);
-    write((IOAPIC_REDTBL_BASE + irq * 2 + 1), redEnt.upperDword);
+    write((IOAPIC_REDTBL_BASE + gsi * 2), redEnt.lowerDword);
+    write((IOAPIC_REDTBL_BASE + gsi * 2 + 1), redEnt.upperDword);
 }
 
 void IOApic::initAll() {
@@ -57,10 +60,9 @@ void IOApic::initAll() {
     auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
     auto const result = madt->enumerate();
     auto const ioapics = result.get<1>();
-    for (size_t i = 0; i < ioapics->size(); i++) {
-        auto entry = ioapics->data()[i];
+    for (size_t i = 0; i < 1; i++) {
+        auto entry = ioapics[i];
         IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase, madt);
-        debugLine << ioapic.getGSI(2);
         ioapic.enableIRQ(1);
     }
 }

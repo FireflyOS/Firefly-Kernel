@@ -1,5 +1,6 @@
 #pragma once
 
+#include "firefly/logger.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 
 struct Allocator {
@@ -19,6 +20,7 @@ struct Allocator {
     }
 
     void free(VirtualAddress ptr) const {
+        // firefly::logLine << firefly::fmt::hex << (uintptr_t) ptr << "\n" << firefly::fmt::endl;
         deallocate(ptr);
     }
 };

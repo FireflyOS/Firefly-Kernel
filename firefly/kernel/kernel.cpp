@@ -47,13 +47,12 @@ void log_core_firefly_contributors() {
 
     // Testing the heap with allocations
     auto ptr = mm::heap->allocate(sizeof(int));
-    // logLine << "ptr=" << fmt::hex(reinterpret_cast<uintptr_t>(ptr)) << '\n';
+    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr) << '\n';
 
     auto ptr2 = mm::heap->allocate(sizeof(int));
-    // logLine << "ptr=" << fmt::hex(reinterpret_cast<uintptr_t>(ptr2)) << '\n';
+    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr2) << '\n';
 
     firefly::drivers::ps2::init();
-    mm::kernelHeap::init();
 
     panic("Reached the end of the kernel");
     __builtin_unreachable();

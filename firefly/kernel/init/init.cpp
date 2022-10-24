@@ -35,6 +35,7 @@ void bootloaderServicesInit() {
     auto tagmem = verify(memmap.response);
 
     core::paging::bootMapExtraRegion(tagmem);
+
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
     mm::kernelHeap::init();
