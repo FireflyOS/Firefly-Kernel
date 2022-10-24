@@ -128,12 +128,13 @@ void init() {
 }
 
 void interrupt_handler(iframe iframe) {
-    logLine << "Exception: " << exceptions[iframe.int_no] << "\n" << fmt::endl;
+    logLine << "Exception: " << exceptions[iframe.int_no] << "\n"
+            << fmt::endl;
     logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
     logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
     debugLine << "Rip: " << fmt::hex << iframe.rip << '\n'
-	      << "Rax: " << fmt::hex << iframe.rax << '\n'
+              << "Rax: " << fmt::hex << iframe.rax << '\n'
               << "Rbx: " << fmt::hex << iframe.rbx << '\n'
               << "Rcx: " << fmt::hex << iframe.rcx << '\n'
               << "Rdx: " << fmt::hex << iframe.rdx << '\n'
@@ -156,9 +157,12 @@ void interrupt_handler(iframe iframe) {
 }
 
 // TODO: maybe use a frg style array?
-static void (*irqHandlers[24])() = { 0 };
+static void (*irqHandlers[24])() = { nullptr };
 
 void registerIRQHandler(void (*handler)(), uint8_t irq) {
+    if (irqHandlers[irq] != nullptr) {
+        panic("Tried to overwrite IRQ handler\n");
+    }
     irqHandlers[irq] = handler;
 }
 

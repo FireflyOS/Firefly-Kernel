@@ -63,6 +63,8 @@ void IOApic::initAll() {
     for (size_t i = 0; i < 1; i++) {
         auto entry = ioapics[i];
         IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase, madt);
+        logLine << "Timer GSI: #" << (uint64_t)ioapic.getGSI(0) << "\n"
+                << fmt::endl;
         ioapic.enableIRQ(1);
     }
 }
