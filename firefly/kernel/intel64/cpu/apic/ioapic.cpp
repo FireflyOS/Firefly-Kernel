@@ -51,7 +51,7 @@ uint8_t IOApic::getGSI(uint8_t irq) {
 void IOApic::enableIRQ(uint8_t irq) {
     RedirectionEntry redEnt = {};
     uint64_t gsi = getGSI(irq);
-    logLine << "IRQ #" << irq << " ==> GSI #" << gsi << "\n"
+    logLine << "IRQ #" << fmt::dec << irq << " ==> GSI #" << fmt::dec << gsi << "\n"
             << fmt::endl;
 
     redEnt.vector = LVT_BASE + gsi;
@@ -72,9 +72,10 @@ void IOApic::initAll() {
     for (size_t i = 0; i < 1; i++) {
         auto entry = ioapics[i];
         IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
-        logLine << "Timer GSI: #" << (uint64_t)ioapic.getGSI(0) << "\n"
-                << fmt::endl;
+
+        ioapic.enableIRQ(0);
         ioapic.enableIRQ(1);
+        ioapic.enableIRQ(8);
     }
 }
 

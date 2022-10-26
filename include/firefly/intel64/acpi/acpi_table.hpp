@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "firefly/compiler/compiler.hpp"
+#include "firefly/logger.hpp"
 #include "libk++/cstring.hpp"
 
 #define ACPI_LOOP_AND_LOG(info, max, str) \
