@@ -4,6 +4,7 @@
 #include <frg/optional.hpp>
 
 #include "firefly/console/console.hpp"
+#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 
 namespace firefly::drivers::ps2 {
@@ -137,6 +138,7 @@ static void ps2_irq_handler() {
 
 bool init() {
     kernel::core::interrupt::registerIRQHandler(ps2_irq_handler, 1);
+    kernel::apic::enableIRQ(1);
     return (inb(status_register) & status::system_flag) ? true : false;
 }
 

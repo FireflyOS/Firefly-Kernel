@@ -58,19 +58,18 @@ void HPET::init() {
     auto const& hpetAcpiTable = reinterpret_cast<AcpiHpet*>(Acpi::accessor().mustFind("HPET"));
     hpetSingleton.initialize(hpetAcpiTable->address, reinterpret_cast<uint16_t>(hpetAcpiTable->minimumClockTicks));
     auto hpet = hpetSingleton.get();
+    apic::enableIRQ(0);
     core::interrupt::registerIRQHandler(hpet_irq2_handler, apic::IOApic::getGSI(0));
-    core::interrupt::registerIRQHandler(hpet_irq8_handler, apic::IOApic::getGSI(8));
 
     hpet->initialize();
     hpet->enable();
     hpet->write(timer_config(0), (apic::IOApic::getGSI(0) << 9) | BIT(2) | BIT(3) | BIT(6));
     hpet->write(timer_comparator(0), hpet->read(MAIN_COUNTER_VALUE_REG) + hpet->period);
-    hpet->write(timer_comparator(0), hpet->period);
+    hpet->write(timer_comparator(0), hpet->period / 2);
 }
 
 void HPET::deinit() {
     core::interrupt::unregisterIRQHandler(apic::IOApic::getGSI(0));
-    core::interrupt::unregisterIRQHandler(apic::IOApic::getGSI(8));
 }
 
 }  // namespace firefly::kernel::timer

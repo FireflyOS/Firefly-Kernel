@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "cstdlib/cassert.h"
 #include "firefly/drivers/ports.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
@@ -160,9 +161,7 @@ void interrupt_handler(iframe iframe) {
 static void (*irqHandlers[24])() = { nullptr };
 
 void registerIRQHandler(void (*handler)(), uint8_t irq) {
-    if (irqHandlers[irq] != nullptr) {
-        panic("Tried to overwrite IRQ handler\n");
-    }
+    assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
 

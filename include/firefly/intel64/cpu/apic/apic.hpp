@@ -85,6 +85,9 @@ public:
     uint32_t apicId();
 };
 
+// Enable an IRQ in both LAPIC and the correct IOAPIC
+void enableIRQ(uint8_t irq);
+
 class IOApic {
 private:
     uint32_t address;
@@ -138,7 +141,11 @@ public:
 
     void write(uint8_t offset, uint32_t value);
     uint32_t read(uint8_t offset) const;
-    void enableIRQ(uint8_t irq);
+    void updateIRQ(uint8_t irq);
+
+    inline uint64_t getGlobalInterruptBase() const {
+        return globalInterruptBase;
+    }
 };
 
 enum ApicTimerMode {
