@@ -31,18 +31,26 @@ private:
 
 protected:
     uint64_t address;
+    uint32_t period;
+    uint32_t frequency;
+    uint16_t minimumTicks;
 
     void write(const uint64_t reg, const uint64_t value);
     uint64_t read(const uint64_t reg) const;
 
 
 public:
-    HPET(AcpiAddress& acpiAddress) {
+    HPET(AcpiAddress& acpiAddress, uint16_t minimumClockTicks) {
         this->address = acpiAddress.address;
+        this->minimumTicks = minimumClockTicks;
     }
 
     static HPET& accessor();
     static void init();
     static void deinit();
+
+    void initialize();
+    void enable();
+    void disable();
 };
 };  // namespace firefly::kernel::timer
