@@ -1,7 +1,9 @@
 #include <cstring>
 
+#include "cstdlib/cassert.h"
 #include "firefly/drivers/ports.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/acpi/tables/madt.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/limine.hpp"
@@ -9,7 +11,12 @@
 #include "firefly/memory-manager/primary/buddy.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "frg/array.hpp"
+#include "frg/manual_box.hpp"
 #include "libk++/bits.h"
+
+namespace {
+AcpiMadt* madt = nullptr;
+}
 
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
@@ -28,6 +35,7 @@ uint32_t IOApic::read(uint8_t offset) const {
 // Check for MADT source override
 // or return one-to-one GSI
 uint8_t IOApic::getGSI(uint8_t irq) {
+    assert_truth(madt != nullptr);
     auto const result = madt->enumerate();
     auto const sourceOverrides = result.get<2>();
     for (size_t i = 0; i < 6; i++) {
@@ -57,12 +65,13 @@ void IOApic::enableIRQ(uint8_t irq) {
 
 void IOApic::initAll() {
     using core::acpi::Acpi;
-    auto const& madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
+    madt = reinterpret_cast<AcpiMadt*>(Acpi::accessor().mustFind("APIC"));
+
     auto const result = madt->enumerate();
     auto const ioapics = result.get<1>();
     for (size_t i = 0; i < 1; i++) {
         auto entry = ioapics[i];
-        IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase, madt);
+        IOApic ioapic = IOApic(entry->ioApicAddress, entry->ioApicId, entry->globalInterruptBase);
         logLine << "Timer GSI: #" << (uint64_t)ioapic.getGSI(0) << "\n"
                 << fmt::endl;
         ioapic.enableIRQ(1);

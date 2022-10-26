@@ -3,6 +3,9 @@
 #include <cstdint>
 #include <frg/manual_box.hpp>
 
+#include "firefly/intel64/acpi/acpi_table.hpp"
+#include "firefly/logger.hpp"
+
 namespace firefly::kernel::timer {
 constexpr const uint64_t GENERAL_CAPS_REG = 0x0;
 constexpr const uint64_t GENERAL_CONF_REG = 0x10;
@@ -26,7 +29,18 @@ class HPET {
 private:
     friend class frg::manual_box<HPET>;
 
+protected:
+    uint64_t address;
+
+    void write(const uint64_t reg, const uint64_t value);
+    uint64_t read(const uint64_t reg) const;
+
+
 public:
+    HPET(AcpiAddress& acpiAddress) {
+        this->address = acpiAddress.address;
+    }
+
     static HPET& accessor();
     static void init();
     static void deinit();

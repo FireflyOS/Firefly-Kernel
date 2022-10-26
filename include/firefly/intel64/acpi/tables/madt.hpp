@@ -73,20 +73,23 @@ struct AcpiMadt {
     char entries[];
 
     // Find and return a tuple<vector> of every apic and io apic device reported by the MADT.
-    using T = frg::tuple<frg::array<MadtEntryApic *, 4>, frg::array<MadtEntryIoApic *, 1>, frg::array<MadtSourceOverride *, 6>>;
+    // using T = frg::tuple<frg::array<MadtEntryApic *, 4>, frg::array<MadtEntryIoApic *, 1>, frg::array<MadtSourceOverride *, 6>>;
+    using T = frg::tuple<frg::vector<MadtEntryApic *, Allocator>, frg::vector<MadtEntryIoApic *, Allocator>, frg::vector<MadtSourceOverride *, Allocator>>;
     inline T enumerate() {
-        frg::array<MadtEntryApic *, 4> apics;
-        frg::array<MadtEntryIoApic *, 1> io_apics;
-        frg::array<MadtSourceOverride *, 6> source_overrides;
-
+        // frg::array<MadtEntryApic *, 4> apics;
+        // frg::array<MadtEntryIoApic *, 1> io_apics;
+        // frg::array<MadtSourceOverride *, 6> source_overrides;
+        frg::vector<MadtEntryApic *, Allocator> apics;
+        frg::vector<MadtEntryIoApic *, Allocator> io_apics;
+        frg::vector<MadtSourceOverride *, Allocator> source_overrides;
         // Madt entries range from  'madt_entries_start' to 'madt_entries_end'
         auto madt_entries_start = (uint8_t *)entries;
         auto madt_entries_end = reinterpret_cast<uintptr_t>(madt_entries_start) + header.length;
 
-        size_t apics_i, io_apics_i, source_overrides_i;
-        apics_i = 0;
-        io_apics_i = 0;
-        source_overrides_i = 0;
+        // size_t apics_i, io_apics_i, source_overrides_i;
+        // apics_i = 0;
+        // io_apics_i = 0;
+        // source_overrides_i = 0;
 
         // Iterate over all madt entries
         while (reinterpret_cast<uintptr_t>(madt_entries_start) < madt_entries_end) {
@@ -94,15 +97,19 @@ struct AcpiMadt {
 
             switch (hdr->entryType) {
                 case MadtEntryType::lApic:
-                    apics[apics_i] = reinterpret_cast<MadtEntryApic *>(madt_entries_start);
+                    // apics[apics_i] = reinterpret_cast<MadtEntryApic *>(madt_entries_start);
+                    apics.push(reinterpret_cast<MadtEntryApic *>(madt_entries_start));
                     break;
 
                 case MadtEntryType::ioApic:
-                    io_apics[io_apics_i] = reinterpret_cast<MadtEntryIoApic *>(madt_entries_start);
+                    // io_apics[io_apics_i] = reinterpret_cast<MadtEntryIoApic *>(madt_entries_start);
+                    io_apics.push(reinterpret_cast<MadtEntryIoApic *>(madt_entries_start));
                     break;
 
                 case MadtEntryType::sourceOverride:
-                    source_overrides[source_overrides_i] = reinterpret_cast<MadtSourceOverride *>(madt_entries_start);
+                    // source_overrides[source_overrides_i] = reinterpret_cast<MadtSourceOverride *>(madt_entries_start);
+                    // source_overrides_vec.push((MadtSourceOverride *) madt_entries_start);
+                    source_overrides.push(reinterpret_cast<MadtSourceOverride *>(madt_entries_start));
                     break;
 
                 case MadtEntryType::x2Apic:
