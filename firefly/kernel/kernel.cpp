@@ -6,6 +6,7 @@
 #include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/pit/pit.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
@@ -38,19 +39,29 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
+    logLine << "Timer start\n"
+            << fmt::endl;
+    firefly::kernel::timer::pit::init();
+    firefly::kernel::timer::pit::sleep(5000);
+    logLine << "Timer end\n"
+            << fmt::endl;
+
     // Testing the heap with a vector
     frg::vector<int, Allocator> vec;
     vec.push(1);
     vec.push(2);
     vec.push(3);
-    logLine << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n";
+    logLine << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n"
+            << fmt::endl;
 
     // Testing the heap with allocations
     auto ptr = mm::heap->allocate(sizeof(int));
-    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr) << '\n';
+    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr) << '\n'
+            << fmt::endl;
 
     auto ptr2 = mm::heap->allocate(sizeof(int));
-    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr2) << '\n';
+    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr2) << '\n'
+            << fmt::endl;
 
     firefly::drivers::ps2::init();
 

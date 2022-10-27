@@ -27,6 +27,7 @@ constexpr uint16_t timer_fsb_int_route(uint8_t n) {
 class HPET {
 private:
     friend class frg::manual_box<HPET>;
+    friend class HPETTimer;
 
 protected:
     uint64_t address;
@@ -51,5 +52,22 @@ public:
     void initialize();
     void enable();
     void disable();
+
+    void sleep_ms(uint32_t ms);
+};
+
+class HPETTimer {
+private:
+    bool periodicSupport;
+    uint8_t timerNum;
+
+public:
+    HPETTimer(bool periodicSupport, uint8_t timerNum) {
+        this->periodicSupport = periodicSupport;
+        this->timerNum = timerNum;
+    }
+
+    void setOneshotMode();
+    void setPeriodicMode();
 };
 };  // namespace firefly::kernel::timer

@@ -62,7 +62,7 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     bootloaderServicesInit();
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::applicationProcessor::startAllCores();
-    firefly::kernel::timer::HPET::init();
+    // firefly::kernel::timer::HPET::init();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();
