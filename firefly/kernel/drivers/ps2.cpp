@@ -3,6 +3,7 @@
 #include <frg/array.hpp>
 #include <frg/optional.hpp>
 
+#include "firefly/compiler/compiler.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
@@ -40,12 +41,12 @@ bool shift_pressed = false;
 /**
  *                          Array for key names
  */
-static frg::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
-                                               "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
-                                               "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
-                                               "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
-                                               "LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
-                                               "/", "RShift", "Keypad *", "LAlt", "Spacebar" };
+static USED frg::array<const char*, 59> sc_name = { "ERROR", "Esc", "1", "2", "3", "4", "5", "6",
+                                                    "7", "8", "9", "0", "-", "=", "Backspace", "Tab", "Q", "W", "E",
+                                                    "R", "T", "Y", "U", "I", "O", "P", "[", "]", "Enter", "Lctrl",
+                                                    "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "`",
+                                                    "LShift", "\\", "Z", "X", "C", "V", "B", "N", "M", ",", ".",
+                                                    "/", "RShift", "Keypad *", "LAlt", "Spacebar" };
 
 /**
  *                          Array for ascii key values
@@ -139,6 +140,12 @@ static void ps2_irq_handler() {
 bool init() {
     kernel::core::interrupt::registerIRQHandler(ps2_irq_handler, 1);
     kernel::apic::enableIRQ(1);
+
+    // clear keyboard buffer
+    while (inb(status_register) & 0x1) {
+        (void)inb(0x60);
+    }
+
     return (inb(status_register) & status::system_flag) ? true : false;
 }
 

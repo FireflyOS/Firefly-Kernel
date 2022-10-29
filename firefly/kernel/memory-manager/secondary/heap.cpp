@@ -75,7 +75,7 @@ void kernelHeap::deallocate(VirtualAddress ptr) const {
     auto aligned_address = (reinterpret_cast<uintptr_t>(ptr) >> PAGE_SHIFT) << PAGE_SHIFT;
     auto size = pagelist.phys_to_page(aligned_address - AddressLayout::SlabHeap)->slab_size;
     // assert_truth(size >= 2 && size <= 4096 && "Invalid deallocation size");
-    if (!(size >= 2 && size <= 4096)) return;
+    if (size < 8) return;
     auto& cache = kernelAllocatorCaches[log2(size) - 1];
     cache.deallocate(ptr);
 }

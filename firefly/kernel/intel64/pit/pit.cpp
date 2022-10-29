@@ -7,6 +7,7 @@
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/logger.hpp"
+#include "firefly/timer/timer.hpp"
 
 namespace {
 constexpr const uint64_t PIT_HZ = 1193180;
@@ -16,18 +17,8 @@ constexpr const uint64_t PIT_FREQUENCY = 1000;  // 1ms or smth
 namespace firefly::kernel {
 namespace timer::pit {
 
-static volatile uint32_t count = 0;
-
 static void timer_callback() {
-    if (count == 0) return;
-    count = count - 1;
-}
-
-void sleep(uint32_t ms) {
-    count = ms;
-    while (count > 0) {
-        asm volatile("hlt");
-    }
+    timer::tick();
 }
 
 void init() {
@@ -45,6 +36,8 @@ void init() {
 
     io::outb(0x40, l);
     io::outb(0x40, h);
+
+    timer::setFrequency(PIT_FREQUENCY);
 }
 
 void destroy() {

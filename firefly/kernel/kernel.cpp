@@ -6,11 +6,13 @@
 #include "firefly/drivers/ps2.hpp"
 #include "firefly/drivers/serial.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/hpet/hpet.hpp"
 #include "firefly/intel64/pit/pit.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/timer/timer.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
 [[maybe_unused]] constexpr short MINOR_VERSION = 0;
@@ -39,12 +41,9 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    logLine << "Timer start\n"
-            << fmt::endl;
-    firefly::kernel::timer::pit::init();
-    firefly::kernel::timer::pit::sleep(5000);
-    logLine << "Timer end\n"
-            << fmt::endl;
+    timer::init();
+    timer::HPET::init();
+    timer::HPET::usleep(5000000);
 
     // Testing the heap with a vector
     frg::vector<int, Allocator> vec;

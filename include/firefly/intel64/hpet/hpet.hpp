@@ -38,6 +38,16 @@ protected:
     void write(const uint64_t reg, const uint64_t value);
     uint64_t read(const uint64_t reg) const;
 
+    inline uint64_t counter() const {
+        return read(MAIN_COUNTER_VALUE_REG);
+    }
+
+    inline uint64_t usecToTicks(const uint64_t usec) const {
+        const uint64_t femtosecond = 1000000000;
+        const uint64_t ticks = read(MAIN_COUNTER_VALUE_REG);
+        return ticks + (usec * femtosecond) / period;
+    }
+
 
 public:
     HPET(AcpiAddress& acpiAddress, uint16_t minimumClockTicks) {
@@ -53,7 +63,12 @@ public:
     void enable();
     void disable();
 
-    void sleep_ms(uint32_t ms);
+    inline void usleep(uint64_t usec) const {
+        const uint64_t required_hpet_ticks = usecToTicks(usec);
+        while (counter() < required_hpet_ticks)
+            asm volatile("pause" ::
+                             : "memory");
+    }
 };
 
 class HPETTimer {
@@ -67,6 +82,9 @@ public:
         this->timerNum = timerNum;
     }
 
+    void enable();
+    void disable();
+    void setIoApicOutput(uint8_t output);
     void setOneshotMode();
     void setPeriodicMode();
 };
