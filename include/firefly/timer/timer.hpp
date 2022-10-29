@@ -8,7 +8,6 @@ void init();
 
 void tick();
 void resetTicks();
-void setFrequency(uint64_t _frequency);
 
 void sleep(uint64_t ms);
 void usleep(uint64_t us);

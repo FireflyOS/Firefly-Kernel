@@ -41,9 +41,6 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    timer::init();
-    timer::HPET::init();
-    timer::HPET::usleep(5000000);
 
     // Testing the heap with a vector
     frg::vector<int, Allocator> vec;

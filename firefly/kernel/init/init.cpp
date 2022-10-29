@@ -5,13 +5,13 @@
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
-#include "firefly/intel64/hpet/hpet.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/stack.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/timer/timer.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
 constinit frg::manual_box<kernelStack> kStack;
@@ -62,7 +62,7 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     bootloaderServicesInit();
     firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::applicationProcessor::startAllCores();
-    // firefly::kernel::timer::HPET::init();
+    firefly::kernel::timer::init();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();

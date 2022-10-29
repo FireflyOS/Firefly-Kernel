@@ -23,7 +23,7 @@ constexpr const uint32_t APIC_LVTPC = 0x340;    // Performance monitor
 constexpr const uint32_t APIC_LVT0 = 0x350;     // Local INT #0
 constexpr const uint32_t APIC_LVT1 = 0x360;     // Local INT #1
 constexpr const uint32_t APIC_LVTERR = 0x370;   // Error
-constexpr const uint32_t APIC_TIMER_INITIAL = 0x390;
+constexpr const uint32_t APIC_TIMER_INITIAL = 0x380;
 constexpr const uint32_t APIC_TIMER_CURRENT = 0x390;
 constexpr const uint32_t APIC_TIMER_DIVIDER = 0x3E0;
 constexpr const uint32_t APIC_EOI = 0x0B0;
@@ -148,10 +148,19 @@ public:
     }
 };
 
-enum ApicTimerMode {
-    OneShot = 0,
-    Periodic = 1,
-    TscDeadline = 2
+class ApicTimer {
+    enum ApicTimerMode {
+        OneShot = 0,
+        Periodic = 1,
+        TscDeadline = 2
+    };
+
+public:
+    static ApicTimer& accessor();
+    static void init();
+
+    uint32_t calibrate(uint64_t usec);
+    void oneShotTimer(uint64_t ticks);
 };
 
 }  // namespace firefly::kernel::apic

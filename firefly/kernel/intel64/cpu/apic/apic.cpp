@@ -8,15 +8,21 @@
 #include "firefly/limine.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/timer/timer.hpp"
 #include "libk++/bits.h"
 
 namespace firefly::kernel::apic {
 using core::acpi::Acpi;
 
 frg::manual_box<Apic> apicSingleton;
+frg::manual_box<ApicTimer> apicTimerSingleton;
 
 Apic& Apic::accessor() {
     return *apicSingleton;
+}
+
+ApicTimer& ApicTimer::accessor() {
+    return *apicTimerSingleton;
 }
 
 // Write to the APIC
@@ -60,7 +66,7 @@ void Apic::enableIRQ(uint8_t irq) {
 }
 
 uint32_t Apic::apicId() {
-    return read(APIC_ID);
+    return (read(APIC_ID) >> 24);
 }
 
 // call this to make sure PIC is disabled completely
@@ -90,4 +96,28 @@ void Apic::init() {
     lapic->enable();
     asm volatile("sti");
 }
+
+uint32_t ApicTimer::calibrate(uint64_t usec) {
+    auto lapic = Apic::accessor();
+    lapic.write(APIC_TIMER_DIVIDER, 3);
+    lapic.write(APIC_TIMER_INITIAL, ~0L);
+
+    timer::usleep(usec);
+
+    lapic.write(APIC_LVTT, APIC_MASKED);
+    auto ticks = ~0U - lapic.read(APIC_TIMER_CURRENT);
+
+    lapic.write(APIC_LVTT, (0 << 16) | (0 << 17) | 32);
+    return ticks;
+}
+
+void ApicTimer::oneShotTimer(uint64_t ticks) {
+    auto lapic = Apic::accessor();
+    lapic.write(APIC_TIMER_INITIAL, ticks);
+}
+
+void ApicTimer::init() {
+    apicTimerSingleton.initialize();
+}
+
 }  // namespace firefly::kernel::apic
