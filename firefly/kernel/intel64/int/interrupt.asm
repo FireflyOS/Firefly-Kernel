@@ -1,5 +1,7 @@
 bits 64
 
+%include "../firefly/kernel/intel64/defs.mac"
+
 global interrupt_wrapper
 global irq_wrapper
 global assign_cpu_exceptions
@@ -8,40 +10,6 @@ global assign_irq_handlers
 extern interrupt_handler
 extern irq_handler
 extern update
-
-%macro popa64 0
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rbx
-    pop rax
-%endmacro
-
-%macro pusha64 0
-    push rax
-    push rbx
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-%endmacro
 
 %macro CPU_INTR 1
 CPU_INTR%1:

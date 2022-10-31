@@ -20,14 +20,14 @@ volatile struct limine_smp_request smp_request {
 
 void smp_main(struct limine_smp_info* info) {
     // clang-format off
-    asm volatile("mov %0, %%rsp" ::"r"((uintptr_t)info->extra_argument) : "memory");
-    asm volatile("mov %0, %%rbp" ::"r"((uintptr_t)info->extra_argument): "memory");
+    asm volatile("mov %0, %%rsp" :: "r"((uintptr_t)info->extra_argument) : "memory");
+    asm volatile("mov %0, %%rbp" :: "r"((uintptr_t)info->extra_argument) : "memory");
     // clang-format on
 
     mm::kernelPageSpace::accessor().set_AP_CR3();
     initializeThisCpu(info->extra_argument);
 
-    asm volatile("hlt");
+    asm volatile("cli; hlt");
 }
 
 void startAllCores() {

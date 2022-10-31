@@ -130,7 +130,7 @@ void handle_input(unsigned char scancode) {
         }
 }
 
-static void ps2_irq_handler() {
+static void ps2_irq_handler(kernel::core::interrupt::iframe iframe) {
     auto const sc = get_scancode();
     if (sc.has_value()) {
         handle_input(sc.value());

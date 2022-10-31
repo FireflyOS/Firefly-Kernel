@@ -8,17 +8,19 @@
 #include "firefly/panic.hpp"
 
 namespace firefly::kernel {
-// TODO: rework this, probably a better solution
+// TODO: rework this, probably a better solution,
+// also not use HPET in sleep maybe?
 namespace timer {
 
 namespace {
 // This will just get increased
 static volatile uint64_t ticks = 0;
+static uint32_t timer_quantum;
 }  // namespace
 
-void timer_irq() {
-    debugLine << "timer\n"
-              << fmt::endl;
+void timer_irq(core::interrupt::iframe iframe) {
+    // debugLine << "LApic Timer IRQ\n" << fmt::endl;
+    apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
 }
 
 void init() {
@@ -26,6 +28,8 @@ void init() {
     HPET::init();
     apic::ApicTimer::init();
     core::interrupt::registerIRQHandler(timer_irq, 0);
+    timer_quantum = apic::ApicTimer::accessor().calibrate(20000);
+    apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
     // pit::init();
     return;
     // panic("No usable timer found");

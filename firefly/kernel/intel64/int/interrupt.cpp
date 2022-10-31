@@ -22,30 +22,6 @@ struct __attribute__((packed)) idt_gate {
 
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
-struct __attribute__((packed)) iframe {
-    int64_t r15;
-    int64_t r14;
-    int64_t r13;
-    int64_t r12;
-    int64_t r11;
-    int64_t r10;
-    int64_t r9;
-    int64_t r8;
-    int64_t rsi;
-    int64_t rdi;
-    int64_t rbp;
-    int64_t rdx;
-    int64_t rcx;
-    int64_t rbx;
-    int64_t rax;
-    int64_t int_no;
-    int64_t err;
-    int64_t rip;
-    int64_t cs;
-    int64_t rflags;
-    int64_t rsp;
-    int64_t ss;
-};
 
 extern "C" {
 void interrupt_handler(iframe iframe);
@@ -95,7 +71,7 @@ static const char* exceptions[] = {
 };
 
 namespace change {
-extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index) {
+extern "C" void update(void (*handler)(iframe iframe), uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
     idt[index].selector = cs;
     idt[index].rsv_0 = 0;
@@ -135,20 +111,20 @@ void interrupt_handler(iframe iframe) {
     logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
     debugLine << "Rip: " << fmt::hex << iframe.rip << '\n'
-              << "Rax: " << fmt::hex << iframe.rax << '\n'
-              << "Rbx: " << fmt::hex << iframe.rbx << '\n'
-              << "Rcx: " << fmt::hex << iframe.rcx << '\n'
-              << "Rdx: " << fmt::hex << iframe.rdx << '\n'
-              << "Rdi: " << fmt::hex << iframe.rdi << '\n'
-              << "Rsi: " << fmt::hex << iframe.rsi << '\n'
-              << "R8: " << fmt::hex << iframe.r8 << '\n'
-              << "R9: " << fmt::hex << iframe.r9 << '\n'
-              << "R10: " << fmt::hex << iframe.r10 << '\n'
-              << "R11: " << fmt::hex << iframe.r11 << '\n'
-              << "R12: " << fmt::hex << iframe.r12 << '\n'
-              << "R13: " << fmt::hex << iframe.r13 << '\n'
-              << "R14: " << fmt::hex << iframe.r14 << '\n'
-              << "R15: " << fmt::hex << iframe.r15 << '\n'
+              << "Rax: " << fmt::hex << iframe.gpr.rax << '\n'
+              << "Rbx: " << fmt::hex << iframe.gpr.rbx << '\n'
+              << "Rcx: " << fmt::hex << iframe.gpr.rcx << '\n'
+              << "Rdx: " << fmt::hex << iframe.gpr.rdx << '\n'
+              << "Rdi: " << fmt::hex << iframe.gpr.rdi << '\n'
+              << "Rsi: " << fmt::hex << iframe.gpr.rsi << '\n'
+              << "R8: " << fmt::hex << iframe.gpr.r8 << '\n'
+              << "R9: " << fmt::hex << iframe.gpr.r9 << '\n'
+              << "R10: " << fmt::hex << iframe.gpr.r10 << '\n'
+              << "R11: " << fmt::hex << iframe.gpr.r11 << '\n'
+              << "R12: " << fmt::hex << iframe.gpr.r12 << '\n'
+              << "R13: " << fmt::hex << iframe.gpr.r13 << '\n'
+              << "R14: " << fmt::hex << iframe.gpr.r14 << '\n'
+              << "R15: " << fmt::hex << iframe.gpr.r15 << '\n'
               << fmt::endl;
 
     panic("interrupt");
@@ -158,9 +134,9 @@ void interrupt_handler(iframe iframe) {
 }
 
 // TODO: maybe use a frg style array?
-static void (*irqHandlers[24])() = { nullptr };
+static void (*irqHandlers[24])(iframe iframe) = { nullptr };
 
-void registerIRQHandler(void (*handler)(), uint8_t irq) {
+void registerIRQHandler(void (*handler)(iframe iframe), uint8_t irq) {
     assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
@@ -172,9 +148,9 @@ void unregisterIRQHandler(uint8_t irq) {
 void irq_handler(iframe iframe) {
     uint8_t irq = iframe.int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
-        irqHandlers[irq]();
+        irqHandlers[irq](iframe);
     } else {
-        debugLine << "Unhandled IRQ received! IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
+        debugLine << "Unhandled IRQ received! IRQ #" << fmt::dec << iframe.int_no - apic::LVT_BASE << "\n";
     }
     apic::Apic::accessor().sendEOI();
 }

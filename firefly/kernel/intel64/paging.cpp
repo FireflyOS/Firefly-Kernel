@@ -27,7 +27,7 @@ inline int64_t get_index(const uint64_t virtual_addr, const int idx) {
 mm::PageFrame pageAllocator{};
 bool early{ true };
 
-inline uint64_t *allocatePageTable(uint64_t size = PageSize::Size4K) {
+uint64_t *allocatePageTable(const PageSize size) {
     uint64_t *ptr{ nullptr };
 
     if (likely(!early))

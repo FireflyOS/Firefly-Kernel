@@ -12,6 +12,7 @@
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/scheduler/scheduler.hpp"
 #include "firefly/timer/timer.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -61,7 +62,7 @@ void log_core_firefly_contributors() {
 
     firefly::drivers::ps2::init();
 
-    panic("Reached the end of the kernel");
+    scheduler::Scheduler::init();
     __builtin_unreachable();
 }
 }  // namespace firefly::kernel

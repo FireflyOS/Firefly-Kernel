@@ -28,6 +28,10 @@ namespace firefly::kernel::mm {
 using core::paging::AccessFlags;
 using core::paging::CacheMode;
 
+inline void writeCR3(uintptr_t pml) {
+    asm volatile("mov %0, %%cr3" ::"r"(pml));
+}
+
 class VirtualSpace {
 public:
     VirtualSpace() = default;
@@ -40,6 +44,10 @@ public:
 
     void set_AP_CR3() {
         loadAddressSpace();
+    }
+
+    uint64_t *getPml4Addr() const {
+        return reinterpret_cast<uint64_t *>(pml4);
     }
 
 protected:
@@ -78,7 +86,7 @@ protected:
     }
 
     inline void loadAddressSpace() const {
-        asm volatile("mov %0, %%cr3" ::"r"(reinterpret_cast<uintptr_t>(pml4)));
+        writeCR3(reinterpret_cast<uintptr_t>(pml4));
     }
 
 private:

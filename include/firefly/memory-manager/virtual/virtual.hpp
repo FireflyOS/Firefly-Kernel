@@ -28,25 +28,15 @@ public:
 };
 
 /* Represents user processes page tables. Private, one (or more) per task. Currently unused (no userspace) */
-class userPageSpace : VirtualSpace {
+class userPageSpace : public VirtualSpace {
+public:
     userPageSpace(PhysicalAddress root) {
         initSpace(root);
     }
 
-    void map(T virtual_addr, T physical_addr, AccessFlags flags, PageSize page_size) const override {
-        (void)virtual_addr;
-        (void)physical_addr;
-        (void)flags;
-        (void)page_size;
-        logLine << "userPageSpace: map() is a stub!\n"
-                << fmt::endl;
-    }
-
-    void unmap(T virtual_addr) const override {
-        (void)virtual_addr;
-        logLine << "userPageSpace: map() is a stub!\n"
-                << fmt::endl;
-    }
+    VIRTUAL_SPACE_FUNC_MAP;
+    VIRTUAL_SPACE_FUNC_MAP_RANGE;
+    VIRTUAL_SPACE_FUNC_UNMAP;
 };
 
 }  // namespace firefly::kernel::mm

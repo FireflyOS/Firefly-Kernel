@@ -17,14 +17,7 @@ constexpr const uint64_t PIT_FREQUENCY = 1000;  // 1ms or smth
 namespace firefly::kernel {
 namespace timer::pit {
 
-static void timer_callback() {
-    timer::tick();
-}
-
 void init() {
-    core::interrupt::registerIRQHandler(timer_callback, apic::IOApic::getGSI(0));
-    apic::enableIRQ(0);
-
     const uint32_t divisor = PIT_HZ / PIT_FREQUENCY;
 
     // send the command byte
@@ -36,8 +29,6 @@ void init() {
 
     io::outb(0x40, l);
     io::outb(0x40, h);
-
-    timer::setFrequency(PIT_FREQUENCY);
 }
 
 void destroy() {
