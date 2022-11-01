@@ -6,6 +6,7 @@
 #include "firefly/intel64/pit/pit.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/scheduler/scheduler.hpp"
 
 namespace firefly::kernel {
 // TODO: rework this, probably a better solution,
@@ -19,8 +20,12 @@ static uint32_t timer_quantum;
 }  // namespace
 
 void timer_irq(core::interrupt::iframe iframe) {
-    // debugLine << "LApic Timer IRQ\n" << fmt::endl;
+    debugLine << "LApic Timer IRQ\n"
+              << fmt::endl;
     apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
+    scheduler::Scheduler::accessor().reschedule(iframe);
+    debugLine << "LApic Timer IRQ end\n"
+              << fmt::endl;
 }
 
 void init() {
@@ -29,10 +34,13 @@ void init() {
     apic::ApicTimer::init();
     core::interrupt::registerIRQHandler(timer_irq, 0);
     timer_quantum = apic::ApicTimer::accessor().calibrate(20000);
-    apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
     // pit::init();
     return;
     // panic("No usable timer found");
+}
+
+void startTimer() {
+    apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
 }
 
 // Probably call this function in the IRQ handler, or whatever the timer fires

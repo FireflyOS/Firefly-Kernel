@@ -5,6 +5,7 @@
 namespace firefly::kernel::timer {
 // This MUST setup a timer, else panics
 void init();
+void startTimer();
 
 void tick();
 void resetTicks();

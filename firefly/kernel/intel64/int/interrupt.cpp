@@ -148,11 +148,11 @@ void unregisterIRQHandler(uint8_t irq) {
 void irq_handler(iframe iframe) {
     uint8_t irq = iframe.int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
+        apic::Apic::accessor().sendEOI();
         irqHandlers[irq](iframe);
     } else {
         debugLine << "Unhandled IRQ received! IRQ #" << fmt::dec << iframe.int_no - apic::LVT_BASE << "\n";
     }
-    apic::Apic::accessor().sendEOI();
 }
 
 }  // namespace firefly::kernel::core::interrupt
