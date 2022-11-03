@@ -7,6 +7,7 @@
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/scheduler/scheduler.hpp"
 #include "firefly/trace/symbols.hpp"
 
 namespace firefly::kernel::core::interrupt {
@@ -25,7 +26,7 @@ static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
 extern "C" {
 void interrupt_handler(iframe iframe);
-void irq_handler(iframe iframe);
+void irq_handler(uint8_t intno, scheduler::RegisterContext* regs);
 void exception_handler([[maybe_unused]] iframe iframe);
 void interrupt_wrapper();
 void exception_wrapper();
@@ -71,7 +72,7 @@ static const char* exceptions[] = {
 };
 
 namespace change {
-extern "C" void update(void (*handler)(iframe iframe), uint16_t cs, uint8_t type, uint8_t index) {
+extern "C" void update(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
     idt[index].selector = cs;
     idt[index].rsv_0 = 0;
@@ -134,9 +135,9 @@ void interrupt_handler(iframe iframe) {
 }
 
 // TODO: maybe use a frg style array?
-static void (*irqHandlers[24])(iframe iframe) = { nullptr };
+static void (*irqHandlers[24])(uint8_t int_num, scheduler::RegisterContext* regs) = { nullptr };
 
-void registerIRQHandler(void (*handler)(iframe iframe), uint8_t irq) {
+void registerIRQHandler(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint8_t irq) {
     assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
@@ -145,13 +146,14 @@ void unregisterIRQHandler(uint8_t irq) {
     irqHandlers[irq] = nullptr;
 }
 
-void irq_handler(iframe iframe) {
-    uint8_t irq = iframe.int_no - apic::LVT_BASE;
+extern "C" void irq_handler(uint8_t int_num, scheduler::RegisterContext* regs) {
+    apic::Apic::accessor().sendEOI();
+    uint8_t irq = int_num - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
-        apic::Apic::accessor().sendEOI();
-        irqHandlers[irq](iframe);
+        irqHandlers[irq](int_num, regs);
     } else {
-        debugLine << "Unhandled IRQ received! IRQ #" << fmt::dec << iframe.int_no - apic::LVT_BASE << "\n";
+        debugLine << "Unhandled IRQ received! IRQ #" << fmt::dec << int_num - apic::LVT_BASE << "\n"
+                  << fmt::endl;
     }
 }
 

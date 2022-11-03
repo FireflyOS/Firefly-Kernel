@@ -4,7 +4,6 @@
 #include <cstdint>
 
 #include "firefly/compiler/compiler.hpp"
-#include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/intel64/paging.hpp"
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
@@ -14,7 +13,29 @@
 #include "frg/vector.hpp"
 
 namespace firefly::kernel::scheduler {
-using core::interrupt::iframe;
+struct RegisterContext {
+    uint64_t r15;
+    uint64_t r14;
+    uint64_t r13;
+    uint64_t r12;
+    uint64_t r11;
+    uint64_t r10;
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t rbp;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rdx;
+    uint64_t rcx;
+    uint64_t rbx;
+    uint64_t rax;
+    uint64_t err;
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+    uint64_t rsp;
+    uint64_t ss;
+};
 
 struct Task {
     uint64_t* cr3;
@@ -22,7 +43,7 @@ struct Task {
     uint64_t* stackBottom;
     uint64_t* stack;
 
-    iframe regs;
+    RegisterContext regs;
 
     frg::string_view descriptor;
 
@@ -51,7 +72,7 @@ protected:
 public:
     static void init();
     static Scheduler& accessor();
-    void reschedule(iframe regs);
+    void reschedule(RegisterContext* regs);
     void registerTask(Task task);
     void preempt();
 };

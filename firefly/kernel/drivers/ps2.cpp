@@ -7,6 +7,7 @@
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
+#include "firefly/scheduler/scheduler.hpp"
 
 namespace firefly::drivers::ps2 {
 using namespace firefly::kernel::io;
@@ -130,7 +131,7 @@ void handle_input(unsigned char scancode) {
         }
 }
 
-static void ps2_irq_handler(kernel::core::interrupt::iframe iframe) {
+static void ps2_irq_handler(uint8_t int_num, kernel::scheduler::RegisterContext* regs) {
     auto const sc = get_scancode();
     if (sc.has_value()) {
         handle_input(sc.value());

@@ -24,12 +24,6 @@ CPU_INTR_ERR%1:
     call interrupt_wrapper
 %endmacro
 
-%macro CPU_IRQ 1
-CPU_IRQ%1:
-	push %1
-	call irq_wrapper
-%endmacro
-
 %macro register_handler 1
     lea rdi, [rel %1]
     mov rsi, 0x8
@@ -93,6 +87,21 @@ interrupt_wrapper:
 
 ; IRQs
 
+%macro CPU_IRQ 1
+CPU_IRQ%1:
+    cld
+    push 0
+    pusha64
+    mov rdi, %1
+    mov rsi, rsp
+    xor rdx, rdx
+    xor rbp, rbp
+    call irq_handler
+    popa64
+        add rsp, 16
+    iretq
+%endmacro
+
 %assign i 0x20
 %rep 16
 CPU_IRQ i
@@ -107,12 +116,3 @@ assign_irq_handlers:
     %endrep
     ret
 
-irq_wrapper:
-    cld
-    pusha64
-
-    call irq_handler
-
-    popa64
-    	add rsp, 16
-    iretq

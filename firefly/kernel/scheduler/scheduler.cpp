@@ -9,6 +9,7 @@
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/mm.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/stack.hpp"
 #include "firefly/memory-manager/virtual/vspace.hpp"
 #include "firefly/timer/timer.hpp"
 #include "frg/manual_box.hpp"
@@ -20,32 +21,39 @@ namespace {
 frg::manual_box<Scheduler> schedulerSingleton;
 }
 
-void Scheduler::preempt() {
-    asm volatile("mov %%rsp, %0" ::"r"(tasks[currTask].regs.rsp));
-    asm volatile("mov %%rbx, %0" ::"r"(tasks[currTask].regs.gpr.rbx));
-    asm volatile("mov %%rbp, %0" ::"r"(tasks[currTask].regs.gpr.rbp));
-    asm volatile("mov %%r12, %0" ::"r"(tasks[currTask].regs.gpr.r12));
-    asm volatile("mov %%r13, %0" ::"r"(tasks[currTask].regs.gpr.r13));
-    asm volatile("mov %%r14, %0" ::"r"(tasks[currTask].regs.gpr.r14));
-    asm volatile("mov %%r15, %0" ::"r"(tasks[currTask].regs.gpr.r15));
-    asm volatile("push %0" ::"r"(tasks[currTask].regs.rip));
-}
-
-void Scheduler::reschedule(core::interrupt::iframe regs) {
+void Scheduler::reschedule(RegisterContext* regs) {
     if (tasks.empty()) return;
 
-    tasks[currTask].regs = regs;
+    auto oldTask = &tasks[currTask];
+    oldTask->regs = *regs;
 
-    // if (++currTask > tasks.size())
-    // currTask = 0;
-
-    if (currTask == 0)
-        currTask = 1;
-    else
+    if (++currTask > tasks.size())
         currTask = 0;
 
     auto newTask = tasks[currTask];
-    preempt();
+    asm volatile(
+        R"(mov %0, %%rsp;
+	mov %1, %%rax;
+	pop %%r15;
+        pop %%r14;
+        pop %%r13;
+        pop %%r12;
+        pop %%r11;
+        pop %%r10;
+        pop %%r9;
+        pop %%r8;
+        pop %%rbp;
+        pop %%rdi;
+        pop %%rsi;
+        pop %%rdx;
+        pop %%rcx;
+        pop %%rbx;
+	
+	mov %%rax, %%cr3
+	pop %%rax
+	addq $8, %%rsp
+	iretq)" ::"r"(&newTask.regs),
+        "r"(&newTask.cr3));
     // newTask.switchPageMap();
 }
 
@@ -81,12 +89,15 @@ void Scheduler::init() {
 
     auto tt = Task("test");
     tt.regs.rip = reinterpret_cast<int64_t>(__task_entry);
+    tt.regs.rsp = kStack->get().rsp;
+    tt.regs.rbp = kStack->get().rbp;
+    sched->registerTask(tt);
 
     auto tt2 = Task("test2");
     tt2.regs.rip = reinterpret_cast<int64_t>(__task2_entry);
-
+    tt2.regs.rsp = kStack->get().rsp;
+    tt2.regs.rbp = kStack->get().rbp;
     sched->registerTask(tt2);
-    sched->registerTask(tt);
 
     timer::startTimer();
 
