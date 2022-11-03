@@ -54,15 +54,15 @@ void Scheduler::yield() {
 }
 
 void Scheduler::schedule(RegisterContext* regs) {
-    if (threads.empty())
+    if (threads.empty()) {
         currentThread = idleThread;
-    else {
+    } else {
         currentThread = threads[0];
     }
     doSwitch();
 }
 
-void Scheduler::doSwitch() {
+[[gnu::noreturn]] void Scheduler::doSwitch() {
     asm volatile(
         R"(mov %0, %%rsp;
         mov %%cr3, %%rax;
@@ -85,6 +85,7 @@ void Scheduler::doSwitch() {
         pop %%rax
         addq $8, %%rsp
         iretq)" ::"r"(&currentThread->registers));
+    __builtin_unreachable();
 }
 
 }  // namespace firefly::kernel::scheduler
