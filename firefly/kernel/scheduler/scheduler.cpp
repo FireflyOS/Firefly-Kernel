@@ -41,7 +41,11 @@ void Scheduler::init() {
 }
 
 void Scheduler::registerProcess(Process* process) {
-    tasks.push(process->getMainThread());
+    procs.push_back(process);
+}
+
+void Scheduler::insertThread(Thread* thread) {
+    threads.push_back(thread);
 }
 
 void Scheduler::yield() {
@@ -50,10 +54,10 @@ void Scheduler::yield() {
 }
 
 void Scheduler::schedule(RegisterContext* regs) {
-    if (tasks.empty())
+    if (threads.empty())
         currentThread = idleThread;
     else {
-        currentThread = tasks.front();
+        currentThread = threads[0];
     }
     doSwitch();
 }

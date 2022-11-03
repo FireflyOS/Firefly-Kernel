@@ -20,8 +20,8 @@ static uint32_t timer_quantum;
 }  // namespace
 
 void timer_irq(uint8_t int_num, RegisterContext* regs) {
-    debugLine << "LApic Timer IRQ\n"
-              << fmt::endl;
+    // debugLine << "LApic Timer IRQ\n"
+    // << fmt::endl;
     apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
     scheduler::Scheduler::accessor().schedule(regs);
 }

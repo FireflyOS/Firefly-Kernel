@@ -11,7 +11,9 @@
 namespace firefly::kernel::scheduler {
 class Scheduler {
 protected:
-    frg::vector<Thread*, Allocator> tasks;
+    frg::vector<Process*, Allocator> procs;
+    // use some sort of queue ig?
+    frg::vector<Thread*, Allocator> threads;
     uint64_t currTask;
 
 public:
@@ -23,6 +25,7 @@ public:
     void schedule(RegisterContext* regs);
 
     void registerProcess(Process* process);
+    void insertThread(Thread* thread);
 };
 
 

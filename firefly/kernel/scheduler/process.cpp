@@ -39,6 +39,7 @@ Process* Process::createKernelProcess(void* entry, const char* name, Process* pa
 }
 
 void Process::start() {
+    Scheduler::accessor().insertThread(mainThread);
 }
 
 Process::Process(int pid, const char* _name, Process* _parent)
