@@ -131,7 +131,7 @@ void handle_input(unsigned char scancode) {
         }
 }
 
-static void ps2_irq_handler(uint8_t int_num, kernel::scheduler::RegisterContext* regs) {
+static void ps2_irq_handler(uint8_t int_num, kernel::RegisterContext* regs) {
     auto const sc = get_scancode();
     if (sc.has_value()) {
         handle_input(sc.value());

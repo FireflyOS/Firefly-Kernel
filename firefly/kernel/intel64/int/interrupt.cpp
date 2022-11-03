@@ -26,7 +26,7 @@ static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
 extern "C" {
 void interrupt_handler(iframe iframe);
-void irq_handler(uint8_t intno, scheduler::RegisterContext* regs);
+void irq_handler(uint8_t intno, RegisterContext* regs);
 void exception_handler([[maybe_unused]] iframe iframe);
 void interrupt_wrapper();
 void exception_wrapper();
@@ -72,7 +72,7 @@ static const char* exceptions[] = {
 };
 
 namespace change {
-extern "C" void update(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint16_t cs, uint8_t type, uint8_t index) {
+extern "C" void update(void (*handler)(uint8_t int_num, RegisterContext* regs), uint16_t cs, uint8_t type, uint8_t index) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
     idt[index].selector = cs;
     idt[index].rsv_0 = 0;
@@ -135,9 +135,9 @@ void interrupt_handler(iframe iframe) {
 }
 
 // TODO: maybe use a frg style array?
-static void (*irqHandlers[24])(uint8_t int_num, scheduler::RegisterContext* regs) = { nullptr };
+static void (*irqHandlers[24])(uint8_t int_num, RegisterContext* regs) = { nullptr };
 
-void registerIRQHandler(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint8_t irq) {
+void registerIRQHandler(void (*handler)(uint8_t int_num, RegisterContext* regs), uint8_t irq) {
     assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
@@ -146,7 +146,7 @@ void unregisterIRQHandler(uint8_t irq) {
     irqHandlers[irq] = nullptr;
 }
 
-extern "C" void irq_handler(uint8_t int_num, scheduler::RegisterContext* regs) {
+extern "C" void irq_handler(uint8_t int_num, RegisterContext* regs) {
     apic::Apic::accessor().sendEOI();
     uint8_t irq = int_num - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {

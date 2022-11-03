@@ -19,13 +19,11 @@ static volatile uint64_t ticks = 0;
 static uint32_t timer_quantum;
 }  // namespace
 
-void timer_irq(uint8_t int_num, scheduler::RegisterContext* regs) {
+void timer_irq(uint8_t int_num, RegisterContext* regs) {
     debugLine << "LApic Timer IRQ\n"
               << fmt::endl;
     apic::ApicTimer::accessor().oneShotTimer(timer_quantum);
-    scheduler::Scheduler::accessor().reschedule(regs);
-    debugLine << "LApic Timer IRQ end\n"
-              << fmt::endl;
+    scheduler::Scheduler::accessor().schedule(regs);
 }
 
 void init() {

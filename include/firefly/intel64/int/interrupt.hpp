@@ -39,10 +39,10 @@ struct __attribute__((packed)) iframe {
 // register IRQ handler
 // No need to call update() as we just write it to a table with handlers
 // for the actual interrupt handler
-void registerIRQHandler(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint8_t irq);
+void registerIRQHandler(void (*handler)(uint8_t int_num, RegisterContext* regs), uint8_t irq);
 void unregisterIRQHandler(uint8_t irq);
 
 namespace change {
-extern "C" void update(void (*handler)(uint8_t int_num, scheduler::RegisterContext* regs), uint16_t cs, uint8_t type, uint8_t index);
+extern "C" void update(void (*handler)(uint8_t int_num, RegisterContext* regs), uint16_t cs, uint8_t type, uint8_t index);
 }
 }  // namespace firefly::kernel::core::interrupt

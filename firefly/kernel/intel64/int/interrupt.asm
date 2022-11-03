@@ -98,7 +98,7 @@ CPU_IRQ%1:
     xor rbp, rbp
     call irq_handler
     popa64
-        add rsp, 16
+        add rsp, 8
     iretq
 %endmacro
 

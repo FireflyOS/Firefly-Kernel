@@ -1,40 +1,68 @@
 #include "firefly/scheduler/scheduler.hpp"
 
-#include <cstdint>
-#include <cstring>
-
-#include "firefly/intel64/int/interrupt.hpp"
-#include "firefly/intel64/uspace.hpp"
-#include "firefly/limine.hpp"
-#include "firefly/memory-manager/allocator.hpp"
-#include "firefly/memory-manager/mm.hpp"
-#include "firefly/memory-manager/primary/primary_phys.hpp"
-#include "firefly/memory-manager/stack.hpp"
-#include "firefly/memory-manager/virtual/vspace.hpp"
+#include "firefly/logger.hpp"
+#include "firefly/scheduler/process.hpp"
+#include "firefly/scheduler/thread.hpp"
 #include "firefly/timer/timer.hpp"
-#include "frg/manual_box.hpp"
-#include "frg/vector.hpp"
-#include "libk++/memory.hpp"
 
 namespace firefly::kernel::scheduler {
 namespace {
 frg::manual_box<Scheduler> schedulerSingleton;
+Thread* idleThread;
+Thread* currentThread;
+}  // namespace
+
+void KernelProcess() {
+    debugLine << "KPROC\n"
+              << fmt::endl;
+    for (;;) {
+        asm volatile("pause");
+    }
 }
 
-void Scheduler::reschedule(RegisterContext* regs) {
-    if (tasks.empty()) return;
+Scheduler& Scheduler::accessor() {
+    return *schedulerSingleton;
+}
 
-    auto oldTask = &tasks[currTask];
-    oldTask->regs = *regs;
+void Scheduler::init() {
+    schedulerSingleton.initialize();
 
-    if (++currTask > tasks.size())
-        currTask = 0;
+    Process* idleProcess = Process::createIdleProcess("idle");
+    idleThread = idleProcess->getMainThread();
 
-    auto newTask = tasks[currTask];
+    auto kproc = Process::createKernelProcess((void*)KernelProcess, "Kernel", nullptr);
+    kproc->start();
+
+    currentThread = nullptr;
+
+    timer::startTimer();
+    while (1) {
+    }
+}
+
+void Scheduler::registerProcess(Process* process) {
+    tasks.push(process->getMainThread());
+}
+
+void Scheduler::yield() {
+    asm("cli");
+    asm("sti");  // Schedule ipi or smth
+}
+
+void Scheduler::schedule(RegisterContext* regs) {
+    if (tasks.empty())
+        currentThread = idleThread;
+    else {
+        currentThread = tasks.front();
+    }
+    doSwitch();
+}
+
+void Scheduler::doSwitch() {
     asm volatile(
         R"(mov %0, %%rsp;
-	mov %1, %%rax;
-	pop %%r15;
+        mov %%cr3, %%rax;
+        pop %%r15;
         pop %%r14;
         pop %%r13;
         pop %%r12;
@@ -48,60 +76,11 @@ void Scheduler::reschedule(RegisterContext* regs) {
         pop %%rdx;
         pop %%rcx;
         pop %%rbx;
-	
-	mov %%rax, %%cr3
-	pop %%rax
-	addq $8, %%rsp
-	iretq)" ::"r"(&newTask.regs),
-        "r"(&newTask.cr3));
-    // newTask.switchPageMap();
+
+        mov %%rax, %%cr3
+        pop %%rax
+        addq $8, %%rsp
+        iretq)" ::"r"(&currentThread->registers));
 }
 
-Scheduler& Scheduler::accessor() {
-    return *schedulerSingleton;
-}
-
-void Scheduler::registerTask(Task task) {
-    tasks.push(task);
-}
-
-static void __task_entry() {
-    uint64_t runTime = 0;
-    debugLine << "Task 1\n"
-              << fmt::endl;
-    for (;;) {
-        runTime++;
-    }
-}
-
-static void __task2_entry() {
-    uint64_t runTime = 0;
-    debugLine << "Task 2\n"
-              << fmt::endl;
-    for (;;) {
-        runTime++;
-    }
-}
-
-void Scheduler::init() {
-    schedulerSingleton.initialize();
-    auto sched = schedulerSingleton.get();
-
-    auto tt = Task("test");
-    tt.regs.rip = reinterpret_cast<int64_t>(__task_entry);
-    tt.regs.rsp = kStack->get().rsp;
-    tt.regs.rbp = kStack->get().rbp;
-    sched->registerTask(tt);
-
-    auto tt2 = Task("test2");
-    tt2.regs.rip = reinterpret_cast<int64_t>(__task2_entry);
-    tt2.regs.rsp = kStack->get().rsp;
-    tt2.regs.rbp = kStack->get().rbp;
-    sched->registerTask(tt2);
-
-    timer::startTimer();
-
-    for (;;) {
-    }
-}
 }  // namespace firefly::kernel::scheduler

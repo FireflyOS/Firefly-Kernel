@@ -10,6 +10,30 @@
 // everything in a way so that it's easy to get it up and running.
 namespace firefly::kernel {
 
+struct RegisterContext {
+    uint64_t r15;
+    uint64_t r14;
+    uint64_t r13;
+    uint64_t r12;
+    uint64_t r11;
+    uint64_t r10;
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t rbp;
+    uint64_t rdi;
+    uint64_t rsi;
+    uint64_t rdx;
+    uint64_t rcx;
+    uint64_t rbx;
+    uint64_t rax;
+    uint64_t err;
+    uint64_t rip;
+    uint64_t cs;
+    uint64_t rflags;
+    uint64_t rsp;
+    uint64_t ss;
+};
+
 // Per-cpu structure
 struct CpuData {
     core::gdt::Gdt gdt;
@@ -21,34 +45,35 @@ CpuData &thisCpu();
 
 // from linux kernel source
 static inline void native_cpuid(uint32_t *eax, uint32_t *ebx,
-                                uint32_t *ecx, uint32_t *edx)
-{
-        /* ecx is often an input as well as an output. */
-        asm volatile("cpuid"
-            : "=a" (*eax),
-              "=b" (*ebx),
-              "=c" (*ecx),
-              "=d" (*edx)
-            : "0" (*eax), "2" (*ecx));
+                                uint32_t *ecx, uint32_t *edx) {
+    /* ecx is often an input as well as an output. */
+    asm volatile("cpuid"
+                 : "=a"(*eax),
+                   "=b"(*ebx),
+                   "=c"(*ecx),
+                   "=d"(*edx)
+                 : "0"(*eax), "2"(*ecx));
 }
 
 inline uint64_t rdtsc(void) {
     uint32_t edx, eax;
-    asm volatile ("rdtsc" : "=a" (eax), "=d" (edx));
+    asm volatile("rdtsc"
+                 : "=a"(eax), "=d"(edx));
     return ((uint64_t)edx << 32) | eax;
 }
 
 static inline bool cpuHugePages() {
-	uint32_t eax{1}, ebx{0}, ecx{0}, edx{0};
-	native_cpuid(&eax, &ebx, &ecx, &edx);
+    uint32_t eax{ 1 }, ebx{ 0 }, ecx{ 0 }, edx{ 0 };
+    native_cpuid(&eax, &ebx, &ecx, &edx);
 
-	// check if bit 26 of edx is set
-	return (edx & BIT(26));
+    // check if bit 26 of edx is set
+    return (edx & BIT(26));
 }
 
 static inline void delay(uint64_t cycles) {
-	uint64_t next_stop = rdtsc() + cycles;
-	while (rdtsc() < next_stop);
+    uint64_t next_stop = rdtsc() + cycles;
+    while (rdtsc() < next_stop)
+        ;
 }
 
 }  // namespace firefly::kernel
