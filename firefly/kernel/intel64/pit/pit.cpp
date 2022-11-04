@@ -36,8 +36,6 @@ void init() {
 
     io::outb(0x40, l);
     io::outb(0x40, h);
-
-    timer::setFrequency(PIT_FREQUENCY);
 }
 
 void destroy() {
