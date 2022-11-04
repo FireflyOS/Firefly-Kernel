@@ -32,7 +32,7 @@ struct RegisterContext {
     uint64_t rflags;
     uint64_t rsp;
     uint64_t ss;
-};
+} __attribute__((packed));
 
 // Per-cpu structure
 struct CpuData {

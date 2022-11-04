@@ -30,7 +30,7 @@ Process* Process::createIdleProcess(const char* name) {
 Process* Process::createKernelProcess(void* entry, const char* name, Process* parent) {
     Process* proc = new Process(0, name, nullptr);
 
-    proc->mainThread->registers.rip = reinterpret_cast<uintptr_t>(IdleProcess);
+    proc->mainThread->registers.rip = reinterpret_cast<uintptr_t>(entry);
     proc->mainThread->registers.rsp = reinterpret_cast<uintptr_t>(proc->mainThread->kernelStack);
     proc->mainThread->registers.rbp = reinterpret_cast<uintptr_t>(proc->mainThread->kernelStack);
 
@@ -42,8 +42,8 @@ void Process::start() {
     Scheduler::accessor().insertThread(mainThread);
 }
 
-Process::Process(int pid, const char* _name, Process* _parent)
-    : parent(_parent) {
+Process::Process(int _pid, const char* _name, Process* _parent)
+    : pid(_pid), name(_name), parent(_parent) {
     mainThread = new Thread(this, 1);
 }
 }  // namespace firefly::kernel::scheduler

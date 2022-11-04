@@ -32,10 +32,22 @@ public:
         return mainThread;
     }
 
+    inline const char* getName() const {
+        return name;
+    }
+
+    inline int getPid() const {
+        return pid;
+    }
+
 private:
     bool started;
     bool isIdleProcess = false;
+
     int state = ProcessState::Running;
+    int pid = -1;
+
+    const char* name;
 
     Process* parent = nullptr;
     Thread* mainThread;

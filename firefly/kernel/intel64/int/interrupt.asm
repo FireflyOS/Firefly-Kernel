@@ -2,13 +2,12 @@ bits 64
 
 %include "../firefly/kernel/intel64/defs.mac"
 
-global interrupt_wrapper
-global irq_wrapper
 global assign_cpu_exceptions
 global assign_irq_handlers
 
 extern interrupt_handler
 extern irq_handler
+extern ipi_handler
 extern update
 
 %macro CPU_INTR 1
@@ -102,16 +101,42 @@ CPU_IRQ%1:
     iretq
 %endmacro
 
-%assign i 0x20
+%macro CPU_IPI 1
+CPU_IPI%1:
+    cld
+    push 0
+    pusha64
+    mov rdi, %1
+    mov rsi, rsp
+    xor rdx, rdx
+    xor rbp, rbp
+    call ipi_handler
+    popa64
+    	add rsp, 8
+    iretq
+%endmacro
+
+%assign i 32
 %rep 16
 CPU_IRQ i
 %assign i i+1
 %endrep
 
+%assign i 48
+%rep 256-48
+CPU_IPI i
+%assign i i+1
+%endrep
+
 assign_irq_handlers:
-    %assign i 0x20
+    %assign i 32
     %rep 16
     	register_handler CPU_IRQ%+i
+    %assign i i+1
+    %endrep
+    %assign i 48
+    %rep 256-48
+    	register_handler CPU_IPI%+i
     %assign i i+1
     %endrep
     ret

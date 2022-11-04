@@ -11,6 +11,31 @@
 #include "firefly/trace/symbols.hpp"
 
 namespace firefly::kernel::core::interrupt {
+struct __attribute__((packed)) iframe {
+    int64_t r15;
+    int64_t r14;
+    int64_t r13;
+    int64_t r12;
+    int64_t r11;
+    int64_t r10;
+    int64_t r9;
+    int64_t r8;
+    int64_t rsi;
+    int64_t rdi;
+    int64_t rbp;
+    int64_t rdx;
+    int64_t rcx;
+    int64_t rbx;
+    int64_t rax;
+    int64_t int_no;
+    int64_t err;
+    int64_t rip;
+    int64_t cs;
+    int64_t rflags;
+    int64_t rsp;
+    int64_t ss;
+};
+
 struct __attribute__((packed)) idt_gate {
     uint16_t offset_0;
     uint16_t selector;
@@ -112,20 +137,20 @@ void interrupt_handler(iframe iframe) {
     logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
     debugLine << "Rip: " << fmt::hex << iframe.rip << '\n'
-              << "Rax: " << fmt::hex << iframe.gpr.rax << '\n'
-              << "Rbx: " << fmt::hex << iframe.gpr.rbx << '\n'
-              << "Rcx: " << fmt::hex << iframe.gpr.rcx << '\n'
-              << "Rdx: " << fmt::hex << iframe.gpr.rdx << '\n'
-              << "Rdi: " << fmt::hex << iframe.gpr.rdi << '\n'
-              << "Rsi: " << fmt::hex << iframe.gpr.rsi << '\n'
-              << "R8: " << fmt::hex << iframe.gpr.r8 << '\n'
-              << "R9: " << fmt::hex << iframe.gpr.r9 << '\n'
-              << "R10: " << fmt::hex << iframe.gpr.r10 << '\n'
-              << "R11: " << fmt::hex << iframe.gpr.r11 << '\n'
-              << "R12: " << fmt::hex << iframe.gpr.r12 << '\n'
-              << "R13: " << fmt::hex << iframe.gpr.r13 << '\n'
-              << "R14: " << fmt::hex << iframe.gpr.r14 << '\n'
-              << "R15: " << fmt::hex << iframe.gpr.r15 << '\n'
+              << "Rax: " << fmt::hex << iframe.rax << '\n'
+              << "Rbx: " << fmt::hex << iframe.rbx << '\n'
+              << "Rcx: " << fmt::hex << iframe.rcx << '\n'
+              << "Rdx: " << fmt::hex << iframe.rdx << '\n'
+              << "Rdi: " << fmt::hex << iframe.rdi << '\n'
+              << "Rsi: " << fmt::hex << iframe.rsi << '\n'
+              << "R8: " << fmt::hex << iframe.r8 << '\n'
+              << "R9: " << fmt::hex << iframe.r9 << '\n'
+              << "R10: " << fmt::hex << iframe.r10 << '\n'
+              << "R11: " << fmt::hex << iframe.r11 << '\n'
+              << "R12: " << fmt::hex << iframe.r12 << '\n'
+              << "R13: " << fmt::hex << iframe.r13 << '\n'
+              << "R14: " << fmt::hex << iframe.r14 << '\n'
+              << "R15: " << fmt::hex << iframe.r15 << '\n'
               << fmt::endl;
 
     panic("interrupt");
@@ -134,25 +159,42 @@ void interrupt_handler(iframe iframe) {
         asm("cli\nhlt");
 }
 
-// TODO: maybe use a frg style array?
-static void (*irqHandlers[24])(uint8_t int_num, RegisterContext* regs) = { nullptr };
+static void (*interruptHandlers[256])(uint8_t int_num, RegisterContext* regs) = { nullptr };
+
+void registerInterruptHandler(void (*handler)(uint8_t int_num, RegisterContext* regs), uint8_t int_num) {
+    assert_truth(interruptHandlers[int_num] == nullptr && "Tried to overwrite interrupt handler");
+    interruptHandlers[int_num] = handler;
+}
+
+void unregisterInterruptHandler(uint8_t int_num) {
+    interruptHandlers[int_num] = nullptr;
+}
 
 void registerIRQHandler(void (*handler)(uint8_t int_num, RegisterContext* regs), uint8_t irq) {
-    assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
-    irqHandlers[irq] = handler;
+    assert_truth(interruptHandlers[irq + apic::LVT_BASE] == nullptr && "Tried to overwrite IRQ handler");
+    interruptHandlers[irq + apic::LVT_BASE] = handler;
 }
 
 void unregisterIRQHandler(uint8_t irq) {
-    irqHandlers[irq] = nullptr;
+    interruptHandlers[irq + apic::LVT_BASE] = nullptr;
 }
 
 extern "C" void irq_handler(uint8_t int_num, RegisterContext* regs) {
     apic::Apic::accessor().sendEOI();
-    uint8_t irq = int_num - apic::LVT_BASE;
-    if (irqHandlers[irq] != nullptr) {
-        irqHandlers[irq](int_num, regs);
+    if (interruptHandlers[int_num] != nullptr) {
+        interruptHandlers[int_num](int_num, regs);
     } else {
         debugLine << "Unhandled IRQ received! IRQ #" << fmt::dec << int_num - apic::LVT_BASE << "\n"
+                  << fmt::endl;
+    }
+}
+
+extern "C" void ipi_handler(uint8_t int_num, RegisterContext* regs) {
+    apic::Apic::accessor().sendEOI();
+    if (interruptHandlers[int_num] != nullptr) {
+        interruptHandlers[int_num](int_num, regs);
+    } else {
+        debugLine << "Unhandled IPI received! IPI #" << fmt::dec << int_num << "\n"
                   << fmt::endl;
     }
 }

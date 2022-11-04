@@ -1,5 +1,6 @@
 #include "firefly/scheduler/scheduler.hpp"
 
+#include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/scheduler/process.hpp"
 #include "firefly/scheduler/thread.hpp"
@@ -24,8 +25,13 @@ Scheduler& Scheduler::accessor() {
     return *schedulerSingleton;
 }
 
+void scheduleHandler(uint8_t int_num, RegisterContext* regs) {
+    Scheduler::accessor().schedule(regs);
+}
+
 void Scheduler::init() {
     schedulerSingleton.initialize();
+    core::interrupt::registerInterruptHandler(scheduleHandler, core::interrupt::IPI_SCHEDULE);
 
     Process* idleProcess = Process::createIdleProcess("idle");
     idleThread = idleProcess->getMainThread();
@@ -34,10 +40,8 @@ void Scheduler::init() {
     kproc->start();
 
     currentThread = nullptr;
-
     timer::startTimer();
-    while (1) {
-    }
+    asm volatile("int $0xfd");
 }
 
 void Scheduler::registerProcess(Process* process) {
@@ -49,8 +53,7 @@ void Scheduler::insertThread(Thread* thread) {
 }
 
 void Scheduler::yield() {
-    asm("cli");
-    asm("sti");  // Schedule ipi or smth
+    asm volatile("int $0xfd");
 }
 
 void Scheduler::schedule(RegisterContext* regs) {
