@@ -24,7 +24,7 @@ void smp_main(struct limine_smp_info* info) {
     asm volatile("mov %0, %%rbp" ::"r"((uintptr_t)info->extra_argument): "memory");
     // clang-format on
 
-    mm::kernelPageSpace::accessor().set_AP_CR3();
+    mm::kernelPageSpace::accessor().setCR3();
     initializeThisCpu(info->extra_argument);
 
     asm volatile("hlt");

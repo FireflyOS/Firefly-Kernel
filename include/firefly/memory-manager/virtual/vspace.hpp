@@ -38,7 +38,7 @@ public:
     void operator delete([[maybe_unused]] void *ptr) {
     }
 
-    void set_AP_CR3() {
+    void setCR3() {
         loadAddressSpace();
     }
 
