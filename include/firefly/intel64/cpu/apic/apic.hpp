@@ -158,6 +158,7 @@ class ApicTimer {
 public:
     static ApicTimer& accessor();
     static void init();
+    static bool isAvailable();
 
     uint32_t calibrate(uint64_t usec);
     void oneShotTimer(uint64_t ticks);

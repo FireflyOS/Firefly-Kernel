@@ -120,4 +120,11 @@ void ApicTimer::init() {
     apicTimerSingleton.initialize();
 }
 
+bool ApicTimer::isAvailable() {
+    if (Acpi::accessor().find("APIC"))
+        return true;
+
+    return false;
+}
+
 }  // namespace firefly::kernel::apic

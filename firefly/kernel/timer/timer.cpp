@@ -24,9 +24,12 @@ void timer_irq() {
 void init() {
     resetTicks();
     HPET::init();
-    apic::ApicTimer::init();
     core::interrupt::registerIRQHandler(timer_irq, 0);
-    // pit::init();
+    if (apic::ApicTimer::isAvailable()) {
+        apic::ApicTimer::init();
+    } else {
+        pit::init();
+    }
     return;
     // panic("No usable timer found");
 }
