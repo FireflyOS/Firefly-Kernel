@@ -10,9 +10,11 @@
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/page.hpp"
+#include "frg/spinlock.hpp"
 #include "libk++/align.h"
 #include "libk++/memory.hpp"
 
+extern frg::ticket_spinlock buddyLock;
 
 struct BuddyAllocationResult {
 private:
@@ -291,6 +293,7 @@ public:
     }
 
     AddressType alloc(uint64_t size) {
+        buddyLock.lock();
         BuddyAllocator::Order order = log2(size);
         Index min_idx = suitable_buddy(order);
 
@@ -309,14 +312,17 @@ public:
                     page->buddy_index = i;
                 }
 
+                buddyLock.unlock();
                 return ptr.unpack();
             }
         }
 
+        buddyLock.unlock();
         return nullptr;
     }
 
     void free(AddressType ptr) {
+        buddyLock.lock();
         auto page = pagelist.phys_to_page(reinterpret_cast<uint64_t>(ptr));
 
         // Not a buddy page
@@ -338,6 +344,7 @@ public:
         }
 
         buddies[buddy_index].free(ptr, order);
+        buddyLock.unlock();
     }
 
 private:
