@@ -35,7 +35,7 @@ void startAllCores() {
 
     for (uint64_t i = 0; i < smp->cpu_count; i++) {
         auto cpu = smp->cpus[i];
-        cpu->extra_argument = reinterpret_cast<uint64_t>(mm::Physical::allocate(PageSize::Size4K * 4));
+        cpu->extra_argument = reinterpret_cast<uint64_t>(mm::Physical::must_allocate(PageSize::Size4K * 4));
         cpu->goto_address = &smp_main;
     }
 
