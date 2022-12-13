@@ -145,8 +145,6 @@ public:
     }
 
 private:
-    frg::ticket_spinlock lock = frg::ticket_spinlock();
-
     template <typename T, int orders>
     class Freelist {
     private:
@@ -234,6 +232,7 @@ private:
 private:
     Freelist<AddressType, largest_allowed_order - min_order> freelist;
     AddressType base{};
+    frg::ticket_spinlock lock;
 };
 
 class BuddyManager {
