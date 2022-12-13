@@ -60,6 +60,7 @@ public:
     }
 
     auto alloc(uint64_t size, FillMode fill = FillMode::ZERO) {
+        lock.lock();
         Order order = std::max(min_order, Order(log2(size >> 3)));
 
         if constexpr (sanity_checks) {
@@ -69,6 +70,7 @@ public:
                                      << " is too large for this buddy instance | max-order is: " << max_order << '\n'
                                      << firefly::fmt::endl;
 
+                lock.unlock();
                 return BuddyAllocationResult();
             }
         }
@@ -91,6 +93,7 @@ public:
                 firefly::logLine << "Block is a nullptr (order: " << firefly::fmt::dec << order << " , size: " << size << ")\n"
                                  << firefly::fmt::endl;
 
+            lock.unlock();
             return BuddyAllocationResult();
         }
 
@@ -113,10 +116,12 @@ public:
                              << " with a size of " << size << '\n'
                              << firefly::fmt::endl;
 
+        lock.unlock();
         return BuddyAllocationResult(block, ord + 1, correct_size / PageSize::Size4K);
     }
 
     void free(AddressType block, Order order) {
+        lock.lock();
         assert_truth(order >= min_order && order <= max_order && "Invalid order passed to free()");
         if (block == nullptr)
             return;
@@ -128,6 +133,7 @@ public:
         }
 
         coalesce(block, order);
+        lock.unlock();
     }
 
     int log2(int size) {
@@ -139,6 +145,8 @@ public:
     }
 
 private:
+    frg::ticket_spinlock lock = frg::ticket_spinlock();
+
     template <typename T, int orders>
     class Freelist {
     private:
