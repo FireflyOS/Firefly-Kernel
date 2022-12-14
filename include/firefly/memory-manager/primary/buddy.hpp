@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cstring>
 #include <utility>
 
 #include "cstdlib/cassert.h"
@@ -46,6 +47,21 @@ public:
     constexpr static Order largest_allowed_order = 30;  // 1GiB is the largest allocation an instance of this class may serve.
     constexpr static bool verbose{}, sanity_checks{};   // sanity_checks ensures we don't go out-of-bounds on the freelist.
                                                         // Beware: These options will impact the performance of the allocator.
+
+    BuddyAllocator() = default;
+    BuddyAllocator(const BuddyAllocator &) {
+    }
+    BuddyAllocator(BuddyAllocator &&) {
+    }
+    ~BuddyAllocator() = default;
+
+    BuddyAllocator &operator=(const BuddyAllocator &) {
+        return *this;
+    }
+
+    BuddyAllocator &operator=(BuddyAllocator &&) {
+        return *this;
+    }
 
     void init(AddressType base, int target_order) {
         this->base = base;
