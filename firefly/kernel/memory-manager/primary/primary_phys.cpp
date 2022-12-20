@@ -2,10 +2,12 @@
 
 #include "firefly/memory-manager/page.hpp"
 #include "firefly/memory-manager/primary/buddy.hpp"
+#include "frg/spinlock.hpp"
 
 // TODO: Use constinit
 Pagelist pagelist;
 BuddyManager buddy;
+frg::ticket_spinlock buddyLock = frg::ticket_spinlock();
 
 namespace firefly::kernel::mm::Physical {
 

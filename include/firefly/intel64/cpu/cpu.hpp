@@ -32,12 +32,23 @@ static inline void native_cpuid(uint32_t *eax, uint32_t *ebx,
             : "0" (*eax), "2" (*ecx));
 }
 
+inline uint64_t rdtsc(void) {
+    uint32_t edx, eax;
+    asm volatile ("rdtsc" : "=a" (eax), "=d" (edx));
+    return ((uint64_t)edx << 32) | eax;
+}
+
 static inline bool cpuHugePages() {
 	uint32_t eax{1}, ebx{0}, ecx{0}, edx{0};
 	native_cpuid(&eax, &ebx, &ecx, &edx);
 
 	// check if bit 26 of edx is set
 	return (edx & BIT(26));
+}
+
+static inline void delay(uint64_t cycles) {
+	uint64_t next_stop = rdtsc() + cycles;
+	while (rdtsc() < next_stop);
 }
 
 }  // namespace firefly::kernel

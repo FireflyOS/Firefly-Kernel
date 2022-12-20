@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cstring>
 #include <utility>
 
 #include "cstdlib/cassert.h"
@@ -10,9 +11,11 @@
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/page.hpp"
+#include "frg/spinlock.hpp"
 #include "libk++/align.h"
 #include "libk++/memory.hpp"
 
+extern frg::ticket_spinlock buddyLock;
 
 struct BuddyAllocationResult {
 private:
@@ -45,6 +48,21 @@ public:
     constexpr static bool verbose{}, sanity_checks{};   // sanity_checks ensures we don't go out-of-bounds on the freelist.
                                                         // Beware: These options will impact the performance of the allocator.
 
+    BuddyAllocator() = default;
+    BuddyAllocator(const BuddyAllocator &) {
+    }
+    BuddyAllocator(BuddyAllocator &&) {
+    }
+    ~BuddyAllocator() = default;
+
+    BuddyAllocator &operator=(const BuddyAllocator &) {
+        return *this;
+    }
+
+    BuddyAllocator &operator=(BuddyAllocator &&) {
+        return *this;
+    }
+
     void init(AddressType base, int target_order) {
         this->base = base;
         max_order = target_order - 3;
@@ -58,6 +76,7 @@ public:
     }
 
     auto alloc(uint64_t size, FillMode fill = FillMode::ZERO) {
+        lock.lock();
         Order order = std::max(min_order, Order(log2(size >> 3)));
 
         if constexpr (sanity_checks) {
@@ -67,6 +86,7 @@ public:
                                      << " is too large for this buddy instance | max-order is: " << max_order << '\n'
                                      << firefly::fmt::endl;
 
+                lock.unlock();
                 return BuddyAllocationResult();
             }
         }
@@ -89,6 +109,7 @@ public:
                 firefly::logLine << "Block is a nullptr (order: " << firefly::fmt::dec << order << " , size: " << size << ")\n"
                                  << firefly::fmt::endl;
 
+            lock.unlock();
             return BuddyAllocationResult();
         }
 
@@ -111,10 +132,12 @@ public:
                              << " with a size of " << size << '\n'
                              << firefly::fmt::endl;
 
+        lock.unlock();
         return BuddyAllocationResult(block, ord + 1, correct_size / PageSize::Size4K);
     }
 
     void free(AddressType block, Order order) {
+        lock.lock();
         assert_truth(order >= min_order && order <= max_order && "Invalid order passed to free()");
         if (block == nullptr)
             return;
@@ -126,6 +149,7 @@ public:
         }
 
         coalesce(block, order);
+        lock.unlock();
     }
 
     int log2(int size) {
@@ -224,6 +248,7 @@ private:
 private:
     Freelist<AddressType, largest_allowed_order - min_order> freelist;
     AddressType base{};
+    frg::ticket_spinlock lock;
 };
 
 class BuddyManager {
@@ -291,6 +316,7 @@ public:
     }
 
     AddressType alloc(uint64_t size) {
+        buddyLock.lock();
         BuddyAllocator::Order order = log2(size);
         Index min_idx = suitable_buddy(order);
 
@@ -309,14 +335,17 @@ public:
                     page->buddy_index = i;
                 }
 
+                buddyLock.unlock();
                 return ptr.unpack();
             }
         }
 
+        buddyLock.unlock();
         return nullptr;
     }
 
     void free(AddressType ptr) {
+        buddyLock.lock();
         auto page = pagelist.phys_to_page(reinterpret_cast<uint64_t>(ptr));
 
         // Not a buddy page
@@ -338,6 +367,7 @@ public:
         }
 
         buddies[buddy_index].free(ptr, order);
+        buddyLock.unlock();
     }
 
 private:

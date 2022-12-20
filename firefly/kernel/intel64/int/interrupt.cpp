@@ -1,4 +1,12 @@
+#include "firefly/intel64/int/interrupt.hpp"
+
+#include <cstdint>
+
+#include "cstdlib/cassert.h"
+#include "firefly/drivers/ports.hpp"
+#include "firefly/intel64/cpu/apic/apic.hpp"
 #include "firefly/logger.hpp"
+#include "firefly/panic.hpp"
 #include "firefly/trace/symbols.hpp"
 
 namespace firefly::kernel::core::interrupt {
@@ -41,13 +49,50 @@ struct __attribute__((packed)) iframe {
 
 extern "C" {
 void interrupt_handler(iframe iframe);
+void irq_handler(iframe iframe);
 void exception_handler([[maybe_unused]] iframe iframe);
 void interrupt_wrapper();
 void exception_wrapper();
 void assign_cpu_exceptions();
+void assign_irq_handlers();
 }
 
 static idt_gate idt[256];
+
+static const char* exceptions[] = {
+    "Divide by Zero",
+    "Debug",
+    "NMI",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device not available",
+    "Double Fault",
+    "",
+    "Invalid TSS",
+    "Segment not present",
+    "Stack Segment fault",
+    "GPF",
+    "Page Fault",
+    "",
+    "x87 Floating point exception",
+    "Alignment check",
+    "Machine check",
+    "SIMD Floating point exception",
+    "Virtualization Exception",
+    "Control protection exception",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "Hypervisor injection exception",
+    "VMM Communication exception",
+    "Security exception",
+    ""
+};
 
 namespace change {
 extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index) {
@@ -69,25 +114,28 @@ struct __attribute__((packed)) idt_reg {
     /**
      *                  base address of idt
      */
-    idt_gate *base;
+    idt_gate* base;
 } idtr = {
     .limit = (sizeof(struct idt_gate) * 256) - 1,
     .base = idt
 };
 
-
 void init() {
     assign_cpu_exceptions();
+    assign_irq_handlers();
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
 }
 
 void interrupt_handler(iframe iframe) {
+    logLine << "Exception: " << exceptions[iframe.int_no] << "\n"
+            << fmt::endl;
     logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
     logLine << "RIP: " << fmt::hex << iframe.rip << fmt::endl;
 
-    debugLine << "Rax: " << fmt::hex << iframe.rax << '\n'
+    debugLine << "Rip: " << fmt::hex << iframe.rip << '\n'
+              << "Rax: " << fmt::hex << iframe.rax << '\n'
               << "Rbx: " << fmt::hex << iframe.rbx << '\n'
               << "Rcx: " << fmt::hex << iframe.rcx << '\n'
               << "Rdx: " << fmt::hex << iframe.rdx << '\n'
@@ -103,17 +151,32 @@ void interrupt_handler(iframe iframe) {
               << "R15: " << fmt::hex << iframe.r15 << '\n'
               << fmt::endl;
 
-    for (;;)
-        asm("cli\nhlt");
-}
-
-// Todo: Do we need this?
-void exception_handler([[maybe_unused]] iframe iframe) {
-    // printf("An external interrupt has occured\n CS: 0x%x\n", iframe.cs);
-    // printf("EIP: %X\n", iframe.rip);
-    // printf("ESP: %X\n", iframe.rsp);
+    panic("interrupt");
 
     for (;;)
         asm("cli\nhlt");
 }
+
+// TODO: maybe use a frg style array?
+static void (*irqHandlers[24])() = { nullptr };
+
+void registerIRQHandler(void (*handler)(), uint8_t irq) {
+    assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
+    irqHandlers[irq] = handler;
+}
+
+void unregisterIRQHandler(uint8_t irq) {
+    irqHandlers[irq] = nullptr;
+}
+
+void irq_handler(iframe iframe) {
+    uint8_t irq = iframe.int_no - apic::LVT_BASE;
+    if (irqHandlers[irq] != nullptr) {
+        irqHandlers[irq]();
+    } else {
+        debugLine << "Unhandled IRQ received! IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
+    }
+    apic::Apic::accessor().sendEOI();
+}
+
 }  // namespace firefly::kernel::core::interrupt

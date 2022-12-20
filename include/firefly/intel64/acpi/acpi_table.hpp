@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "firefly/compiler/compiler.hpp"
+#include "firefly/logger.hpp"
 #include "libk++/cstring.hpp"
 
 #define ACPI_LOOP_AND_LOG(info, max, str) \
@@ -41,6 +42,15 @@ struct AcpiSdt {
         using firefly::libkern::cstring::strncmp;
         return (strncmp(signature, other, 4)) == 0;
     }
+} PACKED;
+
+struct AcpiAddress {
+    uint8_t addressSpaceID;  // 0 - System Memory
+                             // 1 - System I/O
+    uint8_t registerBitWidth;
+    uint8_t registerBitOffset;
+    uint8_t reserved;
+    uint64_t address;
 } PACKED;
 
 template <typename T>
