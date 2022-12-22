@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "firefly/boot/boot_mem.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
@@ -20,7 +21,7 @@ alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
 };
-
+#include "firefly/logger.hpp"
 void bootloaderServicesInit() {
     using namespace firefly::kernel;
     const auto verify = [](auto tag) {
@@ -33,7 +34,8 @@ void bootloaderServicesInit() {
 
     auto tagmem = verify(memmap.response);
 
-    core::paging::bootMapExtraRegion(tagmem);
+    firefly::boot::bootMapExtraRegion(tagmem);
+
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
 

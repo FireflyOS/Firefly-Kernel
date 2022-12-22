@@ -1,6 +1,7 @@
 #pragma once
 
 #include "firefly/intel64/cpu/cpu.hpp"
+#include "firefly/intel64/page_flags.hpp"
 #include "firefly/intel64/page_permissions.hpp"
 #include "firefly/intel64/paging.hpp"
 #include "firefly/logger.hpp"
@@ -35,16 +36,15 @@ public:
         Physical::deallocate(PhysicalAddress(pml4));
     }
 
-    void operator delete([[maybe_unused]] void *ptr) {
+    void operator delete([[maybe_unused]] void* ptr) {
     }
 
 protected:
     using T = uint64_t;
-
     bool hugePages = false;
 
     inline void initSpace(PhysicalAddress root) {
-        pml4 = static_cast<T *>(root);
+        pml4 = static_cast<core::paging::Pml*>(root);
         hugePages = cpuHugePages();
     }
 
@@ -69,8 +69,8 @@ protected:
         core::paging::invalidatePage(page);
     }
 
-    inline T root() const {
-        return reinterpret_cast<T>(pml4);
+    inline core::paging::Pml* root() const {
+        return pml4;
     }
 
     inline void loadAddressSpace() const {
@@ -78,6 +78,7 @@ protected:
     }
 
 private:
-    T *pml4;
+    // T *pml4;
+    core::paging::Pml* pml4;
 };
 }  // namespace firefly::kernel::mm
