@@ -21,7 +21,7 @@ alignas(uint16_t) static uint8_t stack[PageSize::Size4K * 2] = { 0 };
 USED struct limine_memmap_request memmap {
     .id = LIMINE_MEMMAP_REQUEST, .revision = 0, .response = nullptr
 };
-#include "firefly/logger.hpp"
+
 void bootloaderServicesInit() {
     using namespace firefly::kernel;
     const auto verify = [](auto tag) {

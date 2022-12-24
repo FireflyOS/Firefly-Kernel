@@ -1,7 +1,7 @@
 #include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/page_flags.hpp"
 #include "firefly/intel64/page_permissions.hpp"
-#include "firefly/memory-manager/primary/page_frame.hpp"
+#include "firefly/memory-manager/primary/buddy.hpp"
 #include "firefly/panic.hpp"
 #include "libk++/align.h"
 
@@ -9,7 +9,7 @@ namespace firefly::boot {
 using namespace kernel;
 using namespace core::paging;
 
-mm::PageFrame pageAllocator{};
+BuddyAllocator pageAllocator{};
 
 // Index within the Pml (0-511)
 inline int64_t getPmlOffset(const uint64_t virtual_addr, const int depth) {
@@ -18,7 +18,7 @@ inline int64_t getPmlOffset(const uint64_t virtual_addr, const int depth) {
 }
 
 inline uint64_t *allocatePageTable(uint64_t size = PageSize::Size4K) {
-    uint64_t *ptr = reinterpret_cast<uint64_t *>(pageAllocator.allocate());
+    uint64_t *ptr = pageAllocator.alloc(4096).unpack();
 
     if (!ptr)
         firefly::panic("Unable to allocate memory for a page-table");
@@ -69,6 +69,8 @@ void map(uint64_t virtual_addr, uint64_t physical_addr, AccessFlags access_flags
                  : "memory");
 }
 
+// Map some memory for the pagelist (page.hpp)
+// This is required for the Physical memory manager to function.
 void bootMapExtraRegion(limine_memmap_response *mmap) {
     constexpr int required_size = 4;
 
@@ -77,15 +79,16 @@ void bootMapExtraRegion(limine_memmap_response *mmap) {
         if (e->type != LIMINE_MEMMAP_USABLE || e->length < MiB(required_size))
             continue;
 
-        pageAllocator.init(PhysicalAddress(e->base), MiB(required_size));
+        pageAllocator.init(BuddyAllocator::AddressType(e->base), 22);
         e->base = libkern::align_up4k(e->base + MiB(required_size));
         e->length -= libkern::align_down4k(MiB(required_size));
         break;
     }
 
+    // clang-format off
     auto cr3{ 0ul };
-    asm volatile("mov %%cr3, %0"
-                 : "=r"(cr3));
+    asm volatile("mov %%cr3, %0": "=r"(cr3));
+    // clang-format on
 
     if (cpuHugePages()) {
         map(AddressLayout::PageData, 0, AccessFlags::ReadWrite, reinterpret_cast<const uint64_t *>(cr3), PageSize::Size1G);
