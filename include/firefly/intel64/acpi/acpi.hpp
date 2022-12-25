@@ -22,6 +22,14 @@ public:
     static Acpi& accessor();
 
     AcpiTable find(frg::string_view identifier) const;
+    AcpiTable mustFind(frg::string_view identifier) const {
+        auto const& table = find(identifier);
+        if (!table)
+            firefly::panic("Cannot find ACPI table!");
+
+        return table;
+    };
+
     void dumpTables() const;
 
 private:

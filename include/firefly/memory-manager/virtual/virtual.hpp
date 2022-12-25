@@ -11,7 +11,7 @@
 namespace firefly::kernel::mm {
 
 /* Represents kernel page tables. Global singleton. */
-class kernelPageSpace : VirtualSpace {
+class kernelPageSpace : public VirtualSpace {
 private:
     friend class frg::manual_box<kernelPageSpace>;
     kernelPageSpace(PhysicalAddress root) {

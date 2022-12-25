@@ -72,7 +72,8 @@ public:
 
         size = sz;
         slab_type = slabTypeOf(sz);
-        createSlab(descriptor);
+        this->descriptor = std::move(descriptor);
+        createSlab();
     }
 
     VirtualAddress allocate() {
@@ -90,9 +91,10 @@ public:
             _slab = slabs[SlabState::free].first();
 
             if (unlikely(!_slab)) {
-                panic("TODO: Slab cache is OOM. Implement grow()");
-                // grow();
-                // allocate();
+                // panic("TODO: Slab cache is OOM. Implement grow()");
+                grow();
+                _slab = slabs[SlabState::free].first();
+                assert_truth(_slab != nullptr && "Alloc for slab failed");
             }
 
             // Move a free slab into the partial slab
@@ -143,8 +145,11 @@ public:
         }
 
         if constexpr (debugSlab) {
-            logLine << "Slab is located at: " << fmt::hex << _slab << '\n';
-            logLine << "Descriptor: " << _slab->descriptor.data() << ", state: " << fmt::dec << (int)_slab->slab_state << '\n'
+            logLine << "Slab is located at: "
+                    << fmt::hex << reinterpret_cast<uintptr_t>(_slab) << '\n'
+                    << "Descriptor: " << this->descriptor.data()
+                    << ", state: " << fmt::dec << (int)_slab->slab_state
+                    << '\n'
                     << fmt::endl;
         }
 
@@ -165,10 +170,13 @@ public:
     }
 
 private:
-    void grow();
+    void grow() {
+        createSlab();
+    }
+
     void shrink();
 
-    void createSlab(const frg::string_view& descriptor) {
+    void createSlab() {
         size_t alloc_sz = slab_type == SlabType::Large ? PageSize::Size2M : PageSize::Size4K;
 
         if constexpr (debugSlab) {
@@ -191,6 +199,8 @@ private:
     SlabType slabTypeOf(int size) const {
         return size > static_cast<int>(PageSize::Size4K / 8) ? SlabType::Large : SlabType::Small;
     }
+
+    frg::string_view descriptor;
 
 private:
     struct slab {

@@ -39,6 +39,10 @@ public:
     void operator delete([[maybe_unused]] void* ptr) {
     }
 
+    void setCR3() {
+        loadAddressSpace();
+    }
+
 protected:
     using T = uint64_t;
     bool hugePages = false;

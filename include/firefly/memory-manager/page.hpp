@@ -22,10 +22,8 @@ enum class RawPageFlags : int {
 struct RawPage {
     RawPageFlags flags;
     int order;
-    union {
-        int buddy_index;
-        int slab_size;
-    };
+    int buddy_index;
+    int slab_size;
     std::atomic_int refcount;
 
     void operator=(const RawPage &other) {

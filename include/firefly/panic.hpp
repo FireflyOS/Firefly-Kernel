@@ -12,7 +12,8 @@ panic(const char *msg) {
     trace::trace_callstack();
 
     while (1)
-        asm volatile("hlt");
+        // asm volatile("cli; hlt");
+        asm volatile("sti; hlt");
 }
 
 [[gnu::used]] [[noreturn]] static void
@@ -22,7 +23,7 @@ assertion_failure_panic(const char *msg) {
     trace::trace_callstack();
 
     while (1)
-        asm volatile("hlt");
+        asm volatile("cli; hlt");
 }
 
 }  // namespace firefly

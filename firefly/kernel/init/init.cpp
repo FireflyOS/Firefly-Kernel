@@ -4,14 +4,15 @@
 #include "firefly/boot/boot_mem.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
+#include "firefly/intel64/cpu/ap/ap.hpp"
 #include "firefly/intel64/cpu/cpu.hpp"
-#include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/kernel.hpp"
 #include "firefly/limine.hpp"
 #include "firefly/logger.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/memory-manager/stack.hpp"
 #include "firefly/memory-manager/virtual/virtual.hpp"
+#include "firefly/timer/timer.hpp"
 #include "firefly/trace/sanitizer/kasan.hpp"
 
 constinit frg::manual_box<kernelStack> kStack;
@@ -38,6 +39,7 @@ void bootloaderServicesInit() {
 
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();
+    mm::kernelHeap::init();
 
     core::acpi::Acpi::init();
     console::init();
@@ -58,12 +60,11 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     asm volatile("mov %0, %%rsp" :: "r"(stk.rsp) : "memory");
     // clang-format off
 
-    firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
-    firefly::kernel::core::interrupt::init();
-
     bootloaderServicesInit();
+    firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
+    firefly::kernel::applicationProcessor::startAllCores();
+    firefly::kernel::timer::init();
 
     firefly::kernel::kernel_main();
     __builtin_unreachable();
 }
-

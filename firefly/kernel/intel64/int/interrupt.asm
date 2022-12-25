@@ -1,9 +1,12 @@
 bits 64
 
 global interrupt_wrapper
+global irq_wrapper
 global assign_cpu_exceptions
+global assign_irq_handlers
 
 extern interrupt_handler
+extern irq_handler
 extern update
 
 %macro popa64 0
@@ -51,6 +54,12 @@ CPU_INTR%1:
 CPU_INTR_ERR%1:
     push %1
     call interrupt_wrapper
+%endmacro
+
+%macro CPU_IRQ 1
+CPU_IRQ%1:
+	push %1
+	call irq_wrapper
 %endmacro
 
 %macro register_handler 1
@@ -112,4 +121,30 @@ interrupt_wrapper:
 
     popa64
 	add rsp, 16
+    iretq
+
+; IRQs
+
+%assign i 0x20
+%rep 16
+CPU_IRQ i
+%assign i i+1
+%endrep
+
+assign_irq_handlers:
+    %assign i 0x20
+    %rep 16
+    	register_handler CPU_IRQ%+i
+    %assign i i+1
+    %endrep
+    ret
+
+irq_wrapper:
+    cld
+    pusha64
+
+    call irq_handler
+
+    popa64
+    	add rsp, 16
     iretq
