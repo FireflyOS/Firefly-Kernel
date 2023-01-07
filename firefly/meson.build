@@ -53,7 +53,7 @@ cxx_files += files('libk++/fmt.cpp', 'libk++/memory.cpp', 'libk++/utils.cpp', 'l
 cxx_files += files(
     'kernel/kernel.cpp', 'kernel/stubs.cpp', 'kernel/drivers/ps2.cpp', 'kernel/logger.cpp',
     'kernel/drivers/serial.cpp', 'kernel/intel64/int/interrupt.cpp', 'kernel/memory-manager/primary/primary_phys.cpp',
-    'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp',
+    'kernel/intel64/gdt/gdt.cpp', 'kernel/intel64/gdt/tss.cpp', 'kernel/init/init.cpp', 'kernel/boot/boot_mem.cpp',
     'kernel/trace/strace.cpp', 'kernel/trace/symbols.cpp', 'kernel/memory-manager/virtual/virtual.cpp',
     'kernel/console/console.cpp', 'kernel/intel64/acpi/acpi.cpp', 'kernel/graphics/framebuffer.cpp', 
     'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp', 'kernel/intel64/cpu/ap/ap.cpp',

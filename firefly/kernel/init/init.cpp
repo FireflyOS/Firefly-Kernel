@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "firefly/boot/boot_mem.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/acpi/acpi.hpp"
 #include "firefly/intel64/cpu/ap/ap.hpp"
@@ -34,7 +35,7 @@ void bootloaderServicesInit() {
 
     auto tagmem = verify(memmap.response);
 
-    core::paging::bootMapExtraRegion(tagmem);
+    firefly::boot::bootMapExtraRegion(tagmem);
 
     mm::Physical::init(tagmem);
     mm::kernelPageSpace::init();

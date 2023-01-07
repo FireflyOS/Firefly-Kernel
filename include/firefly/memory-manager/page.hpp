@@ -92,6 +92,10 @@ public:
         return get_page(p) << PAGE_SHIFT;
     }
 
+    inline auto pfn(uint64_t addr) const {
+        return addr >> PAGE_SHIFT;
+    }
+
     auto operator[](Index i) const {
         auto const &page = phys_to_page(i);
         return array_operator{ .page = page, .address = page_to_phys(page) };
