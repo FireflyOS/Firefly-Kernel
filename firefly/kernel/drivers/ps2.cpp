@@ -6,6 +6,7 @@
 #include "firefly/compiler/compiler.hpp"
 #include "firefly/console/console.hpp"
 #include "firefly/intel64/cpu/apic/apic.hpp"
+#include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 
 namespace firefly::drivers::ps2 {
@@ -130,7 +131,7 @@ void handle_input(unsigned char scancode) {
         }
 }
 
-static void ps2_irq_handler() {
+static void ps2_irq_handler(kernel::Registers*) {
     auto const sc = get_scancode();
     if (sc.has_value()) {
         handle_input(sc.value());

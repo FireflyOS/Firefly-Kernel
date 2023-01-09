@@ -2,16 +2,16 @@
 
 #include <cstdint>
 
-namespace firefly::kernel::core::interrupt {
-void init();
+#include "firefly/intel64/cpu/cpu.hpp"
 
-// test interrupt handler
-void test_int();
+namespace firefly::kernel::core::interrupt {
+
+void init();
 
 // register IRQ handler
 // No need to call update() as we just write it to a table with handlers
-// for the actual interrupt handler
-void registerIRQHandler(void (*handler)(), uint8_t irq);
+// for the actual interrupt handlers
+void registerIRQHandler(void (*handler)(Registers*), uint8_t irq);
 void unregisterIRQHandler(uint8_t irq);
 
 namespace change {

@@ -1,11 +1,15 @@
 #include "firefly/timer/timer.hpp"
 
 #include "firefly/intel64/cpu/apic/apic.hpp"
+#include "firefly/intel64/cpu/cpu.hpp"
 #include "firefly/intel64/hpet/hpet.hpp"
 #include "firefly/intel64/int/interrupt.hpp"
 #include "firefly/intel64/pit/pit.hpp"
 #include "firefly/logger.hpp"
+#include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
+#include "libk++/memory.hpp"
+
 
 namespace firefly::kernel {
 // TODO: rework this, probably a better solution
@@ -14,11 +18,12 @@ namespace timer {
 namespace {
 // This will just get increased
 static volatile uint64_t ticks = 0;
+static volatile uint32_t ticks_20ms = 0;
 }  // namespace
 
-void timer_irq() {
-    debugLine << "timer\n"
-              << fmt::endl;
+
+void timer_irq(Registers* stack) {
+    // apic::ApicTimer::accessor().oneShotTimer(ticks_20ms);
 }
 
 void init() {
@@ -27,11 +32,16 @@ void init() {
     core::interrupt::registerIRQHandler(timer_irq, 0);
     if (apic::ApicTimer::isAvailable()) {
         apic::ApicTimer::init();
+        ticks_20ms = 200 * apic::ApicTimer::accessor().calibrate(100);
     } else {
         pit::init();
     }
     return;
     // panic("No usable timer found");
+}
+
+void start() {
+    apic::ApicTimer::accessor().oneShotTimer(ticks_20ms);
 }
 
 // Probably call this function in the IRQ handler, or whatever the timer fires

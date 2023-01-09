@@ -22,35 +22,10 @@ struct __attribute__((packed)) idt_gate {
 
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
-struct __attribute__((packed)) iframe {
-    int64_t r15;
-    int64_t r14;
-    int64_t r13;
-    int64_t r12;
-    int64_t r11;
-    int64_t r10;
-    int64_t r9;
-    int64_t r8;
-    int64_t rsi;
-    int64_t rdi;
-    int64_t rbp;
-    int64_t rdx;
-    int64_t rcx;
-    int64_t rbx;
-    int64_t rax;
-    int64_t int_no;
-    int64_t err;
-    int64_t rip;
-    int64_t cs;
-    int64_t rflags;
-    int64_t rsp;
-    int64_t ss;
-};
-
 extern "C" {
-void interrupt_handler(iframe iframe);
-void irq_handler(iframe iframe);
-void exception_handler([[maybe_unused]] iframe iframe);
+void interrupt_handler(InterruptStack iframe);
+InterruptStack* irq_handler(InterruptStack* iframe);
+void exception_handler([[maybe_unused]] InterruptStack iframe);
 void interrupt_wrapper();
 void exception_wrapper();
 void assign_cpu_exceptions();
@@ -128,7 +103,7 @@ void init() {
         : "memory");
 }
 
-void interrupt_handler(iframe iframe) {
+void interrupt_handler(InterruptStack iframe) {
     logLine << "Exception: " << exceptions[iframe.int_no] << "\n"
             << fmt::endl;
     logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
@@ -158,9 +133,9 @@ void interrupt_handler(iframe iframe) {
 }
 
 // TODO: maybe use a frg style array?
-static void (*irqHandlers[24])() = { nullptr };
+static void (*irqHandlers[24])(Registers*) = { nullptr };
 
-void registerIRQHandler(void (*handler)(), uint8_t irq) {
+void registerIRQHandler(void (*handler)(Registers*), uint8_t irq) {
     assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
@@ -169,14 +144,15 @@ void unregisterIRQHandler(uint8_t irq) {
     irqHandlers[irq] = nullptr;
 }
 
-void irq_handler(iframe iframe) {
-    uint8_t irq = iframe.int_no - apic::LVT_BASE;
+InterruptStack* irq_handler(InterruptStack* stack) {
+    uint8_t irq = stack->int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
-        irqHandlers[irq]();
+        irqHandlers[irq](stack);
     } else {
-        debugLine << "Unhandled IRQ received! IRQ #" << iframe.int_no - apic::LVT_BASE << "\n";
+        debugLine << "Unhandled IRQ received! IRQ #" << stack->int_no - apic::LVT_BASE << "\n";
     }
     apic::Apic::accessor().sendEOI();
+    return stack;
 }
 
 }  // namespace firefly::kernel::core::interrupt

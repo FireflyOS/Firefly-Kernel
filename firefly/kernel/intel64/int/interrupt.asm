@@ -120,7 +120,7 @@ interrupt_wrapper:
     call interrupt_handler
 
     popa64
-	add rsp, 16
+	  add rsp, 16
     iretq
 
 ; IRQs
@@ -143,7 +143,9 @@ irq_wrapper:
     cld
     pusha64
 
+    mov rdi, rsp
     call irq_handler
+    mov rsp, rax
 
     popa64
     	add rsp, 16
