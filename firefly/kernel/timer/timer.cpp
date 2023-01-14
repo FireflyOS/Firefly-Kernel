@@ -9,12 +9,7 @@
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
-#include "frg/vector.hpp"
-#include "libk++/memory.hpp"
-
-// clang-format disable
-#include "firefly/tasks/task.hpp"
-// clang-format enable
+#include "firefly/tasks/scheduler.hpp"
 
 namespace firefly::kernel {
 // TODO: rework this, probably a better solution
@@ -24,48 +19,18 @@ namespace {
 // This will just get increased
 static volatile uint64_t ticks = 0;
 static volatile uint32_t ticks_20ms = 0;
-static frg::vector<tasks::Task, Allocator> tasks;
-static volatile uint8_t cur = 0xFF;
 }  // namespace
 
 void timer_irq(Registers* stack) {
-    // debugLine << "timer\n"
-    //              << fmt::endl;
-    switch (cur) {
-        case 0xFF:
-            tasks[0].load(stack);
-            cur = 0;
-            break;
-        case 0:
-            tasks[0].save(stack);
-            tasks[1].load(stack);
-            cur = 1;
-            break;
-        case 1:
-            tasks[1].save(stack);
-            tasks[0].load(stack);
-            cur = 0;
-            break;
-        default:
-            break;
+    if (tasks::Scheduler::accessor().getTask() == nullptr) {
+        tasks::Scheduler::accessor().schedule();
+        tasks::Scheduler::accessor().getTask()->load(stack);
+    } else {
+        tasks::Scheduler::accessor().getTask()->save(stack);
+        tasks::Scheduler::accessor().schedule();
+        tasks::Scheduler::accessor().getTask()->load(stack);
     }
-    apic::ApicTimer::accessor().oneShotTimer(ticks_20ms);
-}
-
-void loop1() {
-    debugLine << "loop 1 \n"
-              << fmt::endl;
-
-    for (;;) {
-    }
-}
-
-void loop2() {
-    debugLine << "loop 2\n"
-              << fmt::endl;
-
-    for (;;) {
-    }
+    start();
 }
 
 void start() {
@@ -83,14 +48,6 @@ void init() {
         pit::init();
     }
 
-    auto sp1 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
-    auto sp2 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
-    auto task1 = tasks::Task(reinterpret_cast<std::uintptr_t>(&loop1), sp1);
-    auto task2 = tasks::Task(reinterpret_cast<std::uintptr_t>(&loop2), sp2);
-    tasks.push(task1);
-    tasks.push(task2);
-    debugLine << "TASK #0 RIP " << fmt::hex << tasks[0].getRip() << '\n'
-              << fmt::endl;
     return;
     // panic("No usable timer found");
 }
