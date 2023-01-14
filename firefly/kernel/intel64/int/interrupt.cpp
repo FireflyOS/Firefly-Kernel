@@ -145,11 +145,16 @@ void unregisterIRQHandler(uint8_t irq) {
 }
 
 InterruptStack* irq_handler(InterruptStack* stack) {
+    /*
+      debugLine << "RIP FROM INT: 0x" << fmt::hex << stack->rip << '\n'
+     << fmt::endl;
+     */
     uint8_t irq = stack->int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
         irqHandlers[irq](stack);
     } else {
-        debugLine << "Unhandled IRQ received! IRQ #" << stack->int_no - apic::LVT_BASE << "\n";
+        debugLine << "Unhandled IRQ received! IRQ #" << stack->int_no - apic::LVT_BASE << "\n"
+                  << fmt::endl;
     }
     apic::Apic::accessor().sendEOI();
     return stack;

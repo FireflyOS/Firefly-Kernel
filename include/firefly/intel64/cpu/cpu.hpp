@@ -18,8 +18,8 @@ struct __attribute__((packed)) InterruptStack {
     int64_t r10;
     int64_t r9;
     int64_t r8;
-    int64_t rsi;
     int64_t rdi;
+    int64_t rsi;
     int64_t rbp;
     int64_t rdx;
     int64_t rcx;

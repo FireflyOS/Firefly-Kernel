@@ -61,7 +61,9 @@ void log_core_firefly_contributors() {
 
     firefly::drivers::ps2::init();
     timer::start();
-
+    for (;;) {
+        // wait for scheduler to start
+    }
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }
