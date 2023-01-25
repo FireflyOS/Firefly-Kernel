@@ -12,6 +12,7 @@
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
+#include "firefly/tasks/scheduler.hpp"
 #include "firefly/timer/timer.hpp"
 
 [[maybe_unused]] constexpr short MAJOR_VERSION = 0;
@@ -37,6 +38,32 @@ void log_core_firefly_contributors() {
             << fmt::endl;
 }
 
+void loop1() {
+    debugLine << "loop 1 \n"
+              << fmt::endl;
+
+    for (;;) {
+        asm volatile("hlt");
+    }
+}
+
+void loop2() {
+    debugLine << "loop 2\n"
+              << fmt::endl;
+
+    for (;;) {
+        asm volatile("hlt");
+    }
+}
+
+void loop3() {
+    debugLine << "loop 3\n"
+              << fmt::endl;
+    for (;;) {
+        asm volatile("hlt");
+    }
+}
+
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
@@ -60,7 +87,22 @@ void log_core_firefly_contributors() {
             << fmt::endl;
 
     firefly::drivers::ps2::init();
+    tasks::Scheduler::init();
 
+    auto sp1 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
+    auto sp2 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
+    auto sp3 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
+    tasks::Scheduler::accessor().addTask(
+        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop1), sp1));
+    tasks::Scheduler::accessor().addTask(
+        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop2), sp2));
+    tasks::Scheduler::accessor().addTask(
+        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop3), sp3));
+
+    timer::start();
+    for (;;) {
+        // wait for scheduler to start
+    }
     panic("Reached the end of the kernel");
     __builtin_unreachable();
 }

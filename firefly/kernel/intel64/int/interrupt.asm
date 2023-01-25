@@ -1,30 +1,11 @@
 bits 64
 
-global interrupt_wrapper
-global irq_wrapper
 global assign_cpu_exceptions
 global assign_irq_handlers
 
 extern interrupt_handler
 extern irq_handler
 extern update
-
-%macro popa64 0
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rbx
-    pop rax
-%endmacro
 
 %macro pusha64 0
     push rax
@@ -33,6 +14,7 @@ extern update
     push rdx
     push rsi
     push rdi
+    push rbp
     push r8
     push r9
     push r10
@@ -43,23 +25,43 @@ extern update
     push r15
 %endmacro
 
+%macro popa64 0
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbp
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+%endmacro
+
 %macro CPU_INTR 1
 CPU_INTR%1:
-    push 0
-    push %1
-    call interrupt_wrapper
+    push qword 0xff
+    push qword %1
+    jmp interrupt_wrapper
 %endmacro
 
 %macro CPU_INTR_ERR 1
 CPU_INTR_ERR%1:
-    push %1
-    call interrupt_wrapper
+    ; error code will be pushed by CPU
+    push qword %1
+    jmp interrupt_wrapper
 %endmacro
 
 %macro CPU_IRQ 1
 CPU_IRQ%1:
-	push %1
-	call irq_wrapper
+  push qword 0xff ; dummy error code
+	push qword %1
+	jmp irq_wrapper
 %endmacro
 
 %macro register_handler 1
@@ -116,11 +118,12 @@ interrupt_wrapper:
     cld
     pusha64
     ; also save SSE state when we figure that out
+    ; note from @legendary-cookie: is saving SSE needed on a non-task switching interrupt?
 
     call interrupt_handler
 
     popa64
-	add rsp, 16
+	    add rsp, 16
     iretq
 
 ; IRQs
@@ -143,7 +146,9 @@ irq_wrapper:
     cld
     pusha64
 
+    mov rdi, rsp
     call irq_handler
+    mov rsp, rax
 
     popa64
     	add rsp, 16

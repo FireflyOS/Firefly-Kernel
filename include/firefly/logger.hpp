@@ -69,7 +69,9 @@ public:
     // Special case:
     // Handles the base of a number using fmt_options::__{dec, hex, etc}
     template <typename NumberBase>
-    ostream &operator<<(NumberBase nb) requires std::is_class_v<NumberBase> {
+    ostream &operator<<(NumberBase nb)
+        requires std::is_class_v<NumberBase>
+    {
         base = static_cast<format_base>(nb.base);
         return *this;
     }

@@ -22,7 +22,7 @@ static void timer_callback() {
 }
 
 void init() {
-    core::interrupt::registerIRQHandler(timer_callback, apic::IOApic::getGSI(0));
+    // core::interrupt::registerIRQHandler(timer_callback, apic::IOApic::getGSI(0));
     apic::enableIRQ(0);
 
     const uint32_t divisor = PIT_HZ / PIT_FREQUENCY;
