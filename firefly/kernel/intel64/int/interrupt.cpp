@@ -23,9 +23,9 @@ struct __attribute__((packed)) idt_gate {
 static_assert(16 == sizeof(idt_gate), "idt_gate size incorrect");
 
 extern "C" {
-void interrupt_handler(InterruptStack iframe);
-InterruptStack* irq_handler(InterruptStack* iframe);
-void exception_handler([[maybe_unused]] InterruptStack iframe);
+void interrupt_handler(InterruptFrame iframe);
+InterruptFrame* irq_handler(InterruptFrame* iframe);
+void exception_handler([[maybe_unused]] InterruptFrame iframe);
 void interrupt_wrapper();
 void exception_wrapper();
 void assign_cpu_exceptions();
@@ -103,7 +103,7 @@ void init() {
         : "memory");
 }
 
-void interrupt_handler(InterruptStack iframe) {
+void interrupt_handler(InterruptFrame iframe) {
     logLine << "Exception: " << exceptions[iframe.int_no] << "\n"
             << fmt::endl;
     logLine << "Int#: " << iframe.int_no << "\nError code: " << iframe.err << fmt::endl;
@@ -132,10 +132,10 @@ void interrupt_handler(InterruptStack iframe) {
         asm("cli\nhlt");
 }
 
-// TODO: maybe use a frg style array?
-static void (*irqHandlers[24])(Registers*) = { nullptr };
+using InterruptHandlerCallback = void (*)(ContextRegisters*);
+static frg::array<InterruptHandlerCallback, 24> irqHandlers;
 
-void registerIRQHandler(void (*handler)(Registers*), uint8_t irq) {
+void registerIRQHandler(void (*handler)(ContextRegisters*), uint8_t irq) {
     assert_truth(irqHandlers[irq] == nullptr && "Tried to overwrite IRQ handler");
     irqHandlers[irq] = handler;
 }
@@ -144,11 +144,7 @@ void unregisterIRQHandler(uint8_t irq) {
     irqHandlers[irq] = nullptr;
 }
 
-InterruptStack* irq_handler(InterruptStack* stack) {
-    /*
-      debugLine << "RIP FROM INT: 0x" << fmt::hex << stack->rip << '\n'
-     << fmt::endl;
-     */
+InterruptFrame* irq_handler(InterruptFrame* stack) {
     uint8_t irq = stack->int_no - apic::LVT_BASE;
     if (irqHandlers[irq] != nullptr) {
         irqHandlers[irq](stack);

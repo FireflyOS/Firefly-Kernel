@@ -11,7 +11,7 @@ void init();
 // register IRQ handler
 // No need to call update() as we just write it to a table with handlers
 // for the actual interrupt handlers
-void registerIRQHandler(void (*handler)(Registers*), uint8_t irq);
+void registerIRQHandler(void (*handler)(ContextRegisters*), uint8_t irq);
 void unregisterIRQHandler(uint8_t irq);
 
 namespace change {

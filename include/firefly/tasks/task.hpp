@@ -11,11 +11,11 @@ public:
         : context(entrypoint, sp) {
     }
 
-    void load(Registers* regs) {
+    void load(ContextRegisters* regs) {
         this->context.load(regs);
     }
 
-    void save(const Registers* regs) {
+    void save(const ContextRegisters* regs) {
         this->context.save(regs);
     }
 

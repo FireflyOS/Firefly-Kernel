@@ -27,8 +27,8 @@ public:
         return currentTask;
     }
 
-    void addTask(Task _task) {
-        tasks.push(_task);
+    void addTask(Task task) {
+        tasks.push(task);
     }
 
 protected:

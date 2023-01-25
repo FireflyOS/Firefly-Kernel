@@ -123,7 +123,7 @@ interrupt_wrapper:
     call interrupt_handler
 
     popa64
-	  add rsp, 16
+	    add rsp, 16
     iretq
 
 ; IRQs

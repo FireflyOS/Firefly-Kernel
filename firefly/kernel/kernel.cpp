@@ -43,6 +43,7 @@ void loop1() {
               << fmt::endl;
 
     for (;;) {
+        asm volatile("hlt");
     }
 }
 
@@ -51,6 +52,7 @@ void loop2() {
               << fmt::endl;
 
     for (;;) {
+        asm volatile("hlt");
     }
 }
 
@@ -58,6 +60,7 @@ void loop3() {
     debugLine << "loop 3\n"
               << fmt::endl;
     for (;;) {
+        asm volatile("hlt");
     }
 }
 

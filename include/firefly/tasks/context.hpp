@@ -14,25 +14,32 @@ class Context {
 
 public:
     Context(uintptr_t ip, uintptr_t sp) {
-        memset(&regs, 0, sizeof(Registers));
+        memset(&regs, 0, sizeof(ContextRegisters));
         // set entrypoint
         regs.rip = ip;
-        // TODO: change this
-        regs.rflags = (1 << 9) | (1 << 1);
+        // set rflags
+        RFlags rflags;
+        rflags.fields.interruptEnable = 1;
+        rflags.fields.carry = 1;
+        regs.rflags = rflags.All;
         // TODO: user mode data selectors
         regs.cs = core::gdt::gdtEntryOffset(SegmentSelector::kernCS);
         regs.ss = core::gdt::gdtEntryOffset(SegmentSelector::kernDS);
         // setup the stack registers
-        // TODO: change this probably
+        // TODO: change this
         regs.rbp = (int64_t)sp;
         regs.rsp = (int64_t)sp + 4096 * 2;
     }
 
-    void save(const Registers* regs);
-    void load(Registers* regs);
+    inline void save(const ContextRegisters* regs) {
+        this->regs = *regs;
+    }
+    inline void load(ContextRegisters* regs) {
+        *regs = this->regs;
+    }
 
 private:
-    Registers regs;
+    ContextRegisters regs;
 };
 
 }  // namespace firefly::kernel::tasks

@@ -59,7 +59,7 @@ cxx_files += files(
     'kernel/intel64/paging.cpp', 'kernel/intel64/cpu/cpu.cpp', 'kernel/intel64/cpu/ap/ap.cpp',
     'kernel/intel64/cpu/apic/apic.cpp', 'kernel/intel64/pit/pit.cpp',
     'kernel/intel64/cpu/apic/ioapic.cpp', 'kernel/intel64/cpu/cpu.cpp', 'kernel/trace/sanitizer/kasan.cpp',
-    'kernel/memory-manager/secondary/heap.cpp', 'kernel/tasks/context.cpp',
+    'kernel/memory-manager/secondary/heap.cpp',
     'kernel/tasks/scheduler.cpp',
     'kernel/timer/timer.cpp', 'kernel/intel64/hpet/hpet.cpp'
 )

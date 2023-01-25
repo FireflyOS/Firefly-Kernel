@@ -21,7 +21,7 @@ static volatile uint64_t ticks = 0;
 static volatile uint32_t ticks_20ms = 0;
 }  // namespace
 
-void timer_irq(Registers* stack) {
+void timer_irq(ContextRegisters* stack) {
     if (tasks::Scheduler::accessor().getTask() == nullptr) {
         tasks::Scheduler::accessor().schedule();
         tasks::Scheduler::accessor().getTask()->load(stack);
