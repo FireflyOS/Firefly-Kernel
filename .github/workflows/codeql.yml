@@ -72,12 +72,12 @@ jobs:
         ./packaging/create_zipapp.py --outfile meson.pyz --interpreter '/usr/bin/env python3'
         chmod +x ./meson.pyz
         alias meson='meson-0.60.1/meson.pyz'
-        meson --version
 
     - run: |
         echo "Listing directory contents..."
         ls -lah
         ls -lah ../
+        meson --version
 
     - run: |
         echo "Build kernel"
