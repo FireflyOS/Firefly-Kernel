@@ -62,7 +62,17 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
     - run: |
         echo "Installing dependencies"
-        sudo apt install meson ninja-build nasm clang lld
+        sudo apt install ninja-build nasm clang lld python3.11
+        
+    - run: |
+        echo "Installing meson version 0.60.1"
+        wget https://github.com/mesonbuild/meson/releases/download/0.60.1/meson-0.60.1.tar.gz
+        tar -xf meson-0.60.1.tar.gz
+        cd meson-0.60.1/
+        ./packaging/create_zipapp.py --outfile meson.pyz --interpreter '/usr/bin/env python3'
+        chmod +x ./meson.pyz
+        alias meson='meson-0.60.1/meson.pyz'
+        meson --version
 
     - run: |
         echo "Listing directory contents..."
