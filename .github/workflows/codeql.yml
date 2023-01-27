@@ -62,7 +62,7 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
     - run: |
         echo "Installing dependencies"
-        sudo apt install ninja-build nasm clang lld python3.11
+        sudo apt install ninja-build nasm clang lld python3.11 git
         
     - run: |
         echo "Installing meson version 0.60.1"
@@ -71,16 +71,14 @@ jobs:
         cd meson-0.60.1/
         ./packaging/create_zipapp.py --outfile meson.pyz --interpreter '/usr/bin/env python3'
         chmod +x ./meson.pyz
-
+        
     - run: |
-        echo "Listing directory contents..."
-        ls -lah
-        ls -lah ../
-        ./meson-0.60.1/meson.pyz --version
+        echo "Installing submodules"
+        git submodule init && git submodule update
 
     - run: |
         echo "Build kernel"
-        ./meson-0.60.1/meson.pyz build --cross-file meson_config.txt && ./meson-0.60.1/meson.pyz compile
+        ./meson-0.60.1/meson.pyz build --cross-file meson_config.txt && cd build && ../meson-0.60.1/meson.pyz compile
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
