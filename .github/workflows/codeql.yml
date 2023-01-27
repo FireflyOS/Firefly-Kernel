@@ -71,17 +71,16 @@ jobs:
         cd meson-0.60.1/
         ./packaging/create_zipapp.py --outfile meson.pyz --interpreter '/usr/bin/env python3'
         chmod +x ./meson.pyz
-        alias meson='meson-0.60.1/meson.pyz'
 
     - run: |
         echo "Listing directory contents..."
         ls -lah
         ls -lah ../
-        meson --version
+        ./meson-0.60.1/meson.pyz --version
 
     - run: |
         echo "Build kernel"
-        meson build --cross-file meson_config.txt && meson compile
+        ./meson-0.60.1/meson.pyz build --cross-file meson_config.txt && ./meson-0.60.1/meson.pyz compile
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
