@@ -71,10 +71,17 @@ jobs:
         cd meson-0.60.1/
         ./packaging/create_zipapp.py --outfile meson.pyz --interpreter '/usr/bin/env python3'
         chmod +x ./meson.pyz
-        
+      
+#     TODO: Some submodules use ssh which won't work since codeQL doesn't have it setup.
+#     - run: |
+#         echo "Installing submodules"
+#         git submodule init && git submodule update
+
     - run: |
-        echo "Installing submodules"
-        git submodule init && git submodule update
+        echo "Installing submodules the hacky way (refer to codeql.yml for details)"
+        cd include/
+        git clone https://github.com/FireflyOS/cxxshim.git
+        git clone https://github.com/FireflyOS/frigg.git
 
     - run: |
         echo "Build kernel"
