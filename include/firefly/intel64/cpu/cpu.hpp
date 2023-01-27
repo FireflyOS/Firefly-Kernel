@@ -4,10 +4,6 @@
 #include "firefly/intel64/gdt/tss.hpp"
 #include "libk++/bits.h"
 
-// Note: This is purposely bare-bones and lacking a
-// proper "per cpu" structure (i.e. gsbase and co).
-// There is no smp yet, but I'd prefer to structure
-// everything in a way so that it's easy to get it up and running.
 namespace firefly::kernel {
 struct __attribute__((packed)) InterruptFrame {
     int64_t r15;
@@ -36,7 +32,7 @@ struct __attribute__((packed)) InterruptFrame {
     int64_t ss;
 };
 
-typedef InterruptFrame ContextRegisters;
+using ContextRegisters = InterruptFrame;
 
 union RFlags {
     uint64_t All;
@@ -63,13 +59,19 @@ union RFlags {
         int8_t virtualInterruptPending : 1;
         int8_t id : 1;
         int64_t reserved4 : 41;
-
-
     } fields PACKED;
 };
 
-// Per-cpu structure
-struct CpuData {
+enum class ModelSpecificRegisters : uint64_t {
+    GsBase = 0xC0000101,
+};
+
+// Per-cpu structures
+struct AssemblyCpuData {
+    AssemblyCpuData *selfPointer;
+} PACKED;
+
+struct CpuData : public AssemblyCpuData {
     core::gdt::Gdt gdt;
     core::tss::Tss tss;
 } PACKED;
@@ -108,6 +110,22 @@ inline void delay(uint64_t cycles) {
     uint64_t next_stop = rdtsc() + cycles;
     while (rdtsc() < next_stop)
         ;
+}
+
+inline void wrmsr(uint32_t index, uint64_t value) {
+    uint32_t low = value;
+    uint32_t high = value >> 32;
+    asm volatile("wrmsr" ::"c"(index), "a"(low), "d"(high)
+                 : "memory");
+}
+
+inline uint64_t rdmsr(uint32_t index) {
+    uint32_t low, high;
+    asm volatile("rdmsr"
+                 : "=a"(low), "=d"(high)
+                 : "c"(index)
+                 : "memory");
+    return ((uint64_t)high << 32) | (uint64_t)low;
 }
 
 }  // namespace firefly::kernel
