@@ -65,6 +65,11 @@ jobs:
         sudo apt install meson ninja-build nasm clang lld
 
     - run: |
+        echo "Listing directory contents..."
+        ls -lah
+        ls -lah ../
+
+    - run: |
         echo "Build kernel"
         meson build --cross-file meson_config.txt && meson compile
 
