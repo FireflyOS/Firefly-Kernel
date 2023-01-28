@@ -62,7 +62,7 @@ union RFlags {
     } fields PACKED;
 };
 
-enum class ModelSpecificRegisters : uint64_t {
+enum MSR : uint32_t {
     GsBase = 0xC0000101,
 };
 
@@ -72,12 +72,22 @@ struct AssemblyCpuData {
 } PACKED;
 
 struct CpuData : public AssemblyCpuData {
+    uint8_t cpuIndex;
+
     core::gdt::Gdt gdt;
     core::tss::Tss tss;
 } PACKED;
 
+// from managarm
+void setupCpuContext(AssemblyCpuData *context);
+void setupBootCpuContext();
+
+void initializeBootProccessor(uint64_t stack);
+void initializeApplicationProcessor(uint64_t stack);
+
 void initializeThisCpu(uint64_t stack);
-CpuData &thisCpu();
+CpuData *getCpuData(size_t k);
+CpuData *getCpuData();
 
 // from linux kernel source
 inline void native_cpuid(uint32_t *eax, uint32_t *ebx,

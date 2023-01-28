@@ -61,7 +61,8 @@ extern "C" [[noreturn]] [[gnu::naked]] void kernel_init() {
     // clang-format off
 
     bootloaderServicesInit();
-    firefly::kernel::initializeThisCpu(reinterpret_cast<uint64_t>(stack));
+
+    firefly::kernel::initializeBootProccessor(reinterpret_cast<uint64_t>(stack));
     firefly::kernel::applicationProcessor::startAllCores();
     firefly::kernel::timer::init();
 
