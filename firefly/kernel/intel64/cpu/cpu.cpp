@@ -32,7 +32,6 @@ void initializeBootProccessor(uint64_t stack) {
 }
 
 void initializeApplicationProcessor(uint64_t stack) {
-    // TODO: Check with @vo1d how to do this
     auto cpuData = new (mm::heap->allocate(sizeof(CpuData))) CpuData;
     setupCpuContext(cpuData);
     initializeThisCpu(stack);
