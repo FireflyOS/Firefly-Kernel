@@ -3,6 +3,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <firefly/compiler/compiler.hpp>
+
+namespace firefly::kernel {
+struct CpuData;
+}
+
 namespace firefly::kernel::core::tss {
 
 struct Tss {
@@ -40,6 +46,6 @@ struct descriptor {
     uint32_t reserved;
 } PACKED;
 
-void init(uint64_t stack);
+void init(CpuData* cpudata, uint64_t stack);
 
 }  // namespace firefly::kernel::core::tss

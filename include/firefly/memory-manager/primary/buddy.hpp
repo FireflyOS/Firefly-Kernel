@@ -349,8 +349,10 @@ public:
         auto page = pagelist.phys_to_page(reinterpret_cast<uint64_t>(ptr));
 
         // Not a buddy page
-        if (!page->is_buddy_page(BuddyAllocator::min_order))
+        if (!page->is_buddy_page(BuddyAllocator::min_order)) {
+            buddyLock.unlock();
             return;
+        }
 
         // Save some data before the page gets reset.
         int buddy_index = page->buddy_index;

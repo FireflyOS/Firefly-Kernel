@@ -69,6 +69,7 @@ CPU_IRQ%1:
     mov rsi, 0x8
     mov rdx, 0x8E
     mov rcx, i
+    mov r8, 0
     call update
 %endmacro
 

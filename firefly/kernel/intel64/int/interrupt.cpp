@@ -13,7 +13,7 @@ namespace firefly::kernel::core::interrupt {
 struct __attribute__((packed)) idt_gate {
     uint16_t offset_0;
     uint16_t selector;
-    uint8_t rsv_0;
+    uint8_t ist;
     uint8_t type;
     uint16_t offset_1;
     uint32_t offset_2;
@@ -70,10 +70,13 @@ static const char* exceptions[] = {
 };
 
 namespace change {
-extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index) {
+extern "C" void set_ist(uint8_t index, uint8_t ist) {
+    idt[index].ist = ist;
+}
+extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index, uint8_t ist) {
     idt[index].offset_0 = reinterpret_cast<size_t>(handler) & 0xffff;
     idt[index].selector = cs;
-    idt[index].rsv_0 = 0;
+    idt[index].ist = ist;
     idt[index].type = type;
     idt[index].offset_1 = reinterpret_cast<size_t>(handler) >> 16 & 0xffff;
     idt[index].offset_2 = reinterpret_cast<size_t>(handler) >> 32 & 0xffffffff;
@@ -98,6 +101,12 @@ struct __attribute__((packed)) idt_reg {
 void init() {
     assign_cpu_exceptions();
     assign_irq_handlers();
+
+    // check tss.cpp for IST usage
+    change::set_ist(8, 1);
+    change::set_ist(2, 2);
+    change::set_ist(1, 3);
+    change::set_ist(18, 4);
 
     asm("lidt %0" ::"m"(idtr)
         : "memory");
