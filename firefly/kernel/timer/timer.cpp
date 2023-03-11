@@ -22,7 +22,7 @@ static volatile uint32_t ticks_20ms = 0;
 }  // namespace
 
 void timer_irq(ContextRegisters* stack) {
-    auto& const scheduler = tasks::Scheduler::accessor();
+    auto& scheduler = tasks::Scheduler::accessor();
     if (scheduler.getTask() == nullptr) {
         scheduler.schedule();
         scheduler.getTask()->load(stack);
