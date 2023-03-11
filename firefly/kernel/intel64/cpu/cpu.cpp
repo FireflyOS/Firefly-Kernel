@@ -27,7 +27,7 @@ CpuData *getCpuData(size_t k) {
     return allCpuContexts[k];
 }
 
-CpuData *getCpuData() {
+CpuData *getLocalCpuData() {
     AssemblyCpuData *cpu_data;
     asm volatile("mov %%gs:0, %0"
                  : "=r"(cpu_data));
@@ -35,7 +35,6 @@ CpuData *getCpuData() {
 }
 
 void initializeThisCpu(uint64_t stack) {
-    // auto cpuData = getCpuData();
     auto cpuData = new (mm::heap->allocate(sizeof(CpuData))) CpuData;
     cpuData->selfPointer = cpuData;
 
@@ -51,6 +50,7 @@ void initializeThisCpu(uint64_t stack) {
     core::gdt::init(cpuData->gdt);
     core::tss::init(cpuData, stack);
 
+    // Write cpu data base to GS base
     wrmsr(MSR::GsBase, reinterpret_cast<uint64_t>(cpuData));
 
     firefly::kernel::core::interrupt::init();

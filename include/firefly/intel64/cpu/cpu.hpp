@@ -87,7 +87,7 @@ void initializeApplicationProcessor(uint64_t stack);
 
 void initializeThisCpu(uint64_t stack);
 CpuData *getCpuData(size_t k);
-CpuData *getCpuData();
+CpuData *getLocalCpuData();
 
 // from linux kernel source
 inline void native_cpuid(uint32_t *eax, uint32_t *ebx,
