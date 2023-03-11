@@ -12,8 +12,7 @@ panic(const char *msg) {
     trace::trace_callstack();
 
     while (1)
-        // asm volatile("cli; hlt");
-        asm volatile("sti; hlt");
+        asm volatile("cli; hlt");
 }
 
 [[gnu::used]] [[noreturn]] static void
