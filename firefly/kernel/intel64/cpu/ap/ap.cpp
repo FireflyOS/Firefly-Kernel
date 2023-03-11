@@ -33,7 +33,8 @@ void smp_main(struct limine_smp_info* info) {
     initializeApplicationProcessor(stack);
     initLock.unlock();
 
-    asm volatile("hlt");
+    for (;;)
+        asm volatile("cli; hlt");
 }
 
 void startAllCores() {
