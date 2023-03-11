@@ -1,14 +1,14 @@
 #pragma once
 
-#include <frg/vector.hpp>
-
 #include "firefly/logger.hpp"
-#include "firefly/memory-manager/allocator.hpp"
-#include "firefly/tasks/task.hpp"
+
+#ifdef SCHEDULER_ALGORITHM_GOES_HERE
+#else
+#include "scheduler-impl/round_robin.hpp" /* Default to RR because that's all we have */
+#endif
 
 namespace firefly::kernel::tasks {
-// TODO: Abstract, multiple sched impls
-class Scheduler {
+class Scheduler : SchedulerImpl {
 public:
     static Scheduler& accessor();
     static void init();
@@ -20,23 +20,13 @@ public:
     /**
      * Get next task
      */
-    Task* schedule() {
-        if (++n > tasks.size())
-            n = 1;
-        currentTask = &tasks[n - 1];
-        return currentTask;
+    inline Task* schedule() {
+        return onSchedule();
     }
 
-    void addTask(Task task) {
-        tasks.push(task);
+    inline void addTask(Task task) {
+        registerTask(task);
     }
-
-protected:
-    frg::vector<Task, Allocator> tasks;
-    Task* currentTask;
-
-private:
-    uint64_t n;
 };
 
 }  // namespace firefly::kernel::tasks
