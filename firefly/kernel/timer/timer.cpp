@@ -22,13 +22,14 @@ static volatile uint32_t ticks_20ms = 0;
 }  // namespace
 
 void timer_irq(ContextRegisters* stack) {
-    if (tasks::Scheduler::accessor().getTask() == nullptr) {
-        tasks::Scheduler::accessor().schedule();
-        tasks::Scheduler::accessor().getTask()->load(stack);
+    auto& const scheduler = tasks::Scheduler::accessor();
+    if (scheduler.getTask() == nullptr) {
+        scheduler.schedule();
+        scheduler.getTask()->load(stack);
     } else {
-        tasks::Scheduler::accessor().getTask()->save(stack);
-        tasks::Scheduler::accessor().schedule();
-        tasks::Scheduler::accessor().getTask()->load(stack);
+        scheduler.getTask()->save(stack);
+        scheduler.schedule();
+        scheduler.getTask()->load(stack);
     }
     start();
 }

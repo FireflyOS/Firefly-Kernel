@@ -20,11 +20,11 @@ public:
     /**
      * Get next task
      */
-    inline Task* schedule() {
+    Task* schedule() {
         return onSchedule();
     }
 
-    inline void addTask(Task task) {
+    void addTask(Task task) {
         registerTask(task);
     }
 };
