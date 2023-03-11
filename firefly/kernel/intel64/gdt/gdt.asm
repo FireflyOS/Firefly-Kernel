@@ -13,6 +13,6 @@ load_gdt:
         mov ds, ax
         mov es, ax
         mov ss, ax
-        ; mov fs, ax
-        ; mov gs, ax
+        mov fs, ax
+        mov gs, ax
         ret

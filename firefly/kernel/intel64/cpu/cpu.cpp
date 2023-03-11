@@ -11,29 +11,15 @@
 
 namespace firefly::kernel {
 namespace {
-frg::manual_box<CpuData> bootCpuData;
 frg::vector<CpuData *, Allocator> allCpuContexts;
 frg::ticket_spinlock allCpuContextsLock;
 }  // namespace
 
-void setupCpuContext(AssemblyCpuData *context) {
-    context->selfPointer = context;
-    wrmsr(MSR::GsBase, reinterpret_cast<uint64_t>(context));
-}
-
-void setupBootCpuContext() {
-    bootCpuData.initialize();
-    setupCpuContext(bootCpuData.get());
-}
-
 void initializeBootProccessor(uint64_t stack) {
-    setupBootCpuContext();
     initializeThisCpu(stack);
 }
 
 void initializeApplicationProcessor(uint64_t stack) {
-    auto cpuData = new (mm::heap->allocate(sizeof(CpuData))) CpuData;
-    setupCpuContext(cpuData);
     initializeThisCpu(stack);
 }
 
@@ -49,7 +35,9 @@ CpuData *getCpuData() {
 }
 
 void initializeThisCpu(uint64_t stack) {
-    auto cpuData = getCpuData();
+    // auto cpuData = getCpuData();
+    auto cpuData = new (mm::heap->allocate(sizeof(CpuData))) CpuData;
+    cpuData->selfPointer = cpuData;
 
     allCpuContextsLock.lock();
     cpuData->cpuIndex = allCpuContexts.size();
@@ -61,7 +49,9 @@ void initializeThisCpu(uint64_t stack) {
             << fmt::endl;
 
     core::gdt::init(cpuData->gdt);
-    core::tss::init(stack);
+    core::tss::init(cpuData, stack);
+
+    wrmsr(MSR::GsBase, reinterpret_cast<uint64_t>(cpuData));
 
     firefly::kernel::core::interrupt::init();
 

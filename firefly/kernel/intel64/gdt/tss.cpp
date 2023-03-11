@@ -9,8 +9,7 @@ inline void load_tss(SegmentSelector selector) {
     asm("ltr %%ax\n" ::"a"(selector));
 }
 
-void init(uint64_t stack) {
-    auto cpuData = static_cast<CpuData*>(getCpuData()->selfPointer);
+void init(CpuData* cpuData, uint64_t stack) {
     Tss& tss = cpuData->tss;
     gdt::setTssEntry(cpuData->gdt, reinterpret_cast<uint64_t>(&tss), 0x20, 0x89);
     tss.RSP0 = stack;
