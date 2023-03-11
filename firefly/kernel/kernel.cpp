@@ -39,52 +39,26 @@ void log_core_firefly_contributors() {
 }
 
 void loop1() {
-    debugLine << "loop 1 \n"
-              << fmt::endl;
-
-    for (;;) {
-        asm volatile("hlt");
-    }
+    for (;;)
+        debugLine << "loop 1 \n"
+                  << fmt::endl;
 }
 
 void loop2() {
-    debugLine << "loop 2\n"
-              << fmt::endl;
-
-    for (;;) {
-        asm volatile("hlt");
-    }
+    for (;;)
+        debugLine << "loop 2\n"
+                  << fmt::endl;
 }
 
 void loop3() {
-    debugLine << "loop 3\n"
-              << fmt::endl;
-    for (;;) {
-        asm volatile("hlt");
-    }
+    for (;;)
+        debugLine << "loop 3\n"
+                  << fmt::endl;
 }
 
 [[noreturn]] void kernel_main() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
-
-
-    // Testing the heap with a vector
-    frg::vector<int, Allocator> vec;
-    vec.push(1);
-    vec.push(2);
-    vec.push(3);
-    logLine << "Vec.size: " << vec.size() << ", vec.front: " << vec.front() << "\n"
-            << fmt::endl;
-
-    // Testing the heap with allocations
-    auto ptr = mm::heap->allocate(sizeof(int));
-    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr) << '\n'
-            << fmt::endl;
-
-    auto ptr2 = mm::heap->allocate(sizeof(int));
-    logLine << "ptr=" << fmt::hex << reinterpret_cast<uintptr_t>(ptr2) << '\n'
-            << fmt::endl;
 
     firefly::drivers::ps2::init();
     tasks::Scheduler::init();
@@ -92,14 +66,13 @@ void loop3() {
     auto sp1 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
     auto sp2 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
     auto sp3 = reinterpret_cast<uintptr_t>(mm::Physical::must_allocate(8192));
-    tasks::Scheduler::accessor().addTask(
-        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop1), sp1));
-    tasks::Scheduler::accessor().addTask(
-        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop2), sp2));
-    tasks::Scheduler::accessor().addTask(
-        tasks::Task(reinterpret_cast<std::uintptr_t>(&loop3), sp3));
+
+    tasks::Scheduler::accessor().addTask(tasks::Task(reinterpret_cast<std::uintptr_t>(&loop1), sp1));
+    tasks::Scheduler::accessor().addTask(tasks::Task(reinterpret_cast<std::uintptr_t>(&loop2), sp2));
+    tasks::Scheduler::accessor().addTask(tasks::Task(reinterpret_cast<std::uintptr_t>(&loop3), sp3));
 
     timer::start();
+
     for (;;) {
         // wait for scheduler to start
     }
