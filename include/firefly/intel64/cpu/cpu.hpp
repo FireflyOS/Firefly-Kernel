@@ -79,9 +79,6 @@ struct CpuData : public AssemblyCpuData {
 } PACKED;
 
 // from managarm
-void setupCpuContext(AssemblyCpuData *context);
-void setupBootCpuContext();
-
 void initializeBootProccessor(uint64_t stack);
 void initializeApplicationProcessor(uint64_t stack);
 

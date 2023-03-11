@@ -15,6 +15,6 @@ void registerIRQHandler(void (*handler)(ContextRegisters*), uint8_t irq);
 void unregisterIRQHandler(uint8_t irq);
 
 namespace change {
-extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index);
+extern "C" void update(void (*handler)(), uint16_t cs, uint8_t type, uint8_t index, uint8_t ist);
 }
 }  // namespace firefly::kernel::core::interrupt
