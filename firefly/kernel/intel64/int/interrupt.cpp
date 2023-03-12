@@ -136,9 +136,7 @@ void interrupt_handler(InterruptFrame iframe) {
               << fmt::endl;
 
     panic("interrupt");
-
-    for (;;)
-        asm("cli\nhlt");
+    __builtin_unreachable();
 }
 
 using InterruptHandlerCallback = void (*)(ContextRegisters*);
