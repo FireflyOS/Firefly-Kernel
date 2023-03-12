@@ -29,7 +29,7 @@ char* format::reverse(char* s) {
         last_char--;
     }
 
-    s[len(s)] = '\0';
+    s[len(s) - 1 + 1] = '\0';
 
     return s;
 }
@@ -50,6 +50,7 @@ void format::itoa(size_t num, char* s, int base) {
     }
 
     s[counter] = '\0';
+    reverse(s);
 }
 
 size_t format::len(const char* s) {
