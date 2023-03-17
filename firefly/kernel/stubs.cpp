@@ -3,6 +3,7 @@
 
 #include "cstdlib/cassert.h"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
+#include "firefly/memory-manager/secondary/heap.hpp"
 #include "firefly/panic.hpp"
 
 /*
@@ -28,6 +29,14 @@ void FRG_INTF(log)(const char *cstring) {
 }
 
 void FRG_INTF(panic)(const char *cstring) {
-	firefly::panic(cstring);
+    firefly::panic(cstring);
 }
+}
+
+void *operator new(size_t sz) {
+    return firefly::kernel::mm::heap->allocate(sz);
+}
+
+void operator delete(void *ptr, [[gnu::unused]] size_t size) {
+    firefly::kernel::mm::heap->deallocate(ptr);
 }
