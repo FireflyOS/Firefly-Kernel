@@ -39,6 +39,12 @@ void format::itoa(size_t num, char* s, int base) {
     size_t counter = 0;
     size_t digit = 0;
 
+    if (num == 0) {
+        s[0] = '0';
+        s[1] = '\0';
+        return;
+    }
+
     while (num != 0 && counter < buffer_sz) {
         digit = (num % base);
         if (digit > 9)
