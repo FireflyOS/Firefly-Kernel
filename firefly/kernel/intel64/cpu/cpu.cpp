@@ -38,6 +38,8 @@ void initializeThisCpu(uint64_t stack) {
     auto cpuData = new (mm::heap->allocate(sizeof(CpuData))) CpuData;
     cpuData->selfPointer = cpuData;
 
+    cpuData->scheduler = new (mm::heap->allocate(sizeof(firefly::kernel::tasks::Scheduler))) firefly::kernel::tasks::Scheduler;
+
     core::gdt::init(cpuData->gdt);
     core::tss::init(cpuData, stack);
 

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "firefly/intel64/cpu/cpu.hpp"
+#include "firefly/intel64/cpu/registers.hpp"
+#include "firefly/intel64/gdt/gdt.hpp"
+#include "firefly/intel64/gdt/tss.hpp"
 #include "libk++/memory.hpp"
 
 namespace firefly::kernel::tasks {

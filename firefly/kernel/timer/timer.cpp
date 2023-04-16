@@ -9,10 +9,9 @@
 #include "firefly/memory-manager/allocator.hpp"
 #include "firefly/memory-manager/primary/primary_phys.hpp"
 #include "firefly/panic.hpp"
-#include "firefly/tasks/scheduler.hpp"
+// #include "firefly/tasks/scheduler.hpp"
 
 namespace firefly::kernel {
-// TODO: rework this, probably a better solution
 namespace timer {
 
 namespace {
@@ -21,18 +20,18 @@ static volatile uint64_t ticks = 0;
 static volatile uint32_t ticks_20ms = 0;
 }  // namespace
 
-void timer_irq(ContextRegisters* stack) {
-    auto& scheduler = tasks::Scheduler::accessor();
-    if (scheduler.getTask() == nullptr) {
-        scheduler.schedule();
-        scheduler.getTask()->load(stack);
-    } else {
-        scheduler.getTask()->save(stack);
-        scheduler.schedule();
-        scheduler.getTask()->load(stack);
-    }
-    start();
-}
+// void timer_irq(ContextRegisters* stack) {
+//     auto& scheduler = tasks::Scheduler::accessor();
+//     if (scheduler.getTask() == nullptr) {
+//         scheduler.schedule();
+//         scheduler.getTask()->load(stack);
+//     } else {
+//         scheduler.getTask()->save(stack);
+//         scheduler.schedule();
+//         scheduler.getTask()->load(stack);
+//     }
+//     start();
+// }
 
 void start() {
     apic::ApicTimer::accessor().oneShotTimer(ticks_20ms);
@@ -41,16 +40,13 @@ void start() {
 void init() {
     resetTicks();
     HPET::init();
-    core::interrupt::registerIRQHandler(timer_irq, 0);
+    // core::interrupt::registerIRQHandler(timer_irq, 0);
     if (apic::ApicTimer::isAvailable()) {
         apic::ApicTimer::init();
         ticks_20ms = 200 * apic::ApicTimer::accessor().calibrate(100);
     } else {
         pit::init();
     }
-
-    return;
-    // panic("No usable timer found");
 }
 
 
