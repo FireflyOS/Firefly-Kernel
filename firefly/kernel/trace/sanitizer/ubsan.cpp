@@ -95,7 +95,7 @@ static void tu_print_location(const char *message, struct tu_source_location loc
     using namespace firefly;
     logLine << "tinyubsan: " << message
             << " at file " << loc.file
-            << ", line " << fmt::dec << loc.file
+            << ", line " << fmt::dec << loc.line
             << ", column " << loc.column << '\n'
             << fmt::endl;
 }
