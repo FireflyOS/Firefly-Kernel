@@ -41,7 +41,10 @@ void log_core_firefly_contributors() {
     log_core_firefly_contributors();
     core::acpi::Acpi::accessor().dumpTables();
 
-    panic("Reached the end of the kernel");
+    timer::start();
+
+    for (;;)
+        ;
     __builtin_unreachable();
 }
 }  // namespace firefly::kernel

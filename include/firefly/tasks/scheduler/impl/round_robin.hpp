@@ -6,12 +6,13 @@
 #include "firefly/tasks/scheduler/base.hpp"
 
 namespace firefly::kernel::tasks {
-class Scheduler : public BaseScheduler<frg::vector<Task, Allocator>> {
+class Scheduler : protected BaseScheduler<frg::vector<Task, Allocator>> {
 public:
-    Task* onSchedule() override {
-        BaseScheduler::onSchedule();
+    Task* onSchedule(ContextRegisters* stack, uint8_t idx) {
+        logLine << "schedule event on cpu#" << idx << "\n"
+                << fmt::endl;
 
-        if (store.empty()) return nullptr;
+        if (unlikely(store.empty())) return nullptr;
 
         if (++n > store.size())
             n = 1;

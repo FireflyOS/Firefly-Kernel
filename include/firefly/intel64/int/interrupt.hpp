@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "firefly/intel64/cpu/cpu.hpp"
+#include "firefly/intel64/cpu/registers.hpp"
 
 namespace firefly::kernel::core::interrupt {
 
